@@ -1,8 +1,10 @@
 package org.chat.converters;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.Message;
 import org.chat.models.MessageDto;
 
+@ApplicationScoped
 public class MessageConverter implements Converter<Message, MessageDto> {
     @Override
     public Message convertToEntity(MessageDto model) {

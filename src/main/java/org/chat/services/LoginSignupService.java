@@ -1,8 +1,11 @@
 package org.chat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import org.chat.config.JwtService;
 import org.chat.entities.User;
 import org.chat.repositories.UserRepository;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,21 +13,30 @@ import java.util.regex.Pattern;
 @ApplicationScoped
 public class LoginSignupService {
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
-    public LoginSignupService(UserRepository userRepository) {
+    public LoginSignupService(
+            UserRepository userRepository,
+            JwtService jwtService
+    ) {
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
-    public User validateUser(String username, String password) {
+    public String login(String username, String password) {
         User user = userRepository.findByUsername(username);
 
-        if (user == null || !user.getPassword().equals(password)) {
+        if (
+                user == null ||
+                !BCrypt.checkpw(password, user.getPassword())
+        ) {
             throw new RuntimeException("Invalid username or password");
         }
 
-        return user;
+        return jwtService.generateJwtToken();
     }
 
+    @Transactional
     public String createUser(String username, String password) {
         if (userRepository.findByUsername(username) != null ||
                 (
@@ -41,8 +53,8 @@ public class LoginSignupService {
 
         User user = new User();
         user.setUsername(username);
+        user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
 
-        user.setPassword(password);
         userRepository.persist(user);
 
         return "user successfully registered";
@@ -52,7 +64,7 @@ public class LoginSignupService {
         Pattern uppercasePattern = Pattern.compile("[A-Z]");
         Pattern lowercasePattern = Pattern.compile("[a-z]");
         Pattern numberPattern = Pattern.compile("[0-9]");
-        Pattern specialCharacterPattern = Pattern.compile("[!@#$%^&*(),.?\":{}|<>_-]");
+        Pattern specialCharacterPattern = Pattern.compile("[!@#$%^&*(),.?\":{}|<>_\\-+]");
 
         Matcher uppercaseMatcher = uppercasePattern.matcher(password);
         Matcher lowercaseMatcher = lowercasePattern.matcher(password);

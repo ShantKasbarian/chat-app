@@ -1,9 +1,11 @@
 package org.chat.converters;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.User;
 import org.chat.models.UserDto;
 
-public class UserModel implements Converter<User, UserDto> {
+@ApplicationScoped
+public class UserConverter implements Converter<User, UserDto> {
     @Override
     public User convertToEntity(UserDto model) {
         User entity = new User();
