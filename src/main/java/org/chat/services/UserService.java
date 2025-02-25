@@ -16,4 +16,10 @@ public class UserService {
     public List<String> getContacts(int userId) {
         return userRepository.getContacts(userId);
     }
+
+    public String addContact(int userId,String recepientUsername) {
+        userRepository.addContact(userId, recepientUsername);
+
+        return "contact has been added";
+    }
 }

@@ -37,14 +37,4 @@ public class MessageService {
 
         return "message has been sent";
     }
-
-    public List<Message> getMessages(int userId, String recepientUsername) {
-        return messageRepository.getMessages(userId, recepientUsername);
-    }
-
-    public String addContact(int userId,String recepientUsername) {
-        userRepository.addContact(userId, recepientUsername);
-
-        return "contact has been added";
-    }
 }
