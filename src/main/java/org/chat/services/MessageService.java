@@ -37,4 +37,8 @@ public class MessageService {
 
         return "message has been sent";
     }
+
+    public List<Message> getMessages(int userId, String recepientUsername) {
+        return messageRepository.getMessages(userId, recepientUsername);
+    }
 }

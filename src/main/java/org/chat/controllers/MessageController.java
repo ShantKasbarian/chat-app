@@ -57,10 +57,4 @@ public class MessageController {
                 .map(messageConverter::convertToModel)
                 .collect(Collectors.toList());
     }
-
-    @POST
-    @ResponseStatus(201)
-    public String addContact(MessageDto messageDto) {}
-
-
 }
