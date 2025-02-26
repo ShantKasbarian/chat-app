@@ -1,5 +1,6 @@
 package org.chat.controllers;
 
+import io.quarkus.security.Authenticated;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -42,6 +43,7 @@ public class MessageController {
     @ResponseStatus(201)
     @Transactional
     public String sendMessage(MessageDto messageDto) {
+        System.out.println("id = " + jwt.getClaim("id").toString());
         messageDto.setSenderId(jwt.getClaim("id"));
         return messageService.writeMessage(
                 messageConverter.convertToEntity(messageDto),

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.security.auth.Subject;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 @Getter
@@ -14,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserPrincipal {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,4 +35,14 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "contact_id")
     )
     private List<User> contacts;
+
+    @Override
+    public String getName() {
+        return "";
+    }
+
+    @Override
+    public boolean implies(Subject subject) {
+        return UserPrincipal.super.implies(subject);
+    }
 }
