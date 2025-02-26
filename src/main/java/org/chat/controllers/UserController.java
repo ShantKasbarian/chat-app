@@ -5,6 +5,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
+import org.chat.models.UserDto;
 import org.chat.services.UserService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -32,13 +33,13 @@ public class UserController {
 
     @POST
     @Path("/add/contact")
-    public String addContact(String recepientUsername) {
-        return userService.addContact(token.getClaim("id"), recepientUsername);
+    public String addContact(UserDto userDto) {
+        return userService.addContact(userDto.getId(), userDto.getUsername());
     }
 
     @GET
     @Path("/contacts")
-    public List<String> getContacts() {
-        return userService.getContacts(token.getClaim("id"));
+    public List<String> getContacts(int id) {
+        return userService.getContacts(id);
     }
 }

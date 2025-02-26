@@ -3,6 +3,8 @@ package org.chat.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 import org.chat.entities.User;
 
 import java.util.List;
@@ -19,29 +21,21 @@ public class UserRepository implements PanacheRepository<User> {
         return find("username",username).firstResult();
     }
 
-    public List getContacts(int currentUserId) {
-        return entityManager
-                .createNativeQuery(
-                        "select u.username from users u " +
-                        "left join users c on u.id = c.contact_id " +
-                        "where u.user_id = ? ",
-                        String.class
-                )
-                .setParameter(1, currentUserId)
-                .getResultList();
+    public List<String> getContacts(int currentUserId) {
+        Query query = entityManager.createNativeQuery("select u.username from users u" +
+                " left join contacts c on c.contact_id = u.id where user_id = ?");
+        query.setParameter(1, currentUserId);
+
+        return query.getResultList();
     }
 
-    public void addContact(int userId, String username) {
-        User contact = findByUsername(username);
-
-        if (contact == null) {
-            throw new RuntimeException("Contact not found");
-        }
-
+    @Transactional
+    public void addContact(int userId, int contactId) {
         entityManager.createNativeQuery("insert into contacts(user_id, contact_id)" +
                 " values(?, ?)"
         )
         .setParameter(1, userId)
-        .setParameter(2, contact.getId());
+        .setParameter(2, contactId)
+        .executeUpdate();
     }
 }
