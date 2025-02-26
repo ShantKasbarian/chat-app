@@ -59,7 +59,11 @@ public class MessageController {
     public List<MessageDto> getMessages(UserDto userDto) {
         return messageService.getMessages(userDto.getId(), userDto.getUsername())
                 .stream()
-                .map(messageConverter::convertToModel)
+                .map(message -> {
+                    MessageDto messageDto = messageConverter.convertToModel(message);
+                    messageDto.setReceiverUsername(userDto.getUsername());
+                    return messageDto;
+                })
                 .collect(Collectors.toList());
     }
 }

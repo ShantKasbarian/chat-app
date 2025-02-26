@@ -24,6 +24,7 @@ public class MessageService {
         }
 
         User recipient = userRepository.findByUsername(recepientUsername);
+        System.out.println(message.getSenderId());
 
         if (
                 recepientUsername == null ||
@@ -33,12 +34,15 @@ public class MessageService {
         }
 
         message.setRecepient(recipient.getId());
-        messageRepository.persist(message);
+        messageRepository.save(message);
 
         return "message has been sent";
     }
 
     public List<Message> getMessages(int userId, String recepientUsername) {
-        return messageRepository.getMessages(userId, recepientUsername);
+        return messageRepository.getMessages(
+                userId,
+                userRepository.findByUsername(recepientUsername).getId()
+        );
     }
 }

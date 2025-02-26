@@ -9,7 +9,6 @@ import lombok.Setter;
 public class MessageDto {
     private int id;
     private String message;
-    @JsonIgnore
     private int senderId;
     private int receiverId;
     private String receiverUsername;
