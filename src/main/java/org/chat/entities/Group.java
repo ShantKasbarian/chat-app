@@ -6,26 +6,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "messages")
-public class Message {
+@Table(name = "groups")
+public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "id")
+    private int id;
 
-    @Column(name = "sender_id")
-    private Integer senderId;
+    @Column(name = "name", unique = true)
+    private String name;
 
-    @Column(name = "recepient_id")
-    private Integer recepient;
+    @OneToMany
+    private List<Message> messages;
 
-    @Column(name = "message")
-    private String message;
-
-    @ManyToOne
-    private Group group;
+    @OneToMany(mappedBy = "group")
+    private List<GroupUser> users;
 }
