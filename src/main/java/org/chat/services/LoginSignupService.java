@@ -23,7 +23,7 @@ public class LoginSignupService {
         this.jwtService = jwtService;
     }
 
-    public String login(String username, String password) {
+    public String login(String username, String password) throws Exception {
         User user = userRepository.findByUsername(username);
 
         if (
@@ -33,7 +33,7 @@ public class LoginSignupService {
             throw new RuntimeException("Invalid username or password");
         }
 
-        return jwtService.generateJwtToken();
+        return jwtService.generateJwtToken(username, user.getId());
     }
 
     @Transactional

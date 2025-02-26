@@ -1,5 +1,6 @@
 package org.chat.controllers;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -12,6 +13,7 @@ import java.util.List;
 @Path("/user")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@PermitAll
 public class UserController {
     private final UserService userService;
     @Context
