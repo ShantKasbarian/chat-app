@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import org.chat.converters.MessageConverter;
+import org.chat.models.GroupMessageDto;
 import org.chat.models.MessageDto;
 import org.chat.models.UserDto;
 import org.chat.services.MessageService;
@@ -65,5 +66,26 @@ public class MessageController {
                     return messageDto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @POST
+    @ResponseStatus(201)
+    @Path("/group")
+    @Transactional
+    public String messageGroup(MessageDto messageDto) {
+        return messageService.messageGroup(
+                messageConverter.convertToEntity(messageDto),
+                messageDto.getGroupName()
+        );
+    }
+
+    @GET
+    @ResponseStatus(200)
+    @Path("/group/{groupName}")
+    public List<GroupMessageDto> getGroupMessages(
+            @PathParam("groupName") String groupName,
+            int userId
+    ) {
+        return messageService.getGroupMessages(groupName, userId);
     }
 }

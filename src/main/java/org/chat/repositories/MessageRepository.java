@@ -3,7 +3,9 @@ package org.chat.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.chat.entities.Message;
+import org.chat.models.GroupMessageDto;
 
 import java.util.List;
 
@@ -26,6 +28,17 @@ public class MessageRepository implements PanacheRepository<Message> {
                 .getResultList();
     }
 
+    public List<GroupMessageDto> getMessages(int groupId) {
+        Query query = entityManager.createNativeQuery(
+            "select u.username, m.message  from messages m " +
+                    "left join users u on u.id = m.sender_id " +
+                    "where m.group_id = ?",
+                GroupMessageDto.class
+        ).setParameter(1, groupId);
+
+        return query.getResultList();
+    }
+
     public void save(Message message) {
         entityManager.createQuery("insert into Message (message, senderId, recepient) values (:message, :sender, :recepient)")
             .setParameter("message", message.getMessage())
@@ -34,7 +47,12 @@ public class MessageRepository implements PanacheRepository<Message> {
             .executeUpdate();
     }
 
-    public Message writeMessage(int currentUserId, Message message, int groupId) {
-        return null;
+    public void save(String message, int groupId, int senderId) {
+        entityManager.createNativeQuery(
+                "insert into messages (message, sender_id, group_id) values (?, ?, ?)")
+                .setParameter(1, message)
+                .setParameter(2, senderId)
+                .setParameter(3, groupId)
+                .executeUpdate();
     }
 }
