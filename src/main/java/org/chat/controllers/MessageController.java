@@ -2,6 +2,7 @@ package org.chat.controllers;
 
 import io.quarkus.security.Authenticated;
 import io.smallrye.jwt.build.Jwt;
+import jakarta.annotation.security.PermitAll;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -9,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import org.chat.converters.MessageConverter;
 import org.chat.models.MessageDto;
+import org.chat.models.UserDto;
 import org.chat.services.MessageService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @Path("/message")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@PermitAll
 public class MessageController {
     private final MessageService messageService;
     private final MessageConverter messageConverter;
@@ -43,8 +46,8 @@ public class MessageController {
     @ResponseStatus(201)
     @Transactional
     public String sendMessage(MessageDto messageDto) {
-        System.out.println("id = " + jwt.getClaim("id").toString());
-        messageDto.setSenderId(jwt.getClaim("id"));
+//        System.out.println("id = " + jwt.getClaim("id").toString());
+//        messageDto.setSenderId(jwt.getClaim("id"));
         return messageService.writeMessage(
                 messageConverter.convertToEntity(messageDto),
                 messageDto.getReceiverUsername()
@@ -53,8 +56,8 @@ public class MessageController {
 
     @GET
     @ResponseStatus(200)
-    public List<MessageDto> getMessages(String username) {
-        return messageService.getMessages(jwt.getClaim("id"), username)
+    public List<MessageDto> getMessages(UserDto userDto) {
+        return messageService.getMessages(userDto.getId(), userDto.getUsername())
                 .stream()
                 .map(messageConverter::convertToModel)
                 .collect(Collectors.toList());

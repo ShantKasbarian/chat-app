@@ -1,6 +1,7 @@
 package org.chat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import org.chat.entities.User;
 import org.chat.repositories.UserRepository;
 
 import java.util.List;
@@ -18,7 +19,13 @@ public class UserService {
     }
 
     public String addContact(int userId,String recepientUsername) {
-        userRepository.addContact(userId, recepientUsername);
+        User contact = userRepository.findByUsername(recepientUsername);
+
+        if (contact == null) {
+            throw new RuntimeException("Contact not found");
+        }
+
+        userRepository.addContact(userId, contact.getId());
 
         return "contact has been added";
     }
