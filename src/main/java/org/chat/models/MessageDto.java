@@ -12,4 +12,5 @@ public class MessageDto {
     private int senderId;
     private int receiverId;
     private String receiverUsername;
+    private String groupName;
 }
