@@ -15,7 +15,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/message")
 @Produces(MediaType.APPLICATION_JSON)

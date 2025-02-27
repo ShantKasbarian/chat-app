@@ -87,7 +87,7 @@ public class GroupController {
         );
     }
 
-    @PUT
+    @DELETE
     @Path("/reject/user")
     @ResponseStatus(204)
     @Transactional

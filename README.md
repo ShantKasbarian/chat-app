@@ -1,4 +1,27 @@
 # chat-app
+How to use this application:
+
+```generate private and public keys
+To generate a private key execute the following command in bash: 
+    openssl genpkey -algorithm RSA -out privateKey.pem
+
+To generate a public key based on the private key execute the following command in bash:
+    openssl rsa -pubout -in privateKey.pem -out publicKey.pem
+
+```application.propertis
+In the application.properties file change the following:
+
+    quarkus.datasource.db-kind=your-database-kind
+    quarkus.datasource.username=your-database-username
+    quarkus.datasource.password=your-database-password
+    quarkus.datasource.jdbc.url=your-database-url
+    quarkus.http.port=to-your-prefered-port (optional) 
+    mp.jwt.verify.issuer=your-issuer
+    smallrye.jwt.sign.key.location=your-private-key-location
+    mp.jwt.verify.publickey.location=your-public-key-location
+    
+    note: how to generate private and public key is mentioned above
+
 ```tables
 To create tables in your database execute the following scripts in this exact order:
 
@@ -77,7 +100,178 @@ To create tables in your database execute the following scripts in this exact or
             ON DELETE NO ACTION
             NOT VALID
     )
+
+```endpoints:
+    http://localhost:your-port/auth/signup
+    Method: POST
+    Description: Allows new user to create an account
+    Payload:
+        {
+            "username": "your-username",
+            "password": "your-password"
+        }
+    Response:
+        String "user successfully registered"
+        
+    note: username must be unique and password must include
+    at least 1 uppercase, 1 lowercase, 1 number, 1 special character
+
+    http://localhost:your-port/auth/login
+    Method: POST
+    Description: Allows user to login
+    Payload:
+        {
+            "username": "your-username",
+            "password": "your-password"
+        }
+    Response:
+        String similar to this "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0ODAwMCIsInVwbiI6IkNvYmxlcG90IiwidXNlcklkIjoiMiIsImdyb3VwcyI6WyJ1c2VyIl0sImV4cCI6MTc0MDY1MjU1MCwiaWF0IjoxNzQwNjQ4OTUwLCJqdGkiOiIxYj"
+        
+    http://localhost:your-port/user/add/contact
+    Method: POST
+    Description: Allows user to add another user to their contacts list
+    Payload:
+        {
+            "username": "your-friend-username"
+        }
+    Response:
+        String "contact has been added"
+
+    http://localhost:your-port/user/contacts
+    Method: GET
+    Description: Allows user to check contacts their contacts
+    Response:
+        [
+            "contact1-username",
+            "contact2-username"
+        ]
     
+    http://localhost:your-port/group/create
+    Method: POST
+    Description: Allows user create a group to chat with multiple other users
+    Payload:
+        {
+            "name": "your-group-name",
+            "creators": ["other-users(as admins)"]
+        }
+    Response:
+        String "group has been created"
+    
+    http://localhost:your-port/group/join
+    Method: POST  
+    Description: Allows user to join a group as a member
+    Payload: 
+        {
+            "name": "group-name"
+        }
+    Response:
+        String "request to join group has been submitted, 
+            waiting for one of the group creators to accept" 
+     
+    http://localhost:your-port/group/leave
+    Method: DELETE
+    Description: Allows user to leave a group
+    Payload:
+        {
+            "name": "group-name"
+        }
+    
+    http://localhost:your-port/group/{groupName}/waiting/users
+    Method: GET
+    Description: Allows creators of the group to check pending join requests
+    Response:
+        [
+            "username1",
+            "username2"
+        ]
+    
+    http://localhost:your-port/group/accept
+    Method: PUT
+    Description: Allows creators of the group to accept a join group request
+    Payload:
+        {
+            "username": "requestor-username",
+            "groupName": "group-name"
+        }
+    Response:
+        String "user has been accepted"
+    
+    http://localhost:your-port/group/reject
+    Method: DELETE
+    Description: Allows creators of the group to reject a join group request
+    Payload:
+        {
+            "username": "requestor-username",
+            "groupName": "group-name"
+        }
+    
+    http://localhost:your-port/group/joined
+    Method: GET
+    Description: Allows user to check joined groups
+    Response:
+        [
+            "groupName1",
+            "groupName2"
+        ]
+
+    http://localhost:your-port/message/send
+    Method: POST
+    Description: Allows user to send message to another user
+    Payload:
+        {
+            "message": "your-message",
+            "receiverUsername": "username"
+        }
+    Response
+        String "message has been sent" with http status 201
+
+    http://localhost:your-port/message
+    Method: GET
+    Description: Allows user to check sent and received messages from another user
+    Payload:
+        {
+            "username": "friend-username"
+        }
+    Response:
+        [
+            {
+                "username": "sender-username",
+                "message": "message"
+            }
+        ],
+        [
+            {
+                "username": "sender-username",
+                "message": "message"
+            }
+        ]
+    
+    http://localhost:your-port/message/group
+    Method: POST
+    Description: Allows a member of the group to send message to other members of the same group
+    Payload:
+        {
+            "message": "message",
+            "groupName": "group-name"
+        }
+    Response: 
+        String "message has been sent"
+    
+    http://localhost:your-port/message/group/{groupName}
+    Method: GET
+    Description: Allows user to check group messages
+    Response:
+        [
+            {
+                "username": "sender-username",
+                "message": "message"
+            },
+            {
+                "username": "sender-username",
+                "message": "message"
+            }
+        ]
+
     
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
