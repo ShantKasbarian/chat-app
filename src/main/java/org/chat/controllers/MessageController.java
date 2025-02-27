@@ -55,17 +55,10 @@ public class MessageController {
 
     @GET
     @ResponseStatus(200)
-    public List<MessageDto> getMessages(UserDto userDto) {
+    public List<GroupMessageDto> getMessages(UserDto userDto) {
         String userId = token.getClaim("userId");
 
-        return messageService.getMessages(Integer.parseInt(userId), userDto.getUsername())
-                .stream()
-                .map(message -> {
-                    MessageDto messageDto = messageConverter.convertToModel(message);
-                    messageDto.setReceiverUsername(userDto.getUsername());
-                    return messageDto;
-                })
-                .collect(Collectors.toList());
+        return messageService.getMessages(Integer.parseInt(userId), userDto.getUsername());
     }
 
     @POST

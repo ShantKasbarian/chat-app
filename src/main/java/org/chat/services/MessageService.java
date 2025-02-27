@@ -6,6 +6,7 @@ import org.chat.entities.GroupUser;
 import org.chat.entities.Message;
 import org.chat.entities.User;
 import org.chat.models.GroupMessageDto;
+import org.chat.models.MessageDto;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.MessageRepository;
@@ -53,7 +54,7 @@ public class MessageService {
         return "message has been sent";
     }
 
-    public List<Message> getMessages(int userId, String recepientUsername) {
+    public List<GroupMessageDto> getMessages(int userId, String recepientUsername) {
         return messageRepository.getMessages(
                 userId,
                 userRepository.findByUsername(recepientUsername).getId()

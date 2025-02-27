@@ -1,7 +1,6 @@
 package org.chat.entities;
 
 import jakarta.persistence.*;
-import jdk.dynalink.linker.LinkerServices;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
