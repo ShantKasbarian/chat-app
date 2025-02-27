@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.chat.models.UserDto;
 import org.chat.services.UserService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class UserController {
 
     @POST
     @Path("/add/contact")
+    @ResponseStatus(201)
     public String addContact(UserDto userDto) {
         String userId = token.getClaim("userId");
         return userService.addContact(Integer.parseInt(userId), userDto.getUsername());
@@ -40,6 +42,7 @@ public class UserController {
 
     @GET
     @Path("/contacts")
+    @ResponseStatus(200)
     public List<String> getContacts() {
         String userId = token.getClaim("userId");
         return userService.getContacts(Integer.parseInt(userId));
