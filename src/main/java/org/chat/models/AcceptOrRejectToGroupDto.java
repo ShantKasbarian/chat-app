@@ -12,5 +12,4 @@ import lombok.Setter;
 public class AcceptOrRejectToGroupDto {
     private String username;
     private String groupName;
-    private int currentUserId; // to be removed later
 }

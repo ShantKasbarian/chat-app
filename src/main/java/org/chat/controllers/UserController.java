@@ -1,6 +1,6 @@
 package org.chat.controllers;
 
-import jakarta.annotation.security.PermitAll;
+import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -14,7 +14,7 @@ import java.util.List;
 @Path("/user")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@PermitAll
+@Authenticated
 public class UserController {
     private final UserService userService;
     @Context
@@ -34,12 +34,14 @@ public class UserController {
     @POST
     @Path("/add/contact")
     public String addContact(UserDto userDto) {
-        return userService.addContact(userDto.getId(), userDto.getUsername());
+        String userId = token.getClaim("userId");
+        return userService.addContact(Integer.parseInt(userId), userDto.getUsername());
     }
 
     @GET
     @Path("/contacts")
-    public List<String> getContacts(int id) {
-        return userService.getContacts(id);
+    public List<String> getContacts() {
+        String userId = token.getClaim("userId");
+        return userService.getContacts(Integer.parseInt(userId));
     }
 }
