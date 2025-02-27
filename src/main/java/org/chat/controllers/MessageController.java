@@ -1,8 +1,6 @@
 package org.chat.controllers;
 
 import io.quarkus.security.Authenticated;
-import io.smallrye.jwt.build.Jwt;
-import jakarta.annotation.security.PermitAll;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -22,24 +20,24 @@ import java.util.stream.Collectors;
 @Path("/message")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@PermitAll
+@Authenticated
 public class MessageController {
     private final MessageService messageService;
     private final MessageConverter messageConverter;
     @Context
     private final SecurityContext securityContext;
-    private final JsonWebToken jwt;
+    private final JsonWebToken token;
 
     public MessageController(
             MessageService messageService,
             MessageConverter messageConverter,
             SecurityContext securityContext,
-            JsonWebToken jwt
+            JsonWebToken token
     ) {
         this.messageService = messageService;
         this.messageConverter = messageConverter;
         this.securityContext = securityContext;
-        this.jwt = jwt;
+        this.token = token;
     }
 
     @POST
@@ -47,8 +45,8 @@ public class MessageController {
     @ResponseStatus(201)
     @Transactional
     public String sendMessage(MessageDto messageDto) {
-//        System.out.println("id = " + jwt.getClaim("id").toString());
-//        messageDto.setSenderId(jwt.getClaim("id"));
+        String userId = token.getClaim("userId");
+        messageDto.setSenderId(Integer.parseInt(userId));
         return messageService.writeMessage(
                 messageConverter.convertToEntity(messageDto),
                 messageDto.getReceiverUsername()
@@ -58,7 +56,9 @@ public class MessageController {
     @GET
     @ResponseStatus(200)
     public List<MessageDto> getMessages(UserDto userDto) {
-        return messageService.getMessages(userDto.getId(), userDto.getUsername())
+        String userId = token.getClaim("userId");
+
+        return messageService.getMessages(Integer.parseInt(userId), userDto.getUsername())
                 .stream()
                 .map(message -> {
                     MessageDto messageDto = messageConverter.convertToModel(message);
@@ -73,6 +73,8 @@ public class MessageController {
     @Path("/group")
     @Transactional
     public String messageGroup(MessageDto messageDto) {
+        String userId = token.getClaim("userId");
+        messageDto.setSenderId(Integer.parseInt(userId));
         return messageService.messageGroup(
                 messageConverter.convertToEntity(messageDto),
                 messageDto.getGroupName()
@@ -83,9 +85,9 @@ public class MessageController {
     @ResponseStatus(200)
     @Path("/group/{groupName}")
     public List<GroupMessageDto> getGroupMessages(
-            @PathParam("groupName") String groupName,
-            int userId
+            @PathParam("groupName") String groupName
     ) {
-        return messageService.getGroupMessages(groupName, userId);
+        String userId = token.getClaim("userId");
+        return messageService.getGroupMessages(groupName, Integer.parseInt(userId));
     }
 }

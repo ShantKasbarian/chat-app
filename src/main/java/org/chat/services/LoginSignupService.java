@@ -33,7 +33,7 @@ public class LoginSignupService {
             throw new RuntimeException("Invalid username or password");
         }
 
-        return jwtService.generateJwtToken(username, user.getId());
+        return jwtService.generateToken(username, String.valueOf(user.getId()));
     }
 
     @Transactional

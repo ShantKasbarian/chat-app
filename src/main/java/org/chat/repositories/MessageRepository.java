@@ -18,14 +18,30 @@ public class MessageRepository implements PanacheRepository<Message> {
     }
 
     public List<Message> getMessages(int currentUserId, int receiverId) {
-        return entityManager
-                .createQuery(
-                        "from Message where recepient = :recepient and senderId = :sender",
+        List<Message> messages =
+                entityManager
+                    .createQuery(
+                            "from Message m where m.recepient = :recepient and m.senderId = :sender",
+                            Message.class
+                    )
+                    .setParameter("recepient", receiverId)
+                    .setParameter("sender", currentUserId)
+                    .getResultList();
+
+        List<Message> messagesList2 =
+                entityManager.createQuery(
+                        "from Message m where m.recepient = :recepient and m.senderId = :sender",
                         Message.class
                 )
-                .setParameter("recepient", receiverId)
-                .setParameter("sender", currentUserId)
+                .setParameter("recepient", currentUserId)
+                .setParameter("sender", receiverId)
                 .getResultList();
+
+        if (messagesList2 != null) {
+            messages.addAll(messagesList2);
+        }
+
+        return messages;
     }
 
     public List<GroupMessageDto> getMessages(int groupId) {

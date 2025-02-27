@@ -18,7 +18,12 @@ public class UserRepository implements PanacheRepository<User> {
     }
 
     public User findByUsername(String username) {
-        return find("username",username).firstResult();
+        try {
+            return find("username",username).firstResult();
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     public List<String> getContacts(int currentUserId) {

@@ -9,8 +9,7 @@ import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.UserRepository;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @ApplicationScoped
 public class GroupService {
@@ -30,7 +29,7 @@ public class GroupService {
     }
 
     @Transactional
-    public String createGroup(Group group, String[] creators) {
+    public String createGroup(Group group, String[] creators, String userId) {
         if (group.getName() == null || group.getName().isEmpty()) {
             throw new RuntimeException("Invalid group name");
         }
@@ -44,12 +43,27 @@ public class GroupService {
         groupRepository.persist(group);
 
         final Group gr = groupRepository.findByName(group.getName());
+        User currentUser = userRepository.findById(Long.valueOf(userId));
 
-        Arrays.stream(creators).forEach(
+        Set<Integer> creatorsSet = new HashSet<>();
+        creatorsSet.add(currentUser.getId());
+
+        for (int i = 0; i < creators.length; i++) {
+            User creator = userRepository.findByUsername(creators[i]);
+
+            if (creator == null || creator.getId().equals(currentUser.getId())) {
+                continue;
+            }
+
+            creatorsSet.add(creator.getId());
+
+        }
+
+        creatorsSet.stream().forEach(
             creator -> groupUserRepository.persist(
                     new GroupUser(
                             gr,
-                            userRepository.findByUsername(creator).getId(),
+                            creator,
                             true,
                             true
                     )
