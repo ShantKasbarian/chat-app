@@ -1,6 +1,5 @@
 package org.chat.config;
 
-import io.smallrye.jwt.algorithm.SignatureAlgorithm;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.inject.Singleton;
 

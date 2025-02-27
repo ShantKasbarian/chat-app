@@ -7,6 +7,8 @@ import jakarta.persistence.Query;
 import org.chat.entities.Message;
 import org.chat.models.GroupMessageDto;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @ApplicationScoped
@@ -17,31 +19,31 @@ public class MessageRepository implements PanacheRepository<Message> {
         this.entityManager = entityManager;
     }
 
-    public List<Message> getMessages(int currentUserId, int receiverId) {
-        List<Message> messages =
+    public List getMessages(int currentUserId, int receiverId) {
+        Query query1 =
                 entityManager
-                    .createQuery(
-                            "from Message m where m.recepient = :recepient and m.senderId = :sender",
-                            Message.class
+                    .createNativeQuery(
+                            "select u.username, m.message from messages m " +
+                                    "left join users u on u.id = m.sender_id "+
+                                    "where m.recepient_id = ? and m.sender_id = ?",
+                            GroupMessageDto.class
                     )
-                    .setParameter("recepient", receiverId)
-                    .setParameter("sender", currentUserId)
-                    .getResultList();
+                    .setParameter(1, receiverId)
+                    .setParameter(2, currentUserId);
 
-        List<Message> messagesList2 =
-                entityManager.createQuery(
-                        "from Message m where m.recepient = :recepient and m.senderId = :sender",
-                        Message.class
+        Query query2 =
+                entityManager
+                        .createNativeQuery(
+                            "select u.username, m.message from messages m " +
+                                    "left join users u on u.id = m.sender_id "+
+                                    "where m.recepient_id = ? and m.sender_id = ?",
+                        GroupMessageDto.class
                 )
-                .setParameter("recepient", currentUserId)
-                .setParameter("sender", receiverId)
-                .getResultList();
+                .setParameter(1, currentUserId)
+                .setParameter(2, receiverId);
 
-        if (messagesList2 != null) {
-            messages.addAll(messagesList2);
-        }
+        return List.of(query1.getResultList(), query2.getResultList());
 
-        return messages;
     }
 
     public List<GroupMessageDto> getMessages(int groupId) {
