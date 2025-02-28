@@ -10,6 +10,7 @@ import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.UserRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class GroupService {
@@ -45,30 +46,21 @@ public class GroupService {
         final Group gr = groupRepository.findByName(group.getName());
         User currentUser = userRepository.findById(Long.valueOf(userId));
 
-        Set<Integer> creatorsSet = new HashSet<>();
-        creatorsSet.add(currentUser.getId());
+        List<GroupUser> creatorsList = new ArrayList<>(
+            Arrays.stream(creators)
+                .map(userRepository::findByUsername)
+                .filter(creator -> creator != null)
+                .map(creator -> new GroupUser(gr, creator.getId(), true, true))
+                .toList()
+        );
 
-        for (int i = 0; i < creators.length; i++) {
-            User creator = userRepository.findByUsername(creators[i]);
+        GroupUser currentGroupUser = new GroupUser(gr, currentUser.getId(), true, true);
 
-            if (creator == null || creator.getId().equals(currentUser.getId())) {
-                continue;
-            }
-
-            creatorsSet.add(creator.getId());
-
+        if (!creatorsList.contains(currentGroupUser)) {
+            creatorsList.add(currentGroupUser);
         }
 
-        creatorsSet.stream().forEach(
-            creator -> groupUserRepository.persist(
-                    new GroupUser(
-                            gr,
-                            creator,
-                            true,
-                            true
-                    )
-            )
-        );
+        groupUserRepository.persist(creatorsList);
 
         return "group has been created";
     }
