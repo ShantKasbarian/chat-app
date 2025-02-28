@@ -7,8 +7,6 @@ import jakarta.persistence.Query;
 import org.chat.entities.Message;
 import org.chat.models.GroupMessageDto;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ApplicationScoped
@@ -25,7 +23,7 @@ public class MessageRepository implements PanacheRepository<Message> {
                     .createNativeQuery(
                             "select u.username, m.message from messages m " +
                                     "left join users u on u.id = m.sender_id "+
-                                    "where m.recepient_id = ? and m.sender_id = ?",
+                                    "where m.recipient_id = ? and m.sender_id = ?",
                             GroupMessageDto.class
                     )
                     .setParameter(1, receiverId)
@@ -36,7 +34,7 @@ public class MessageRepository implements PanacheRepository<Message> {
                         .createNativeQuery(
                             "select u.username, m.message from messages m " +
                                     "left join users u on u.id = m.sender_id "+
-                                    "where m.recepient_id = ? and m.sender_id = ?",
+                                    "where m.recipient_id = ? and m.sender_id = ?",
                         GroupMessageDto.class
                 )
                 .setParameter(1, currentUserId)
@@ -58,10 +56,10 @@ public class MessageRepository implements PanacheRepository<Message> {
     }
 
     public void save(Message message) {
-        entityManager.createQuery("insert into Message (message, senderId, recepient) values (:message, :sender, :recepient)")
+        entityManager.createQuery("insert into Message (message, senderId, recipient) values (:message, :sender, :recipient)")
             .setParameter("message", message.getMessage())
             .setParameter("sender", message.getSenderId())
-            .setParameter("recepient", message.getRecepient())
+            .setParameter("recipient", message.getRecipient())
             .executeUpdate();
     }
 

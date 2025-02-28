@@ -20,8 +20,8 @@ public class Message {
     @Column(name = "sender_id")
     private Integer senderId;
 
-    @Column(name = "recepient_id")
-    private Integer recepient;
+    @Column(name = "recipient_id")
+    private Integer recipient;
 
     @Column(name = "message")
     private String message;

@@ -6,7 +6,6 @@ import org.chat.entities.GroupUser;
 import org.chat.entities.Message;
 import org.chat.entities.User;
 import org.chat.models.GroupMessageDto;
-import org.chat.models.MessageDto;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.MessageRepository;
@@ -33,31 +32,31 @@ public class MessageService {
         this.groupUserRepository = groupUserRepository;
     }
 
-    public String writeMessage(Message message, String recepientUsername) {
+    public String writeMessage(Message message, String recipientUsername) {
         if (message.getMessage() == null || message.getMessage().isEmpty()) {
             throw new IllegalArgumentException("Message is empty");
         }
 
-        User recipient = userRepository.findByUsername(recepientUsername);
+        User recipient = userRepository.findByUsername(recipientUsername);
         System.out.println(message.getSenderId());
 
         if (
-                recepientUsername == null ||
+                recipientUsername == null ||
                 recipient == null
         ) {
-            throw new IllegalArgumentException("Recepient not found");
+            throw new IllegalArgumentException("Recipient not found");
         }
 
-        message.setRecepient(recipient.getId());
+        message.setRecipient(recipient.getId());
         messageRepository.save(message);
 
         return "message has been sent";
     }
 
-    public List<GroupMessageDto> getMessages(int userId, String recepientUsername) {
+    public List<GroupMessageDto> getMessages(int userId, String recipientUsername) {
         return messageRepository.getMessages(
                 userId,
-                userRepository.findByUsername(recepientUsername).getId()
+                userRepository.findByUsername(recipientUsername).getId()
         );
     }
 
