@@ -130,7 +130,7 @@ To create tables in your database execute the following scripts in this exact or
     http://localhost:your-port/user/{username}/add/contact
     Method: POST
     Description: Allows user to add another user to their contacts list
-    Payload: String "username": "your-friend-username"
+    Payload: String username: "your-friend-username"
     Response:
         String "contact has been added"
 
@@ -141,6 +141,16 @@ To create tables in your database execute the following scripts in this exact or
         [
             "contact1-username",
             "contact2-username"
+        ]
+        
+    http://localhost:your-port/user/{username}/search
+    Method: GET
+    Description: Allows user to search for users by username
+    Payload: String username: "username"
+    Response:
+        [
+            "username1",
+            "username2"
         ]
     
     http://localhost:your-port/group/create

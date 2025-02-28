@@ -43,4 +43,14 @@ public class UserRepository implements PanacheRepository<User> {
         .setParameter(2, contactId)
         .executeUpdate();
     }
+
+    public List<String> getUsersByUsername(String username) {
+        return entityManager
+                .createQuery(
+                        "select u.username from User u where upper(u.username) LIKE upper(:pattern)",
+                        String.class
+                )
+                .setParameter("pattern", "%" + username + "%")
+                .getResultList();
+    }
 }

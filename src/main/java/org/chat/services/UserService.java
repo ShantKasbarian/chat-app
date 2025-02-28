@@ -18,8 +18,8 @@ public class UserService {
         return userRepository.getContacts(userId);
     }
 
-    public String addContact(int userId,String recepientUsername) {
-        User contact = userRepository.findByUsername(recepientUsername);
+    public String addContact(int userId,String recipientUsername) {
+        User contact = userRepository.findByUsername(recipientUsername);
 
         if (contact == null) {
             throw new RuntimeException("Contact not found");
@@ -28,5 +28,9 @@ public class UserService {
         userRepository.addContact(userId, contact.getId());
 
         return "contact has been added";
+    }
+
+    public List<String> searchUserByUsername(String username) {
+        return userRepository.getUsersByUsername(username);
     }
 }

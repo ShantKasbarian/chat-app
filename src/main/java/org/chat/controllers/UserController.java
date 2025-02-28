@@ -47,4 +47,11 @@ public class UserController {
         String userId = token.getClaim("userId");
         return userService.getContacts(Integer.parseInt(userId));
     }
+
+    @GET
+    @Path("/{username}/search")
+    @ResponseStatus(200)
+    public List<String> searchUserByUsername(@PathParam("username") String username) {
+        return userService.searchUserByUsername(username);
+    }
 }
