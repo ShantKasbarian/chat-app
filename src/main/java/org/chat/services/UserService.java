@@ -19,6 +19,10 @@ public class UserService {
     }
 
     public String addContact(int userId,String recipientUsername) {
+        if (recipientUsername == null) {
+            throw new RuntimeException("Invalid recipientUsername");
+        }
+
         User contact = userRepository.findByUsername(recipientUsername);
 
         if (contact == null) {
