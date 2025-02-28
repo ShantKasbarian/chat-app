@@ -157,27 +157,22 @@ To create tables in your database execute the following scripts in this exact or
     Response:
         String "group has been created"
     
-    http://localhost:your-port/group/join
+    http://localhost:your-port/group/{groupName}/join
     Method: POST  
     Description: Allows user to join a group as a member
-    Payload: 
-        {
-            "name": "group-name"
-        }
+    Payload: String groupName: "your-group-name"
     Response:
         String "request to join group has been submitted, 
             waiting for one of the group creators to accept" 
      
-    http://localhost:your-port/group/leave
+    http://localhost:your-port/group/{groupName}/leave
     Method: DELETE
     Description: Allows user to leave a group
-    Payload:
-        {
-            "name": "group-name"
-        }
+    Payload: String groupName: "your-group-name"
     
     http://localhost:your-port/group/{groupName}/waiting/users
     Method: GET
+    Payload: String groupName: "your-groupName"
     Description: Allows creators of the group to check pending join requests
     Response:
         [
@@ -185,7 +180,7 @@ To create tables in your database execute the following scripts in this exact or
             "username2"
         ]
     
-    http://localhost:your-port/group/accept
+    http://localhost:your-port/group/accept/user
     Method: PUT
     Description: Allows creators of the group to accept a join group request
     Payload:
@@ -196,7 +191,7 @@ To create tables in your database execute the following scripts in this exact or
     Response:
         String "user has been accepted"
     
-    http://localhost:your-port/group/reject
+    http://localhost:your-port/group/reject/user
     Method: DELETE
     Description: Allows creators of the group to reject a join group request
     Payload:

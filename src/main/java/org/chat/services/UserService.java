@@ -15,7 +15,6 @@ public class UserService {
     }
 
     public List<String> getContacts(int userId) {
-        System.out.println("----------------------- " + userId);
         return userRepository.getContacts(userId);
     }
 
