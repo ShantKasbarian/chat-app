@@ -56,7 +56,9 @@ public class MessageRepository implements PanacheRepository<Message> {
     }
 
     public void save(Message message) {
-        entityManager.createQuery("insert into Message (message, senderId, recipient) values (:message, :sender, :recipient)")
+        entityManager.createQuery(
+                "insert into Message (message, senderId, recipient) values (:message, :sender, :recipient)"
+            )
             .setParameter("message", message.getMessage())
             .setParameter("sender", message.getSenderId())
             .setParameter("recipient", message.getRecipient())

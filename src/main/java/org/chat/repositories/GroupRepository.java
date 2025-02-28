@@ -5,6 +5,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import org.chat.entities.Group;
 
+import java.util.List;
+
 @ApplicationScoped
 public class GroupRepository implements PanacheRepository<Group> {
     private final EntityManager entityManager;
@@ -25,5 +27,16 @@ public class GroupRepository implements PanacheRepository<Group> {
         catch (Exception e) {
             return null;
         }
+    }
+
+    public List<String> getGroups(String groupName) {
+        return entityManager
+                .createQuery(
+                        "select g.name from Group g where upper(g.name) like upper(:groupName)",
+                        String.class
+                )
+                .setParameter("groupName", "%" + groupName + "%")
+                .getResultList();
+
     }
 }

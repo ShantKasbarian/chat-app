@@ -27,8 +27,10 @@ public class UserRepository implements PanacheRepository<User> {
     }
 
     public List<String> getContacts(int currentUserId) {
-        Query query = entityManager.createNativeQuery("select u.username from users u" +
-                " left join contacts c on c.contact_id = u.id where user_id = ?");
+        Query query = entityManager.createNativeQuery(
+                "select u.username from users u" +
+                " left join contacts c on c.contact_id = u.id where user_id = ?"
+        );
         query.setParameter(1, currentUserId);
 
         return query.getResultList();
@@ -36,7 +38,8 @@ public class UserRepository implements PanacheRepository<User> {
 
     @Transactional
     public void addContact(int userId, int contactId) {
-        entityManager.createNativeQuery("insert into contacts(user_id, contact_id)" +
+        entityManager.createNativeQuery(
+                "insert into contacts(user_id, contact_id)" +
                 " values(?, ?)"
         )
         .setParameter(1, userId)

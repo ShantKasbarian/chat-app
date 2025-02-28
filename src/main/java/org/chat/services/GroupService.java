@@ -10,7 +10,6 @@ import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.UserRepository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class GroupService {
@@ -174,5 +173,9 @@ public class GroupService {
 
     public List<String> getUserJoinedGroups(int userId) {
         return groupUserRepository.getUserGroups(userId);
+    }
+
+    public List<String> getGroups(String groupName) {
+        return groupRepository.getGroups(groupName);
     }
 }
