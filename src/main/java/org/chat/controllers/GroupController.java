@@ -56,21 +56,21 @@ public class GroupController {
     }
 
     @POST
-    @Path("/join")
+    @Path("/{groupName}/join")
     @ResponseStatus(201)
     @Transactional
-    public String joinGroup(GroupDto groupDto) {
+    public String joinGroup(@PathParam("groupName") String groupName) {
         String userId = token.getClaim("userId");
-        return groupService.joinGroup(groupDto.getName(), Integer.parseInt(userId));
+        return groupService.joinGroup(groupName, Integer.parseInt(userId));
     }
 
     @DELETE
-    @Path("/leave")
+    @Path("/{groupName}/leave")
     @ResponseStatus(204)
     @Transactional
-    public String leaveGroup(GroupDto groupDto) {
+    public String leaveGroup(@PathParam("groupName") String groupName) {
         String userId = token.getClaim("userId");
-        return groupService.leaveGroup(groupDto.getName(), Integer.parseInt(userId));
+        return groupService.leaveGroup(groupName, Integer.parseInt(userId));
     }
 
     @PUT
