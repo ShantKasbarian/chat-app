@@ -38,11 +38,13 @@ public class LoginSignupService {
 
     @Transactional
     public String createUser(String username, String password) {
-        if (userRepository.findByUsername(username) != null ||
+        if (userRepository.findByUsername(username.trim()) != null ||
                 (
                         username.length() < 5 ||
                         username.length() > 20
                 )
+                ||
+                username.trim().contains(" ")
         ) {
             throw new RuntimeException("Invalid username");
         }

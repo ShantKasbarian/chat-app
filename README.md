@@ -230,7 +230,7 @@ To create tables in your database execute the following scripts in this exact or
     http://localhost:your-port/message/{username}
     Method: GET
     Description: Allows user to check sent and received messages from another user
-    Payload: String username: "your-friend-username"
+    Payload: String username: "username"
     Response:
         [
             {
@@ -259,6 +259,7 @@ To create tables in your database execute the following scripts in this exact or
     http://localhost:your-port/message/group/{groupName}
     Method: GET
     Description: Allows user to check group messages
+    Payload: String groupName: "group-name"
     Response:
         [
             {
@@ -269,6 +270,15 @@ To create tables in your database execute the following scripts in this exact or
                 "username": "sender-username",
                 "message": "message"
             }
+        ]
+    
+    http://localhost:your-port/group/{groupName}/search
+    Description: Allows user to search for groups
+    Payload: String groupName: "group-name"
+    Response:
+        [
+            "group-name1",
+            "group-name2"
         ]
 
     

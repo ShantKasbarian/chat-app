@@ -37,12 +37,13 @@ public class MessageService {
             throw new IllegalArgumentException("Message is empty");
         }
 
+        if (recipientUsername == null) {
+            throw new IllegalArgumentException("username not specified");
+        }
+
         User recipient = userRepository.findByUsername(recipientUsername);
 
-        if (
-                recipientUsername == null ||
-                recipient == null
-        ) {
+        if (recipient == null) {
             throw new IllegalArgumentException("Recipient not found");
         }
 
@@ -64,6 +65,10 @@ public class MessageService {
             throw new IllegalArgumentException("Message is empty");
         }
 
+        if (groupName == null) {
+            throw new IllegalArgumentException("group name not specified");
+        }
+
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
@@ -77,6 +82,10 @@ public class MessageService {
     }
 
     public List<GroupMessageDto> getGroupMessages(String groupName, int userId) {
+        if (groupName == null) {
+            throw new IllegalArgumentException("group name not specified");
+        }
+
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {

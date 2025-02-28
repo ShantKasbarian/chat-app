@@ -119,4 +119,11 @@ public class GroupController {
         String userId = token.getClaim("userId");
         return groupService.getUserJoinedGroups(Integer.parseInt(userId));
     }
+
+    @GET
+    @Path("/{groupName}/search")
+    @ResponseStatus(200)
+    public List<String> getGroups(@PathParam("groupName") String groupName) {
+        return groupService.getGroups(groupName);
+    }
 }
