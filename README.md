@@ -127,13 +127,10 @@ To create tables in your database execute the following scripts in this exact or
     Response:
         String similar to this "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0ODAwMCIsInVwbiI6IkNvYmxlcG90IiwidXNlcklkIjoiMiIsImdyb3VwcyI6WyJ1c2VyIl0sImV4cCI6MTc0MDY1MjU1MCwiaWF0IjoxNzQwNjQ4OTUwLCJqdGkiOiIxYj"
         
-    http://localhost:your-port/user/add/contact
+    http://localhost:your-port/user/{username}/add/contact
     Method: POST
     Description: Allows user to add another user to their contacts list
-    Payload:
-        {
-            "username": "your-friend-username"
-        }
+    Payload: String "username": "your-friend-username"
     Response:
         String "contact has been added"
 
@@ -220,13 +217,10 @@ To create tables in your database execute the following scripts in this exact or
     Response
         String "message has been sent" with http status 201
 
-    http://localhost:your-port/message
+    http://localhost:your-port/message/{username}
     Method: GET
     Description: Allows user to check sent and received messages from another user
-    Payload:
-        {
-            "username": "friend-username"
-        }
+    Payload: String username: "your-friend-username"
     Response:
         [
             {

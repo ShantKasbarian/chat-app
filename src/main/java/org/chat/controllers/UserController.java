@@ -33,11 +33,11 @@ public class UserController {
     }
 
     @POST
-    @Path("/add/contact")
+    @Path("/{username}/add/contact")
     @ResponseStatus(201)
-    public String addContact(UserDto userDto) {
+    public String addContact(@PathParam("username") String username) {
         String userId = token.getClaim("userId");
-        return userService.addContact(Integer.parseInt(userId), userDto.getUsername());
+        return userService.addContact(Integer.parseInt(userId), username);
     }
 
     @GET

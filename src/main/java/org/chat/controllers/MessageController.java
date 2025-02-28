@@ -9,7 +9,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.chat.converters.MessageConverter;
 import org.chat.models.GroupMessageDto;
 import org.chat.models.MessageDto;
-import org.chat.models.UserDto;
 import org.chat.services.MessageService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -53,11 +52,12 @@ public class MessageController {
     }
 
     @GET
+    @Path("/{username}")
     @ResponseStatus(200)
-    public List<GroupMessageDto> getMessages(UserDto userDto) {
+    public List<GroupMessageDto> getMessages(@PathParam("username") String username) {
         String userId = token.getClaim("userId");
 
-        return messageService.getMessages(Integer.parseInt(userId), userDto.getUsername());
+        return messageService.getMessages(Integer.parseInt(userId), username);
     }
 
     @POST
