@@ -38,7 +38,6 @@ public class MessageService {
         }
 
         User recipient = userRepository.findByUsername(recipientUsername);
-        System.out.println(message.getSenderId());
 
         if (
                 recipientUsername == null ||
