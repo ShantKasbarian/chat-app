@@ -12,7 +12,7 @@ public class MessageConverter implements Converter<Message, MessageDto> {
         entity.setId(model.getId());
         entity.setMessage(model.getMessage());
         entity.setSenderId(model.getSenderId());
-        entity.setRecepient(model.getReceiverId());
+        entity.setRecipient(model.getReceiverId());
 
         return entity;
     }
@@ -23,7 +23,7 @@ public class MessageConverter implements Converter<Message, MessageDto> {
         model.setId(entity.getId());
         model.setMessage(entity.getMessage());
         model.setSenderId(entity.getSenderId());
-        model.setReceiverId(entity.getRecepient());
+        model.setReceiverId(entity.getRecipient());
 
         return model;
     }
