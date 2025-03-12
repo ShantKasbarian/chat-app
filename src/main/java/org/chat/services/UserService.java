@@ -2,6 +2,9 @@ package org.chat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.User;
+import org.chat.exceptions.InvalidInfoException;
+import org.chat.exceptions.InvalidRoleException;
+import org.chat.exceptions.NotFoundException;
 import org.chat.repositories.UserRepository;
 
 import java.util.List;
@@ -20,13 +23,13 @@ public class UserService {
 
     public String addContact(int userId,String recipientUsername) {
         if (recipientUsername == null) {
-            throw new RuntimeException("Invalid recipientUsername");
+            throw new InvalidInfoException("Invalid recipientUsername");
         }
 
         User contact = userRepository.findByUsername(recipientUsername);
 
         if (contact == null) {
-            throw new RuntimeException("Contact not found");
+            throw new NotFoundException("Contact not found");
         }
 
         userRepository.addContact(userId, contact.getId());

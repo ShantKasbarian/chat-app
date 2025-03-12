@@ -5,6 +5,9 @@ import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
 import org.chat.entities.Message;
 import org.chat.entities.User;
+import org.chat.exceptions.InvalidInfoException;
+import org.chat.exceptions.InvalidRoleException;
+import org.chat.exceptions.NotFoundException;
 import org.chat.models.GroupMessageDto;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
@@ -34,17 +37,17 @@ public class MessageService {
 
     public String writeMessage(Message message, String recipientUsername) {
         if (message.getMessage() == null || message.getMessage().isEmpty()) {
-            throw new IllegalArgumentException("Message is empty");
+            throw new InvalidInfoException("Message is empty");
         }
 
         if (recipientUsername == null) {
-            throw new IllegalArgumentException("username not specified");
+            throw new InvalidInfoException("username not specified");
         }
 
         User recipient = userRepository.findByUsername(recipientUsername);
 
         if (recipient == null) {
-            throw new IllegalArgumentException("Recipient not found");
+            throw new NotFoundException("Recipient not found");
         }
 
         message.setRecipient(recipient.getId());
@@ -54,25 +57,31 @@ public class MessageService {
     }
 
     public List<GroupMessageDto> getMessages(int userId, String recipientUsername) {
+        User user = userRepository.findByUsername(recipientUsername);
+
+        if (user == null) {
+            throw new NotFoundException("user not found");
+        }
+
         return messageRepository.getMessages(
                 userId,
-                userRepository.findByUsername(recipientUsername).getId()
+                user.getId()
         );
     }
 
     public String messageGroup(Message message, String groupName) {
         if (message.getMessage() == null || message.getMessage().isEmpty()) {
-            throw new IllegalArgumentException("Message is empty");
+            throw new InvalidInfoException("Message is empty");
         }
 
         if (groupName == null) {
-            throw new IllegalArgumentException("group name not specified");
+            throw new InvalidInfoException("group name not specified");
         }
 
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new IllegalArgumentException("Group not found");
+            throw new NotFoundException("Group not found");
         }
 
         message.setGroup(group);
@@ -83,19 +92,19 @@ public class MessageService {
 
     public List<GroupMessageDto> getGroupMessages(String groupName, int userId) {
         if (groupName == null) {
-            throw new IllegalArgumentException("group name not specified");
+            throw new InvalidInfoException("group name not specified");
         }
 
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new IllegalArgumentException("Group not found");
+            throw new NotFoundException("Group not found");
         }
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
 
         if (groupUser == null || !groupUser.getIsMember()) {
-            throw new IllegalArgumentException("you're not in group");
+            throw new InvalidRoleException("you're not in group");
         }
 
         return messageRepository.getMessages(group.getId());

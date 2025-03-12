@@ -5,6 +5,9 @@ import jakarta.transaction.Transactional;
 import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
 import org.chat.entities.User;
+import org.chat.exceptions.InvalidGroupException;
+import org.chat.exceptions.InvalidRoleException;
+import org.chat.exceptions.NotFoundException;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.UserRepository;
@@ -31,13 +34,13 @@ public class GroupService {
     @Transactional
     public String createGroup(Group group, String[] creators, String userId) {
         if (group.getName() == null || group.getName().isEmpty()) {
-            throw new RuntimeException("Invalid group name");
+            throw new InvalidGroupException("Invalid group name");
         }
 
         Group g = groupRepository.findByName(group.getName());
 
         if (g != null) {
-            throw new RuntimeException("Group already exists");
+            throw new InvalidGroupException("Group already exists");
         }
 
         groupRepository.persist(group);
@@ -69,7 +72,7 @@ public class GroupService {
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new RuntimeException("Group does not exist");
+            throw new NotFoundException("Group does not exist");
         }
 
         groupUserRepository.persist(new GroupUser(group, userId, false, false));
@@ -82,7 +85,7 @@ public class GroupService {
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new RuntimeException("Group does not exist");
+            throw new NotFoundException("Group does not exist");
         }
 
         groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(group.getId(), userId));
@@ -95,25 +98,25 @@ public class GroupService {
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new RuntimeException("Group does not exist");
+            throw new NotFoundException("Group does not exist");
         }
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
 
         if (!creator.getIsCreator()) {
-            throw new RuntimeException("You do not have permission to accept join requests in this group");
+            throw new InvalidRoleException("You do not have permission to accept join requests in this group");
         }
 
         User user = userRepository.findByUsername(userName);
 
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
 
         if (groupUser == null) {
-            throw new RuntimeException("user not found");
+            throw new NotFoundException("user not found");
         }
 
         groupUser.setIsCreator(false);
@@ -129,25 +132,25 @@ public class GroupService {
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new RuntimeException("Group does not exist");
+            throw new NotFoundException("Group does not exist");
         }
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
 
         if (!creator.getIsCreator()) {
-            throw new RuntimeException("You do not have permission to accept join requests in this group");
+            throw new InvalidRoleException("You do not have permission to accept join requests in this group");
         }
 
         User user = userRepository.findByUsername(userName);
 
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
 
         if (groupUser == null) {
-            throw new RuntimeException("user not found");
+            throw new NotFoundException("user not found");
         }
 
         groupUserRepository.delete(groupUser);
@@ -159,13 +162,13 @@ public class GroupService {
         Group group = groupRepository.findByName(groupName);
 
         if (group == null) {
-            throw new RuntimeException("Group does not exist");
+            throw new NotFoundException("Group does not exist");
         }
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
 
         if (creator == null) {
-            throw new RuntimeException("user not found");
+            throw new InvalidRoleException("user not found");
         }
 
         return groupUserRepository.getWaitingUsers(group.getId());

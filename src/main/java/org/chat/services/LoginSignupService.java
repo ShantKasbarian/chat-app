@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.chat.config.JwtService;
 import org.chat.entities.User;
+import org.chat.exceptions.InvalidCredentialsException;
 import org.chat.repositories.UserRepository;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -30,7 +31,7 @@ public class LoginSignupService {
                 user == null ||
                 !BCrypt.checkpw(password, user.getPassword())
         ) {
-            throw new RuntimeException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
         return jwtService.generateToken(username, String.valueOf(user.getId()));
@@ -46,11 +47,11 @@ public class LoginSignupService {
                 ||
                 username.trim().contains(" ")
         ) {
-            throw new RuntimeException("Invalid username");
+            throw new InvalidCredentialsException("Invalid username");
         }
 
         if (password == null || !isPasswordValid(password)) {
-            throw new RuntimeException("Invalid password");
+            throw new InvalidCredentialsException("Invalid password");
         }
 
         User user = new User();
