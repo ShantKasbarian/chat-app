@@ -36,9 +36,18 @@ public class User implements UserPrincipal {
     )
     private List<User> contacts;
 
+    @OneToMany(mappedBy = "user")
+    private List<GroupUser> groups;
+
+    @OneToMany(mappedBy = "sender")
+    private List<Message> sentMessages;
+
+    @OneToMany(mappedBy = "recipient")
+    private List<Message> receivedMessages;
+
     @Override
     public String getName() {
-        return "";
+        return username;
     }
 
     @Override

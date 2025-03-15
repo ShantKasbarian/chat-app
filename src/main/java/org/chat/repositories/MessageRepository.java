@@ -5,8 +5,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.chat.entities.Message;
-import org.chat.models.GroupMessageDto;
+import org.chat.models.MessageRepresentationDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @ApplicationScoped
@@ -17,60 +18,60 @@ public class MessageRepository implements PanacheRepository<Message> {
         this.entityManager = entityManager;
     }
 
-    public List getMessages(int currentUserId, int receiverId) {
-        Query query1 =
+    public List<Message> getMessages(int currentUserId, int receiverId) {
+        List<Message> messages =
                 entityManager
-                    .createNativeQuery(
-                            "select u.username, m.message from messages m " +
-                                    "left join users u on u.id = m.sender_id "+
-                                    "where m.recipient_id = ? and m.sender_id = ?",
-                            GroupMessageDto.class
+                    .createQuery(
+                            "from Message m where m.sender.id =:sender and m.recipient.id =:recipient",
+                            Message.class
                     )
-                    .setParameter(1, receiverId)
-                    .setParameter(2, currentUserId);
+                    .setParameter("sender", currentUserId)
+                    .setParameter("recipient", receiverId)
+                    .getResultList();
 
-        Query query2 =
+        List<Message> messageList2 =
                 entityManager
-                        .createNativeQuery(
-                            "select u.username, m.message from messages m " +
-                                    "left join users u on u.id = m.sender_id "+
-                                    "where m.recipient_id = ? and m.sender_id = ?",
-                        GroupMessageDto.class
+                        .createQuery(
+                            "from Message m where m.sender.id =:sender and m.recipient.id =:recipient",
+                        Message.class
                 )
-                .setParameter(1, currentUserId)
-                .setParameter(2, receiverId);
+                .setParameter("sender", receiverId)
+                .setParameter("recipient", currentUserId)
+                .getResultList();
 
-        return List.of(query1.getResultList(), query2.getResultList());
+        messages.addAll(messageList2);
 
+        return messages;
     }
 
-    public List<GroupMessageDto> getMessages(int groupId) {
-        Query query = entityManager.createNativeQuery(
-            "select u.username, m.message  from messages m " +
-                    "left join users u on u.id = m.sender_id " +
-                    "where m.group_id = ?",
-                GroupMessageDto.class
-        ).setParameter(1, groupId);
-
-        return query.getResultList();
+    public List<Message> getGroupMessages(int groupId) {
+        return entityManager
+                .createQuery(
+                        "from Message m where m.group.id = :groupId",
+                        Message.class
+                )
+                .setParameter("groupId", groupId)
+                .getResultList();
     }
 
     public void save(Message message) {
         entityManager.createQuery(
-                "insert into Message (message, senderId, recipient) values (:message, :sender, :recipient)"
+                "insert into Message m (m.message, m.sender, m.recipient, m.time) values (:message, :sender, :recipient, :time)"
             )
             .setParameter("message", message.getMessage())
-            .setParameter("sender", message.getSenderId())
+            .setParameter("sender", message.getSender())
             .setParameter("recipient", message.getRecipient())
+            .setParameter("time", message.getTime())
             .executeUpdate();
     }
 
-    public void save(String message, int groupId, int senderId) {
-        entityManager.createNativeQuery(
-                "insert into messages (message, sender_id, group_id) values (?, ?, ?)")
-                .setParameter(1, message)
-                .setParameter(2, senderId)
-                .setParameter(3, groupId)
+    public void saveGroupMessage(Message message) {
+        entityManager.createQuery(
+                "insert into Message m (m.message, m.sender, m.group, m.time) values (:message, :senderId, :groupId, :time)")
+                .setParameter("message", message.getMessage())
+                .setParameter("senderId", message.getSender())
+                .setParameter("groupId", message.getGroup())
+                .setParameter("time", message.getTime())
                 .executeUpdate();
     }
 }

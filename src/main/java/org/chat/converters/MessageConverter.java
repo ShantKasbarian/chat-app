@@ -2,29 +2,25 @@ package org.chat.converters;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.Message;
-import org.chat.models.MessageDto;
+import org.chat.models.SubmitMessageDto;
 
 @ApplicationScoped
-public class MessageConverter implements Converter<Message, MessageDto> {
+public class MessageConverter implements Converter<Message, SubmitMessageDto> {
     @Override
-    public Message convertToEntity(MessageDto model) {
+    public Message convertToEntity(SubmitMessageDto model) {
         Message entity = new Message();
         entity.setId(model.getId());
         entity.setMessage(model.getMessage());
-        entity.setSenderId(model.getSenderId());
-        entity.setRecipient(model.getReceiverId());
-
+        entity.setTime(model.getTime());
         return entity;
     }
 
     @Override
-    public MessageDto convertToModel(Message entity) {
-        MessageDto model = new MessageDto();
+    public SubmitMessageDto convertToModel(Message entity) {
+        SubmitMessageDto model = new SubmitMessageDto();
         model.setId(entity.getId());
         model.setMessage(entity.getMessage());
-        model.setSenderId(entity.getSenderId());
-        model.setReceiverId(entity.getRecipient());
-
+        model.setTime(entity.getTime());
         return model;
     }
 }

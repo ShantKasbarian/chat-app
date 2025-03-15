@@ -25,7 +25,7 @@ public class LoginSignupController {
     @Path("/login")
     @PermitAll
     @POST
-    public Response login(UserDto userDto) throws Exception {
+    public Response login(UserDto userDto) {
         return Response.ok(
                 loginSignupService.login(userDto.getUsername(), userDto.getPassword())
         ).build();

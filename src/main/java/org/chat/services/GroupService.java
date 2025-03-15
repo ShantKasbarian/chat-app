@@ -1,20 +1,19 @@
 package org.chat.services;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import io.quarkus.runtime.Startup;
 import jakarta.transaction.Transactional;
 import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidGroupException;
 import org.chat.exceptions.InvalidRoleException;
-import org.chat.exceptions.NotFoundException;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.UserRepository;
 
 import java.util.*;
 
-@ApplicationScoped
+@Startup
 public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupUserRepository groupUserRepository;
@@ -37,13 +36,17 @@ public class GroupService {
             throw new InvalidGroupException("Invalid group name");
         }
 
-        Group g = groupRepository.findByName(group.getName());
+        Group g = null;
+        try {
+            g = groupRepository.findByName(group.getName());
+
+        } catch (Exception e) {}
 
         if (g != null) {
             throw new InvalidGroupException("Group already exists");
         }
 
-        groupRepository.persist(group);
+        groupRepository.getEntityManager().persist(new Group(group.getName()));
 
         final Group gr = groupRepository.findByName(group.getName());
         User currentUser = userRepository.findById(Long.valueOf(userId));
@@ -52,11 +55,11 @@ public class GroupService {
             Arrays.stream(creators)
                 .map(userRepository::findByUsername)
                 .filter(creator -> creator != null)
-                .map(creator -> new GroupUser(gr, creator.getId(), true, true))
+                .map(creator -> new GroupUser(gr, creator, true, true))
                 .toList()
         );
 
-        GroupUser currentGroupUser = new GroupUser(gr, currentUser.getId(), true, true);
+        GroupUser currentGroupUser = new GroupUser(gr, currentUser, true, true);
 
         if (!creatorsList.contains(currentGroupUser)) {
             creatorsList.add(currentGroupUser);
@@ -68,14 +71,11 @@ public class GroupService {
     }
 
     @Transactional
-    public String joinGroup(String groupName, int userId) {
+    public String joinGroup(String groupName, Long userId) {
         Group group = groupRepository.findByName(groupName);
+        User user = userRepository.findById(userId);
 
-        if (group == null) {
-            throw new NotFoundException("Group does not exist");
-        }
-
-        groupUserRepository.persist(new GroupUser(group, userId, false, false));
+        groupUserRepository.persist(new GroupUser(group, user, false, false));
 
         return "request to join group has been submitted, waiting for one of the group creators to accept";
     }
@@ -84,23 +84,13 @@ public class GroupService {
     public String leaveGroup(String groupName, int userId) {
         Group group = groupRepository.findByName(groupName);
 
-        if (group == null) {
-            throw new NotFoundException("Group does not exist");
-        }
-
         groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(group.getId(), userId));
-
         return "you left the group";
     }
 
     @Transactional
     public String acceptToGroup(String groupName, int creatorId, String userName) {
         Group group = groupRepository.findByName(groupName);
-
-        if (group == null) {
-            throw new NotFoundException("Group does not exist");
-        }
-
         GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
 
         if (!creator.getIsCreator()) {
@@ -109,16 +99,7 @@ public class GroupService {
 
         User user = userRepository.findByUsername(userName);
 
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
-
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
-
-        if (groupUser == null) {
-            throw new NotFoundException("user not found");
-        }
-
         groupUser.setIsCreator(false);
         groupUser.setIsMember(true);
 
@@ -130,11 +111,6 @@ public class GroupService {
     @Transactional
     public String rejectFromEnteringGroup(String groupName, int creatorId, String userName) {
         Group group = groupRepository.findByName(groupName);
-
-        if (group == null) {
-            throw new NotFoundException("Group does not exist");
-        }
-
         GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
 
         if (!creator.getIsCreator()) {
@@ -143,16 +119,7 @@ public class GroupService {
 
         User user = userRepository.findByUsername(userName);
 
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
-
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
-
-        if (groupUser == null) {
-            throw new NotFoundException("user not found");
-        }
-
         groupUserRepository.delete(groupUser);
 
         return "user has been rejected";
@@ -160,25 +127,31 @@ public class GroupService {
 
     public List<String> getWaitingUsers(String groupName, int creatorId) {
         Group group = groupRepository.findByName(groupName);
+        GroupUser creator =
+                groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
 
-        if (group == null) {
-            throw new NotFoundException("Group does not exist");
+        if (!creator.getIsCreator()) {
+            throw new InvalidRoleException("you do not have permission to check for waiting user");
         }
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
-
-        if (creator == null) {
-            throw new InvalidRoleException("user not found");
-        }
-
-        return groupUserRepository.getWaitingUsers(group.getId());
+        return groupUserRepository
+                .getWaitingUsers(group.getId())
+                .stream()
+                .map(groupUser ->  groupUser.getUser().getUsername())
+                .toList();
     }
 
     public List<String> getUserJoinedGroups(int userId) {
-        return groupUserRepository.getUserGroups(userId);
+        return groupUserRepository.getUserGroups(userId)
+                .stream()
+                .map(groupUser -> groupUser.getGroup().getName())
+                .toList();
     }
 
     public List<String> getGroups(String groupName) {
-        return groupRepository.getGroups(groupName);
+        return groupRepository.getGroups(groupName)
+                .stream()
+                .map(Group::getName)
+                .toList();
     }
 }

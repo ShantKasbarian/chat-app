@@ -1,24 +1,31 @@
 package org.chat.services;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import io.quarkus.runtime.Startup;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidInfoException;
-import org.chat.exceptions.InvalidRoleException;
-import org.chat.exceptions.NotFoundException;
+import org.chat.repositories.ContactRepository;
 import org.chat.repositories.UserRepository;
 
 import java.util.List;
 
-@ApplicationScoped
+@Startup
 public class UserService {
     private final UserRepository userRepository;
+    private final ContactRepository contactRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository,
+            ContactRepository contactRepository
+    ) {
         this.userRepository = userRepository;
+        this.contactRepository = contactRepository;
     }
 
     public List<String> getContacts(int userId) {
-        return userRepository.getContacts(userId);
+        return contactRepository.getContacts(userId)
+                .stream()
+                .map(contact -> contact.getContact().getUsername())
+                .toList();
     }
 
     public String addContact(int userId,String recipientUsername) {
@@ -27,17 +34,15 @@ public class UserService {
         }
 
         User contact = userRepository.findByUsername(recipientUsername);
-
-        if (contact == null) {
-            throw new NotFoundException("Contact not found");
-        }
-
-        userRepository.addContact(userId, contact.getId());
+        contactRepository.addContact(userId, contact.getId());
 
         return "contact has been added";
     }
 
     public List<String> searchUserByUsername(String username) {
-        return userRepository.getUsersByUsername(username);
+        return userRepository.searchByUsername(username)
+                .stream()
+                .map(User::getUsername)
+                .toList();
     }
 }
