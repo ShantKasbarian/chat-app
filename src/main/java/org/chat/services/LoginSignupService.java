@@ -1,6 +1,6 @@
 package org.chat.services;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import io.quarkus.runtime.Startup;
 import jakarta.transaction.Transactional;
 import org.chat.config.JwtService;
 import org.chat.entities.User;
@@ -11,7 +11,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@ApplicationScoped
+@Startup
 public class LoginSignupService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -24,13 +24,10 @@ public class LoginSignupService {
         this.jwtService = jwtService;
     }
 
-    public String login(String username, String password) throws Exception {
+    public String login(String username, String password) {
         User user = userRepository.findByUsername(username);
 
-        if (
-                user == null ||
-                !BCrypt.checkpw(password, user.getPassword())
-        ) {
+        if (!BCrypt.checkpw(password, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid username or password");
         }
 

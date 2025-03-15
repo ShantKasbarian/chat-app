@@ -61,7 +61,7 @@ public class GroupController {
     @Transactional
     public String joinGroup(@PathParam("groupName") String groupName) {
         String userId = token.getClaim("userId");
-        return groupService.joinGroup(groupName, Integer.parseInt(userId));
+        return groupService.joinGroup(groupName, Long.valueOf(userId));
     }
 
     @DELETE

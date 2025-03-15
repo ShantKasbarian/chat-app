@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import org.chat.entities.Group;
+import org.chat.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -13,6 +14,12 @@ public class GroupRepository implements PanacheRepository<Group> {
     
     public GroupRepository(EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    public void save(Group group) {
+        entityManager
+                .createQuery("insert into Group g (g.name) values (:name)")
+                .setParameter("name", group.getName());
     }
 
     public Group findByName(String name) {
@@ -25,15 +32,15 @@ public class GroupRepository implements PanacheRepository<Group> {
             .getSingleResult();
         }
         catch (Exception e) {
-            return null;
+            throw new ResourceNotFoundException("group not found");
         }
     }
 
-    public List<String> getGroups(String groupName) {
+    public List<Group> getGroups(String groupName) {
         return entityManager
                 .createQuery(
                         "select g.name from Group g where upper(g.name) like upper(:groupName)",
-                        String.class
+                        Group.class
                 )
                 .setParameter("groupName", "%" + groupName + "%")
                 .getResultList();

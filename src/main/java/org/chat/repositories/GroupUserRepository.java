@@ -3,8 +3,8 @@ package org.chat.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import org.chat.entities.GroupUser;
+import org.chat.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -17,33 +17,41 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
     }
 
     public GroupUser findByGroupIdUserId(int groupId, int userId) {
+        GroupUser groupUser = null;
+        try {
+             groupUser =
+                    entityManager
+                            .createQuery(
+                        "from GroupUser gu where gu.group.id = :groupId and gu.user.id = :userId",
+                        GroupUser.class
+                )
+                .setParameter("groupId", groupId)
+                .setParameter("userId", userId)
+                .getSingleResult();
+
+        }
+        catch (Exception e) {
+            throw new ResourceNotFoundException("user is not part of this group");
+        }
+
+        return groupUser;
+    }
+
+    public List<GroupUser> getWaitingUsers(int groupId) {
+        return entityManager.createQuery(
+                "from GroupUser gu where gu.group.id = :groupId and gu.isMember = false",
+                GroupUser.class
+        )
+        .setParameter("groupId", groupId)
+        .getResultList();
+    }
+
+    public List<GroupUser> getUserGroups(int userId) {
         return entityManager
-            .createQuery(
-                    "from GroupUser gu where gu.group.id = :group and gu.userId = :userId",
-                    GroupUser.class
-            )
-            .setParameter("group", groupId)
-            .setParameter("userId", userId)
-            .getSingleResult();
-    }
-
-    public List<String> getWaitingUsers(int groupId) {
-        Query query = entityManager.createNativeQuery(
-                "select u.username from users u " +
-                "left join group_users gu on gu.user_id = u.id and gu.is_member = false " +
-                "where group_id = ?"
-        ).setParameter(1, groupId);
-
-        return query.getResultList();
-    }
-
-    public List<String> getUserGroups(int userId) {
-        Query query = entityManager.createNativeQuery(
-                "select g.name from groups g " +
-                "left join group_users gu on gu.group_id = g.id and gu.is_member = true " +
-                "where gu.user_id = ?"
-        ).setParameter(1, userId);
-
-        return query.getResultList();
+                .createQuery(
+                "from GroupUser gu where gu.user.id = :userId",
+                        GroupUser.class
+        ).setParameter("userId", userId)
+        .getResultList();
     }
 }

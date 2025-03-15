@@ -7,8 +7,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import org.chat.converters.MessageConverter;
-import org.chat.models.GroupMessageDto;
-import org.chat.models.MessageDto;
+import org.chat.models.MessageRepresentationDto;
+import org.chat.models.SubmitMessageDto;
 import org.chat.services.MessageService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -42,19 +42,19 @@ public class MessageController {
     @Path(("/send"))
     @ResponseStatus(201)
     @Transactional
-    public String sendMessage(MessageDto messageDto) {
+    public String sendMessage(SubmitMessageDto submitMessageDto) {
         String userId = token.getClaim("userId");
-        messageDto.setSenderId(Integer.parseInt(userId));
         return messageService.writeMessage(
-                messageConverter.convertToEntity(messageDto),
-                messageDto.getReceiverUsername()
+                messageConverter.convertToEntity(submitMessageDto),
+                submitMessageDto.getReceiverUsername(),
+                Long.valueOf(userId)
         );
     }
 
     @GET
     @Path("/{username}")
     @ResponseStatus(200)
-    public List<GroupMessageDto> getMessages(@PathParam("username") String username) {
+    public List<MessageRepresentationDto> getMessages(@PathParam("username") String username) {
         String userId = token.getClaim("userId");
 
         return messageService.getMessages(Integer.parseInt(userId), username);
@@ -64,19 +64,20 @@ public class MessageController {
     @ResponseStatus(201)
     @Path("/group")
     @Transactional
-    public String messageGroup(MessageDto messageDto) {
+    public String messageGroup(SubmitMessageDto submitMessageDto) {
         String userId = token.getClaim("userId");
-        messageDto.setSenderId(Integer.parseInt(userId));
+
         return messageService.messageGroup(
-                messageConverter.convertToEntity(messageDto),
-                messageDto.getGroupName()
+                messageConverter.convertToEntity(submitMessageDto),
+                submitMessageDto.getGroupName(),
+                Long.valueOf(userId)
         );
     }
 
     @GET
     @ResponseStatus(200)
     @Path("/group/{groupName}")
-    public List<GroupMessageDto> getGroupMessages(
+    public List<MessageRepresentationDto> getGroupMessages(
             @PathParam("groupName") String groupName
     ) {
         String userId = token.getClaim("userId");

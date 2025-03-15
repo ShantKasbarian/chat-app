@@ -9,40 +9,49 @@ import org.chat.exceptions.*;
 public class ExceptionHandler implements ExceptionMapper<Throwable> {
     @Override
     public Response toResponse(Throwable throwable) {
-        if (throwable instanceof InvalidCredentialsException) {
-            return Response
-                    .status(Response.Status.UNAUTHORIZED)
-                    .entity(throwable.getMessage())
-                    .build();
-        }
+        switch (throwable) {
+            case InvalidCredentialsException e -> {
+                return Response
+                        .status(Response.Status.UNAUTHORIZED)
+                        .entity(e.getMessage())
+                        .build();
+            }
 
-        if (throwable instanceof InvalidRoleException) {
-            return Response
-                    .status(Response.Status.FORBIDDEN)
-                    .entity(throwable.getMessage())
-                    .build();
-        }
+            case InvalidRoleException e -> {
+                return Response
+                        .status(Response.Status.FORBIDDEN)
+                        .entity(e.getMessage())
+                        .build();
+            }
 
-        if (throwable instanceof NotFoundException) {
-            return Response
-                    .status(Response.Status.NOT_FOUND)
-                    .entity(throwable.getMessage())
-                    .build();
-        }
+            case ResourceNotFoundException e -> {
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity(e.getMessage())
+                        .build();
+            }
 
-        if (
-                throwable instanceof InvalidGroupException ||
-                throwable instanceof InvalidInfoException
-        ) {
-            return Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity(throwable.getMessage())
-                    .build();
-        }
+            case InvalidGroupException e -> {
+                return Response
+                        .status(Response.Status.BAD_REQUEST)
+                        .entity(e.getMessage())
+                        .build();
+            }
 
-        return Response
-                .status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity("Internal server error")
-                .build();
+            case InvalidInfoException e -> {
+                return Response
+                        .status(Response.Status.BAD_REQUEST)
+                        .entity(e.getMessage())
+                        .build();
+            }
+
+            default -> {
+                return Response
+                        .status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity("internal server error")
+                        .build();
+            }
+
+        }
     }
 }

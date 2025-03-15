@@ -22,8 +22,9 @@ public class GroupUser {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    @Column(name = "user_id")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "is_creator")
     private Boolean isCreator;
@@ -31,9 +32,9 @@ public class GroupUser {
     @Column(name = "is_member")
     private Boolean isMember;
 
-    public GroupUser(Group group, Integer userId, Boolean isCreator, Boolean isMember) {
+    public GroupUser(Group group, User user, Boolean isCreator, Boolean isMember) {
         this.group = group;
-        this.userId = userId;
+        this.user = user;
         this.isCreator = isCreator;
         this.isMember = isMember;
     }
