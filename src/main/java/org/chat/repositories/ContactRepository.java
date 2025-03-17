@@ -16,7 +16,7 @@ public class ContactRepository implements PanacheRepository<Contact> {
         this.entityManager = entityManager;
     }
 
-    public List<Contact> getContacts(int currentUserId) {
+    public List<Contact> getContacts(Long currentUserId) {
         return entityManager.createQuery(
                 "from Contact c where c.user.id = :userId",
                 Contact.class
@@ -26,7 +26,7 @@ public class ContactRepository implements PanacheRepository<Contact> {
     }
 
     @Transactional
-    public void addContact(int userId, int contactId) {
+    public void addContact(Long userId, Long contactId) {
         entityManager.createQuery(
             "insert into Contact c (c.user.id, c.contact.id)" +
                     " values(:userId, :contactId)"

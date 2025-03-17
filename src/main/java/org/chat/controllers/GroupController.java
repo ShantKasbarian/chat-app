@@ -44,13 +44,15 @@ public class GroupController {
     @Path("/create")
     @ResponseStatus(201)
     @Transactional
-    public String create(GroupDto groupDto) {
+    public GroupDto create(GroupDto groupDto) {
         String userId = token.getClaim("userId");
 
-        return groupService.createGroup(
-                groupConverter.convertToEntity(groupDto),
-                groupDto.getCreators(),
-                Long.valueOf(userId)
+        return groupConverter.convertToModel(
+                groupService.createGroup(
+                    groupConverter.convertToEntity(groupDto),
+                    groupDto.getCreators(),
+                    Long.valueOf(userId)
+                )
         );
     }
 
@@ -69,7 +71,7 @@ public class GroupController {
     @Transactional
     public String leaveGroup(@PathParam("groupName") String groupName) {
         String userId = token.getClaim("userId");
-        return groupService.leaveGroup(groupName, Integer.parseInt(userId));
+        return groupService.leaveGroup(groupName, Long.valueOf(userId));
     }
 
     @PUT
@@ -84,7 +86,7 @@ public class GroupController {
 
         return groupService.acceptToGroup(
                 groupName,
-                Integer.parseInt(userId),
+                Long.valueOf(userId),
                 username
         );
     }
@@ -101,7 +103,7 @@ public class GroupController {
 
         return groupService.rejectFromEnteringGroup(
                 groupName,
-                Integer.parseInt(userId),
+                Long.valueOf(userId),
                 username
         );
     }
@@ -114,7 +116,7 @@ public class GroupController {
     ) {
         String userId = token.getClaim("userId");
 
-        return groupService.getWaitingUsers(groupName, Integer.parseInt(userId));
+        return groupService.getWaitingUsers(groupName, Long.valueOf(userId));
     }
 
     @GET
@@ -122,7 +124,7 @@ public class GroupController {
     @ResponseStatus(200)
     public List<String> getJoinedGroups() {
         String userId = token.getClaim("userId");
-        return groupService.getUserJoinedGroups(Integer.parseInt(userId));
+        return groupService.getUserJoinedGroups(Long.valueOf(userId));
     }
 
     @GET

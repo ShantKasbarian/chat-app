@@ -1,10 +1,10 @@
 package org.chat.models;
 
 public record MessageDto(
-        Integer messageId,
-        Integer senderId,
+        Long messageId,
+        Long senderId,
         String senderUsername,
-        Integer recipientId,
+        Long recipientId,
         String recipientUsername,
         String message,
         String time

@@ -3,6 +3,7 @@ package org.chat.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import org.chat.entities.Group;
 import org.chat.exceptions.ResourceNotFoundException;
 
@@ -31,7 +32,7 @@ public class GroupRepository implements PanacheRepository<Group> {
             .setParameter("name", name)
             .getSingleResult();
         }
-        catch (Exception e) {
+        catch (NoResultException e) {
             throw new ResourceNotFoundException("group not found");
         }
     }

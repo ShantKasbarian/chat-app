@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import org.chat.entities.Message;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @ApplicationScoped
 public class MessageRepository implements PanacheRepository<Message> {
@@ -15,7 +16,7 @@ public class MessageRepository implements PanacheRepository<Message> {
         this.entityManager = entityManager;
     }
 
-    public List<Message> getMessages(int currentUserId, int receiverId) {
+    public List<Message> getMessages(Long currentUserId, Long receiverId) {
         List<Message> messages =
                 entityManager
                     .createQuery(
@@ -41,7 +42,16 @@ public class MessageRepository implements PanacheRepository<Message> {
         return messages;
     }
 
-    public List<Message> getGroupMessages(int groupId) {
+    public Stream<Message> getMessagesPage(
+            int page,
+            int size,
+            int currentUserId,
+            int recipirentId
+    ) {
+            return null;
+    }
+
+    public List<Message> getGroupMessages(Long groupId) {
         return entityManager
                 .createQuery(
                         "from Message m where m.group.id = :groupId",

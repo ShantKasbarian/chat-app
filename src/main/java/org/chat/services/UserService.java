@@ -1,6 +1,8 @@
 package org.chat.services;
 
 import io.quarkus.runtime.Startup;
+import jakarta.transaction.Transactional;
+import org.chat.entities.Contact;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidInfoException;
 import org.chat.repositories.ContactRepository;
@@ -22,22 +24,25 @@ public class UserService {
         this.contactRepository = contactRepository;
     }
 
-    public List<String> getContacts(int userId) {
+    public List<String> getContacts(Long userId) {
         return contactRepository.getContacts(userId)
                 .stream()
                 .map(contact -> contact.getContact().getUsername())
                 .toList();
     }
 
-    public String addContact(int userId, String recipientUsername) {
+    @Transactional
+    public Contact addContact(Long userId, String recipientUsername) {
         if (recipientUsername == null) {
             throw new InvalidInfoException("Invalid recipientUsername");
         }
 
-        User contact = userRepository.findByUsername(recipientUsername);
-        contactRepository.addContact(userId, contact.getId());
+        User current = userRepository.findById(userId);
+        User target = userRepository.findByUsername(recipientUsername);
+        Contact contact = new Contact(current, target);
 
-        return "contact has been added";
+        contact.persist();
+        return contact;
     }
 
     public List<String> searchUserByUsername(String username) {

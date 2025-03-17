@@ -32,7 +32,7 @@ public class GroupService {
     }
 
     @Transactional
-    public String createGroup(Group group, String[] creators, Long userId) {
+    public Group createGroup(final Group group, String[] creators, Long userId) {
         if (group.getName() == null || group.getName().isEmpty()) {
             throw new InvalidGroupException("Invalid group name");
         }
@@ -47,20 +47,18 @@ public class GroupService {
             throw new InvalidGroupException("Group already exists");
         }
 
-        groupRepository.getEntityManager().persist(new Group(group.getName()));
-
-        final Group gr = groupRepository.findByName(group.getName());
+        group.persist();
         User currentUser = userRepository.findById(userId);
 
         List<GroupUser> creatorsList = new ArrayList<>(
             Arrays.stream(creators)
                 .map(userRepository::findByUsername)
                 .filter(creator -> creator != null)
-                .map(creator -> new GroupUser(gr, creator, true, true))
+                .map(creator -> new GroupUser(group, creator, true, true))
                 .toList()
         );
 
-        GroupUser currentGroupUser = new GroupUser(gr, currentUser, true, true);
+        GroupUser currentGroupUser = new GroupUser(group, currentUser, true, true);
 
         if (!creatorsList.contains(currentGroupUser)) {
             creatorsList.add(currentGroupUser);
@@ -68,7 +66,7 @@ public class GroupService {
 
         groupUserRepository.persist(creatorsList);
 
-        return "group has been created";
+        return group;
     }
 
     @Transactional
@@ -77,7 +75,7 @@ public class GroupService {
         User user = userRepository.findById(userId);
         GroupUser groupUser = null;
         try {
-            groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), Integer.parseInt(userId + ""));
+            groupUser = groupUserRepository.findByGroupIdUserId(group.id, userId);
         }
         catch (ResourceNotFoundException e) {}
 
@@ -99,25 +97,25 @@ public class GroupService {
     }
 
     @Transactional
-    public String leaveGroup(String groupName, int userId) {
+    public String leaveGroup(String groupName, Long userId) {
         Group group = groupRepository.findByName(groupName);
 
-        groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(group.getId(), userId));
+        groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(group.id, userId));
         return "you left the group";
     }
 
     @Transactional
-    public String acceptToGroup(String groupName, int creatorId, String userName) {
+    public String acceptToGroup(String groupName, Long creatorId, String userName) {
         Group group = groupRepository.findByName(groupName);
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.id, creatorId);
 
         if (!creator.getIsCreator()) {
             throw new InvalidRoleException("You do not have permission to accept join requests in this group");
         }
 
-        User user = userRepository.findByUsername(userName);
+        User recipient = userRepository.findByUsername(userName);
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.id, recipient.id);
         groupUser.setIsCreator(false);
         groupUser.setIsMember(true);
 
@@ -127,9 +125,9 @@ public class GroupService {
     }
 
     @Transactional
-    public String rejectFromEnteringGroup(String groupName, int creatorId, String userName) {
+    public String rejectFromEnteringGroup(String groupName, Long creatorId, String userName) {
         Group group = groupRepository.findByName(groupName);
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.id, creatorId);
 
         if (!creator.getIsCreator()) {
             throw new InvalidRoleException("You do not have permission to accept join requests in this group");
@@ -137,29 +135,29 @@ public class GroupService {
 
         User user = userRepository.findByUsername(userName);
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.id, user.id);
         groupUserRepository.delete(groupUser);
 
         return "user has been rejected";
     }
 
-    public List<String> getWaitingUsers(String groupName, int creatorId) {
+    public List<String> getWaitingUsers(String groupName, Long creatorId) {
         Group group = groupRepository.findByName(groupName);
         GroupUser creator =
-                groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
+                groupUserRepository.findByGroupIdUserId(group.id, creatorId);
 
         if (!creator.getIsCreator()) {
             throw new InvalidRoleException("you do not have permission to check for waiting user");
         }
 
         return groupUserRepository
-                .getWaitingUsers(group.getId())
+                .getWaitingUsers(group.id)
                 .stream()
                 .map(groupUser ->  groupUser.getUser().getUsername())
                 .toList();
     }
 
-    public List<String> getUserJoinedGroups(int userId) {
+    public List<String> getUserJoinedGroups(Long userId) {
         return groupUserRepository.getUserGroups(userId)
                 .stream()
                 .map(groupUser -> groupUser.getGroup().getName())

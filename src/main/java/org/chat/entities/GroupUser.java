@@ -1,5 +1,6 @@
 package org.chat.entities;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,12 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "group_users")
-public class GroupUser {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
-
+public class GroupUser extends PanacheEntity {
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Group group;
@@ -31,11 +27,4 @@ public class GroupUser {
 
     @Column(name = "is_member")
     private Boolean isMember;
-
-    public GroupUser(Group group, User user, Boolean isCreator, Boolean isMember) {
-        this.group = group;
-        this.user = user;
-        this.isCreator = isCreator;
-        this.isMember = isMember;
-    }
 }

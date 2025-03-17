@@ -1,5 +1,7 @@
 package org.chat.entities;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,11 +14,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "messages")
-public class Message {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
+public class Message extends PanacheEntity {
     @ManyToOne
     @JoinColumn(name = "sender_id")
     private User sender;
