@@ -68,8 +68,8 @@ public class MessageService {
         List<MessageRepresentationDto> messages =
                 messageRepository.getMessages(userId, recipient.getId())
                         .stream()
-                        .map(messageRepresentationConverter::convertToMessageRepresentationDto)
-                        .sorted(Comparator.comparing(MessageRepresentationDto::getTime))
+                        .map(messageRepresentationConverter::convertToModel)
+                        .sorted(Comparator.comparing(MessageRepresentationDto::time))
                         .toList();
 
         return messages.reversed();
@@ -108,8 +108,8 @@ public class MessageService {
 
         return messageRepository.getGroupMessages(group.getId())
                 .stream()
-                .map(messageRepresentationConverter::convertToMessageRepresentationDto)
-                .sorted(Comparator.comparing(MessageRepresentationDto::getTime))
+                .map(messageRepresentationConverter::convertToModel)
+                .sorted(Comparator.comparing(MessageRepresentationDto::time))
                 .toList()
                 .reversed();
     }

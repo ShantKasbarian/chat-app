@@ -1,12 +1,9 @@
 package org.chat.models;
 
-import lombok.Getter;
-import lombok.Setter;
+public record UserDto(
+        int id,
+        String username,
+        String password
+) {
 
-@Getter
-@Setter
-public class UserDto {
-    private int id;
-    private String username;
-    private String password;
 }

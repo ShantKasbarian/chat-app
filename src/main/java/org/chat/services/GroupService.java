@@ -5,8 +5,7 @@ import jakarta.transaction.Transactional;
 import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
 import org.chat.entities.User;
-import org.chat.exceptions.InvalidGroupException;
-import org.chat.exceptions.InvalidRoleException;
+import org.chat.exceptions.*;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.UserRepository;
@@ -31,7 +30,7 @@ public class GroupService {
     }
 
     @Transactional
-    public String createGroup(Group group, String[] creators, String userId) {
+    public String createGroup(Group group, String[] creators, Long userId) {
         if (group.getName() == null || group.getName().isEmpty()) {
             throw new InvalidGroupException("Invalid group name");
         }
@@ -49,7 +48,7 @@ public class GroupService {
         groupRepository.getEntityManager().persist(new Group(group.getName()));
 
         final Group gr = groupRepository.findByName(group.getName());
-        User currentUser = userRepository.findById(Long.valueOf(userId));
+        User currentUser = userRepository.findById(userId);
 
         List<GroupUser> creatorsList = new ArrayList<>(
             Arrays.stream(creators)
@@ -74,6 +73,23 @@ public class GroupService {
     public String joinGroup(String groupName, Long userId) {
         Group group = groupRepository.findByName(groupName);
         User user = userRepository.findById(userId);
+        GroupUser groupUser = null;
+        try {
+            groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), Integer.parseInt(userId + ""));
+        }
+        catch (ResourceNotFoundException e) {}
+
+        if (groupUser != null && groupUser.getIsMember()) {
+            throw new UnableToJoinGroupException("you're already a member of this group");
+        }
+
+        else if (
+                groupUser != null &&
+                !groupUser.getIsMember()
+        ) {
+            throw new UnableToJoinGroupException("you have already submitted a request to join this group");
+        }
+
 
         groupUserRepository.persist(new GroupUser(group, user, false, false));
 

@@ -5,14 +5,21 @@ import org.chat.entities.Message;
 import org.chat.models.MessageRepresentationDto;
 
 @ApplicationScoped
-public class MessageRepresentationConverter {
-    public MessageRepresentationDto convertToMessageRepresentationDto(Message message) {
-        MessageRepresentationDto messageRepresentationDto = new MessageRepresentationDto();
+public class MessageRepresentationConverter implements Converter<Message, MessageRepresentationDto> {
+    @Override
+    public Message convertToEntity(MessageRepresentationDto model) {
+        Message message = new Message();
+        message.setMessage(model.message());
 
-        messageRepresentationDto.setUsername(message.getSender().getUsername());
-        messageRepresentationDto.setMessage(message.getMessage());
-        messageRepresentationDto.setTime(message.getTime());
+        return message;
+    }
 
-        return messageRepresentationDto;
+    @Override
+    public MessageRepresentationDto convertToModel(Message message) {
+        return new MessageRepresentationDto(
+            message.getSender().getUsername(),
+            message.getMessage(),
+            message.getTime()
+        );
     }
 }

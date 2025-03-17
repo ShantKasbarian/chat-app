@@ -49,7 +49,7 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
     public List<GroupUser> getUserGroups(int userId) {
         return entityManager
                 .createQuery(
-                "from GroupUser gu where gu.user.id = :userId",
+                "from GroupUser gu where gu.user.id = :userId and gu.isMember = true",
                         GroupUser.class
         ).setParameter("userId", userId)
         .getResultList();

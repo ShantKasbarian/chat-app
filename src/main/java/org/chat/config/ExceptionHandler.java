@@ -45,6 +45,13 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
                         .build();
             }
 
+            case UnableToJoinGroupException e -> {
+                return Response
+                        .status(Response.Status.CONFLICT)
+                        .entity(e.getMessage())
+                        .build();
+            }
+
             default -> {
                 return Response
                         .status(Response.Status.INTERNAL_SERVER_ERROR)

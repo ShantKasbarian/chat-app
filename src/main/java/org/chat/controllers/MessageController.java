@@ -46,7 +46,7 @@ public class MessageController {
         String userId = token.getClaim("userId");
         return messageService.writeMessage(
                 messageConverter.convertToEntity(submitMessageDto),
-                submitMessageDto.getReceiverUsername(),
+                submitMessageDto.receiverUsername(),
                 Long.valueOf(userId)
         );
     }
@@ -69,7 +69,7 @@ public class MessageController {
 
         return messageService.messageGroup(
                 messageConverter.convertToEntity(submitMessageDto),
-                submitMessageDto.getGroupName(),
+                submitMessageDto.groupName(),
                 Long.valueOf(userId)
         );
     }
