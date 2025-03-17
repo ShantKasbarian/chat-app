@@ -6,6 +6,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
+import org.chat.converters.GroupMessageConverter;
+import org.chat.converters.MessageConverter;
 import org.chat.models.GroupMessageDto;
 import org.chat.models.MessageDto;
 import org.chat.services.MessageService;
@@ -21,6 +23,10 @@ import java.util.List;
 public class MessageController {
     private final MessageService messageService;
 
+    private final MessageConverter messageConverter;
+
+    private final GroupMessageConverter groupMessageConverter;
+
     @Context
     private final SecurityContext securityContext;
 
@@ -28,10 +34,14 @@ public class MessageController {
 
     public MessageController(
             MessageService messageService,
+            MessageConverter messageConverter,
+            GroupMessageConverter groupMessageConverter,
             SecurityContext securityContext,
             JsonWebToken token
     ) {
         this.messageService = messageService;
+        this.messageConverter = messageConverter;
+        this.groupMessageConverter = groupMessageConverter;
         this.securityContext = securityContext;
         this.token = token;
     }
@@ -40,12 +50,12 @@ public class MessageController {
     @Path(("/send"))
     @ResponseStatus(201)
     @Transactional
-    public String sendMessage(MessageDto messageDto) {
+    public MessageDto sendMessage(MessageDto messageDto) {
         String userId = token.getClaim("userId");
-        return messageService.writeMessage(
+        return messageConverter.convertToModel(messageService.writeMessage(
                 messageDto.message(),
                 messageDto.recipientUsername(),
-                Long.valueOf(userId)
+                Long.valueOf(userId))
         );
     }
 
@@ -54,20 +64,22 @@ public class MessageController {
     @ResponseStatus(200)
     public List<MessageDto> getMessages(@PathParam("username") String username) {
         String userId = token.getClaim("userId");
-        return messageService.getMessages(Integer.parseInt(userId), username);
+        return messageService.getMessages(Long.valueOf(userId), username);
     }
 
     @POST
     @ResponseStatus(201)
     @Path("/group")
     @Transactional
-    public String messageGroup(GroupMessageDto messageDto) {
+    public GroupMessageDto messageGroup(GroupMessageDto messageDto) {
         String userId = token.getClaim("userId");
 
-        return messageService.messageGroup(
-                messageDto.message(),
-                messageDto.groupName(),
-                Long.valueOf(userId)
+        return groupMessageConverter.convertToModel(
+                messageService.messageGroup(
+                    messageDto.message(),
+                    messageDto.groupName(),
+                    Long.valueOf(userId)
+                )
         );
     }
 
@@ -78,6 +90,6 @@ public class MessageController {
             @PathParam("groupName") String groupName
     ) {
         String userId = token.getClaim("userId");
-        return messageService.getGroupMessages(groupName, Integer.parseInt(userId));
+        return messageService.getGroupMessages(groupName, Long.valueOf(userId));
     }
 }

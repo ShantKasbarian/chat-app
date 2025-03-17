@@ -52,7 +52,7 @@ public class MessageService {
     }
 
     @Transactional
-    public String writeMessage(String content, String recipientUsername, Long currentUserId) {
+    public Message writeMessage(String content, String recipientUsername, Long currentUserId) {
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
@@ -69,25 +69,24 @@ public class MessageService {
         message.setSender(sender);
         message.setMessage(content);
         message.setTime(LocalDateTime.now());
-        messageRepository.save(message);
 
-        return "message has been sent";
+        message.persist();
+        return message;
     }
 
-    public List<MessageDto> getMessages(int userId, String recipientUsername) {
+    public List<MessageDto> getMessages(Long userId, String recipientUsername) {
         User recipient = userRepository.findByUsername(recipientUsername);
 
-        return
-                messageRepository.getMessages(userId, recipient.getId())
+        return messageRepository.getMessages(userId, recipient.id)
                         .stream()
                         .map(messageConverter::convertToModel)
                         .sorted(Comparator.comparing(MessageDto::time))
                         .toList()
                         .reversed();
-
     }
 
-    public String messageGroup(String content, String groupName, Long senderId) {
+    @Transactional
+    public Message messageGroup(String content, String groupName, Long senderId) {
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
@@ -104,23 +103,23 @@ public class MessageService {
         message.setGroup(group);
         message.setTime(LocalDateTime.now());
 
-        messageRepository.saveGroupMessage(message);
-        return "message has been sent";
+        message.persist();
+        return message;
     }
 
-    public List<GroupMessageDto> getGroupMessages(String groupName, int userId) {
+    public List<GroupMessageDto> getGroupMessages(String groupName, Long userId) {
         if (groupName == null) {
             throw new InvalidInfoException("group name not specified");
         }
 
         Group group = groupRepository.findByName(groupName);
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.id, userId);
 
         if (!groupUser.getIsMember()) {
             throw new InvalidRoleException("you're not in group");
         }
 
-        return messageRepository.getGroupMessages(group.getId())
+        return messageRepository.getGroupMessages(group.id)
                 .stream()
                 .map(groupMessageConverter::convertToModel)
                 .sorted(Comparator.comparing(GroupMessageDto::time))

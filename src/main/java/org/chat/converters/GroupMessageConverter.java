@@ -14,11 +14,11 @@ public class GroupMessageConverter implements
     public GroupMessageDto convertToModel(Message entity) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         return new GroupMessageDto(
-                entity.getId(),
-                entity.getSender().getId(),
+                entity.id,
+                entity.getSender().id,
                 entity.getSender().getName(),
                 entity.getMessage(),
-                entity.getGroup().getId(),
+                entity.getGroup().id,
                 entity.getGroup().getName(),
                 entity.getTime().format(formatter)
         );

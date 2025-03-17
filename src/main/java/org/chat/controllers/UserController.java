@@ -1,10 +1,13 @@
 package org.chat.controllers;
 
 import io.quarkus.security.Authenticated;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
+import org.chat.entities.Contact;
+import org.chat.models.ContactDto;
 import org.chat.services.UserService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -36,9 +39,11 @@ public class UserController {
     @POST
     @Path("/{username}/add/contact")
     @ResponseStatus(201)
-    public String addContact(@PathParam("username") String username) {
+    @Transactional
+    public ContactDto addContact(@PathParam("username") String username) {
         String userId = token.getClaim("userId");
-        return userService.addContact(Integer.parseInt(userId), username);
+        Contact contact = userService.addContact(Long.valueOf(userId), username);
+        return new ContactDto(contact.id, contact.getContact().id, contact.getContact().getUsername());
     }
 
     @GET
@@ -46,7 +51,7 @@ public class UserController {
     @ResponseStatus(200)
     public List<String> getContacts() {
         String userId = token.getClaim("userId");
-        return userService.getContacts(Integer.parseInt(userId));
+        return userService.getContacts(Long.valueOf(userId));
     }
 
     @GET

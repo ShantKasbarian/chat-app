@@ -55,7 +55,7 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
             default -> {
                 return Response
                         .status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity("internal server error")
+                        .entity(throwable.getMessage())
                         .build();
             }
 

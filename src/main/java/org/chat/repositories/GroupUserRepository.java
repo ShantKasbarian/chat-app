@@ -3,6 +3,7 @@ package org.chat.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import org.chat.entities.GroupUser;
 import org.chat.exceptions.ResourceNotFoundException;
 
@@ -16,7 +17,7 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
         this.entityManager = entityManager;
     }
 
-    public GroupUser findByGroupIdUserId(int groupId, int userId) {
+    public GroupUser findByGroupIdUserId(Long groupId, Long userId) {
         GroupUser groupUser = null;
         try {
              groupUser =
@@ -30,14 +31,14 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
                 .getSingleResult();
 
         }
-        catch (Exception e) {
+        catch (NoResultException e) {
             throw new ResourceNotFoundException("user is not part of this group");
         }
 
         return groupUser;
     }
 
-    public List<GroupUser> getWaitingUsers(int groupId) {
+    public List<GroupUser> getWaitingUsers(Long groupId) {
         return entityManager.createQuery(
                 "from GroupUser gu where gu.group.id = :groupId and gu.isMember = false",
                 GroupUser.class
@@ -46,7 +47,7 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
         .getResultList();
     }
 
-    public List<GroupUser> getUserGroups(int userId) {
+    public List<GroupUser> getUserGroups(Long userId) {
         return entityManager
                 .createQuery(
                 "from GroupUser gu where gu.user.id = :userId and gu.isMember = true",
