@@ -2,7 +2,10 @@ package org.chat.converters;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.Group;
+import org.chat.entities.GroupUser;
 import org.chat.models.GroupDto;
+
+import java.util.Optional;
 
 @ApplicationScoped
 public class GroupConverter implements Converter<Group, GroupDto> {

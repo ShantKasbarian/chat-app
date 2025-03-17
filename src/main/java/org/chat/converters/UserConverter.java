@@ -9,20 +9,19 @@ public class UserConverter implements Converter<User, UserDto> {
     @Override
     public User convertToEntity(UserDto model) {
         User entity = new User();
-        entity.setId(model.getId());
-        entity.setUsername(model.getUsername());
-        entity.setPassword(model.getPassword());
+        entity.setId(model.id());
+        entity.setUsername(model.username());
+        entity.setPassword(model.password());
 
         return entity;
     }
 
     @Override
     public UserDto convertToModel(User entity) {
-        UserDto model = new UserDto();
-        model.setId(entity.getId());
-        model.setUsername(entity.getUsername());
-        model.setPassword(entity.getPassword());
-
-        return model;
+        return new UserDto(
+                entity.getId(),
+                entity.getUsername(),
+                entity.getPassword()
+        );
     }
 }

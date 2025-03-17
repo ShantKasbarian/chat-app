@@ -7,7 +7,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import org.chat.converters.GroupConverter;
-import org.chat.models.AcceptOrRejectToGroupDto;
 import org.chat.models.GroupDto;
 import org.chat.services.GroupService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -51,7 +50,7 @@ public class GroupController {
         return groupService.createGroup(
                 groupConverter.convertToEntity(groupDto),
                 groupDto.getCreators(),
-                userId
+                Long.valueOf(userId)
         );
     }
 
@@ -74,30 +73,36 @@ public class GroupController {
     }
 
     @PUT
-    @Path("/accept/user")
+    @Path("/{groupName}/accept/user/{username}")
     @ResponseStatus(200)
     @Transactional
-    public String acceptUserToGroup(AcceptOrRejectToGroupDto acceptOrRejectToGroupDto) {
+    public String acceptUserToGroup(
+            @PathParam("groupName") String groupName,
+            @PathParam("username") String username
+    ) {
         String userId = token.getClaim("userId");
 
         return groupService.acceptToGroup(
-                acceptOrRejectToGroupDto.getGroupName(),
+                groupName,
                 Integer.parseInt(userId),
-                acceptOrRejectToGroupDto.getUsername()
+                username
         );
     }
 
     @DELETE
-    @Path("/reject/user")
+    @Path("/{groupName}/reject/user/{username}")
     @ResponseStatus(204)
     @Transactional
-    public String rejectUserFromGroup(AcceptOrRejectToGroupDto acceptOrRejectToGroupDto) {
+    public String rejectUserFromGroup(
+            @PathParam("groupName") String groupName,
+            @PathParam("username") String username
+    ) {
         String userId = token.getClaim("userId");
 
         return groupService.rejectFromEnteringGroup(
-                acceptOrRejectToGroupDto.getGroupName(),
+                groupName,
                 Integer.parseInt(userId),
-                acceptOrRejectToGroupDto.getUsername()
+                username
         );
     }
 

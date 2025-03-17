@@ -28,7 +28,7 @@ public class UserService {
                 .toList();
     }
 
-    public String addContact(int userId,String recipientUsername) {
+    public String addContact(int userId, String recipientUsername) {
         if (recipientUsername == null) {
             throw new InvalidInfoException("Invalid recipientUsername");
         }

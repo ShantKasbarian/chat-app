@@ -27,7 +27,7 @@ public class LoginSignupController {
     @POST
     public Response login(UserDto userDto) {
         return Response.ok(
-                loginSignupService.login(userDto.getUsername(), userDto.getPassword())
+                loginSignupService.login(userDto.username(), userDto.password())
         ).build();
     }
 
@@ -36,11 +36,11 @@ public class LoginSignupController {
     @POST
     public Response signup(UserDto userDto) {
         return Response
-                .created(URI.create("/login"))
+                .status(Response.Status.CREATED)
                 .entity(
                         loginSignupService.createUser(
-                                userDto.getUsername(),
-                                userDto.getPassword()
+                                userDto.username(),
+                                userDto.password()
                         )
                 ).build();
     }
