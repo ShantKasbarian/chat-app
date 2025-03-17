@@ -17,7 +17,11 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User extends PanacheEntity implements UserPrincipal {
+public class User implements UserPrincipal {
+    @Id
+    @Column(name = "id")
+    private String id;
+
     @Column(name = "username", unique = true)
     private String username;
 

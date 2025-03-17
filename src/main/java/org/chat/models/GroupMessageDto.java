@@ -1,11 +1,11 @@
 package org.chat.models;
 
 public record GroupMessageDto(
-        Long id,
-        Long senderId,
+        String id,
+        String senderId,
         String senderName,
         String message,
-        Long groupId,
+        String groupId,
         String groupName,
         String time
 ) {

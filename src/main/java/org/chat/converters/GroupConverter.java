@@ -21,7 +21,7 @@ public class GroupConverter implements
     @Override
     public GroupDto convertToModel(Group entity) {
         GroupDto groupDto = new GroupDto();
-        groupDto.setId(entity.id);
+        groupDto.setId(entity.getId());
         groupDto.setName(entity.getName());
 
         return groupDto;

@@ -20,6 +20,7 @@ import org.chat.repositories.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @Startup
 public class MessageService {
@@ -52,7 +53,7 @@ public class MessageService {
     }
 
     @Transactional
-    public Message writeMessage(String content, String recipientUsername, Long currentUserId) {
+    public Message writeMessage(String content, String recipientUsername, String currentUserId) {
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
@@ -65,19 +66,20 @@ public class MessageService {
         User sender = userRepository.findById(currentUserId);
 
         Message message = new Message();
+        message.setId(UUID.randomUUID().toString());
         message.setRecipient(recipient);
         message.setSender(sender);
         message.setMessage(content);
         message.setTime(LocalDateTime.now());
 
-        message.persist();
+        messageRepository.persist(message);
         return message;
     }
 
-    public List<MessageDto> getMessages(Long userId, String recipientUsername) {
+    public List<MessageDto> getMessages(String userId, String recipientUsername) {
         User recipient = userRepository.findByUsername(recipientUsername);
 
-        return messageRepository.getMessages(userId, recipient.id)
+        return messageRepository.getMessages(userId, recipient.getId())
                         .stream()
                         .map(messageConverter::convertToModel)
                         .sorted(Comparator.comparing(MessageDto::time))
@@ -86,7 +88,7 @@ public class MessageService {
     }
 
     @Transactional
-    public Message messageGroup(String content, String groupName, Long senderId) {
+    public Message messageGroup(String content, String groupName, String senderId) {
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
@@ -98,28 +100,29 @@ public class MessageService {
         Group group = groupRepository.findByName(groupName);
 
         Message message = new Message();
+        message.setId(UUID.randomUUID().toString());
         message.setSender(userRepository.findById(senderId));
         message.setMessage(content);
         message.setGroup(group);
         message.setTime(LocalDateTime.now());
 
-        message.persist();
+        messageRepository.persist(message);
         return message;
     }
 
-    public List<GroupMessageDto> getGroupMessages(String groupName, Long userId) {
+    public List<GroupMessageDto> getGroupMessages(String groupName, String userId) {
         if (groupName == null) {
             throw new InvalidInfoException("group name not specified");
         }
 
         Group group = groupRepository.findByName(groupName);
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.id, userId);
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
 
         if (!groupUser.getIsMember()) {
             throw new InvalidRoleException("you're not in group");
         }
 
-        return messageRepository.getGroupMessages(group.id)
+        return messageRepository.getGroupMessages(group.getId())
                 .stream()
                 .map(groupMessageConverter::convertToModel)
                 .sorted(Comparator.comparing(GroupMessageDto::time))

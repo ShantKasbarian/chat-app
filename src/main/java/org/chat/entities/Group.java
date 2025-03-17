@@ -15,7 +15,11 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "groups")
-public class Group extends PanacheEntity {
+public class Group {
+    @Id
+    @Column(name = "id")
+    private String id;
+
     @Column(name = "name", unique = true)
     private String name;
 

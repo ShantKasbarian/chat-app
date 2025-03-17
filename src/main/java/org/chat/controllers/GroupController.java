@@ -45,13 +45,11 @@ public class GroupController {
     @ResponseStatus(201)
     @Transactional
     public GroupDto create(GroupDto groupDto) {
-        String userId = token.getClaim("userId");
-
         return groupConverter.convertToModel(
                 groupService.createGroup(
                     groupConverter.convertToEntity(groupDto),
                     groupDto.getCreators(),
-                    Long.valueOf(userId)
+                    token.getClaim("userId")
                 )
         );
     }
@@ -61,8 +59,7 @@ public class GroupController {
     @ResponseStatus(201)
     @Transactional
     public String joinGroup(@PathParam("groupName") String groupName) {
-        String userId = token.getClaim("userId");
-        return groupService.joinGroup(groupName, Long.valueOf(userId));
+        return groupService.joinGroup(groupName, token.getClaim("userId"));
     }
 
     @DELETE
@@ -70,8 +67,7 @@ public class GroupController {
     @ResponseStatus(204)
     @Transactional
     public String leaveGroup(@PathParam("groupName") String groupName) {
-        String userId = token.getClaim("userId");
-        return groupService.leaveGroup(groupName, Long.valueOf(userId));
+        return groupService.leaveGroup(groupName, token.getClaim("userId"));
     }
 
     @PUT
@@ -82,11 +78,9 @@ public class GroupController {
             @PathParam("groupName") String groupName,
             @PathParam("username") String username
     ) {
-        String userId = token.getClaim("userId");
-
         return groupService.acceptToGroup(
                 groupName,
-                Long.valueOf(userId),
+                token.getClaim("userId"),
                 username
         );
     }
@@ -99,11 +93,9 @@ public class GroupController {
             @PathParam("groupName") String groupName,
             @PathParam("username") String username
     ) {
-        String userId = token.getClaim("userId");
-
         return groupService.rejectFromEnteringGroup(
                 groupName,
-                Long.valueOf(userId),
+                token.getClaim("userId"),
                 username
         );
     }
@@ -114,17 +106,14 @@ public class GroupController {
     public List<String> getWaitingUsers(
             @PathParam("groupName") String groupName
     ) {
-        String userId = token.getClaim("userId");
-
-        return groupService.getWaitingUsers(groupName, Long.valueOf(userId));
+        return groupService.getWaitingUsers(groupName, token.getClaim("userId"));
     }
 
     @GET
     @Path("/joined")
     @ResponseStatus(200)
     public List<String> getJoinedGroups() {
-        String userId = token.getClaim("userId");
-        return groupService.getUserJoinedGroups(Long.valueOf(userId));
+        return groupService.getUserJoinedGroups(token.getClaim("userId"));
     }
 
     @GET

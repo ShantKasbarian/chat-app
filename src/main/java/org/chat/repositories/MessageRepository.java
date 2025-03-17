@@ -6,7 +6,6 @@ import jakarta.persistence.EntityManager;
 import org.chat.entities.Message;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @ApplicationScoped
 public class MessageRepository implements PanacheRepository<Message> {
@@ -16,7 +15,7 @@ public class MessageRepository implements PanacheRepository<Message> {
         this.entityManager = entityManager;
     }
 
-    public List<Message> getMessages(Long currentUserId, Long receiverId) {
+    public List<Message> getMessages(String currentUserId, String receiverId) {
         List<Message> messages =
                 entityManager
                     .createQuery(
@@ -42,16 +41,7 @@ public class MessageRepository implements PanacheRepository<Message> {
         return messages;
     }
 
-    public Stream<Message> getMessagesPage(
-            int page,
-            int size,
-            int currentUserId,
-            int recipirentId
-    ) {
-            return null;
-    }
-
-    public List<Message> getGroupMessages(Long groupId) {
+    public List<Message> getGroupMessages(String groupId) {
         return entityManager
                 .createQuery(
                         "from Message m where m.group.id = :groupId",
@@ -59,26 +49,5 @@ public class MessageRepository implements PanacheRepository<Message> {
                 )
                 .setParameter("groupId", groupId)
                 .getResultList();
-    }
-
-    public void save(Message message) {
-        entityManager.createQuery(
-                "insert into Message m (m.message, m.sender, m.recipient, m.time) values (:message, :sender, :recipient, :time)"
-            )
-            .setParameter("message", message.getMessage())
-            .setParameter("sender", message.getSender())
-            .setParameter("recipient", message.getRecipient())
-            .setParameter("time", message.getTime())
-            .executeUpdate();
-    }
-
-    public void saveGroupMessage(Message message) {
-        entityManager.createQuery(
-                "insert into Message m (m.message, m.sender, m.group, m.time) values (:message, :senderId, :groupId, :time)")
-                .setParameter("message", message.getMessage())
-                .setParameter("senderId", message.getSender())
-                .setParameter("groupId", message.getGroup())
-                .setParameter("time", message.getTime())
-                .executeUpdate();
     }
 }

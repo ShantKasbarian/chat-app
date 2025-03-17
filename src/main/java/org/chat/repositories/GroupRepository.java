@@ -17,12 +17,6 @@ public class GroupRepository implements PanacheRepository<Group> {
         this.entityManager = entityManager;
     }
 
-    public void save(Group group) {
-        entityManager
-                .createQuery("insert into Group g (g.name) values (:name)")
-                .setParameter("name", group.getName());
-    }
-
     public Group findByName(String name) {
         try {
             return entityManager.createQuery(
