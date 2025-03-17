@@ -13,7 +13,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "contacts")
-public class Contact extends PanacheEntity {
+public class Contact {
+    @Id
+    @Column(name = "id")
+    private String id;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

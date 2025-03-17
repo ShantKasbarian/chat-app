@@ -41,17 +41,15 @@ public class UserController {
     @ResponseStatus(201)
     @Transactional
     public ContactDto addContact(@PathParam("username") String username) {
-        String userId = token.getClaim("userId");
-        Contact contact = userService.addContact(Long.valueOf(userId), username);
-        return new ContactDto(contact.id, contact.getContact().id, contact.getContact().getUsername());
+        Contact contact = userService.addContact(token.getClaim("userId"), username);
+        return new ContactDto(contact.getId(), contact.getContact().getId(), contact.getContact().getUsername());
     }
 
     @GET
     @Path("/contacts")
     @ResponseStatus(200)
     public List<String> getContacts() {
-        String userId = token.getClaim("userId");
-        return userService.getContacts(Long.valueOf(userId));
+        return userService.getContacts(token.getClaim("userId"));
     }
 
     @GET

@@ -14,7 +14,11 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "messages")
-public class Message extends PanacheEntity {
+public class Message {
+    @Id
+    @Column(name = "id")
+    private String id;
+
     @ManyToOne
     @JoinColumn(name = "sender_id")
     private User sender;

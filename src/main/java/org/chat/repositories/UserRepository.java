@@ -16,6 +16,16 @@ public class UserRepository implements PanacheRepository<User> {
         this.entityManager = entityManager;
     }
 
+    public User findById(String id) {
+        User user = find("id",id).firstResult();
+
+        if (user == null) {
+            throw new ResourceNotFoundException("user not found");
+        }
+
+        return user;
+    }
+
     public User findByUsername(String username) {
         User user = find("username",username).firstResult();
 

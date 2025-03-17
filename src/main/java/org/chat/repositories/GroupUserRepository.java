@@ -17,7 +17,7 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
         this.entityManager = entityManager;
     }
 
-    public GroupUser findByGroupIdUserId(Long groupId, Long userId) {
+    public GroupUser findByGroupIdUserId(String groupId, String userId) {
         GroupUser groupUser = null;
         try {
              groupUser =
@@ -38,7 +38,7 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
         return groupUser;
     }
 
-    public List<GroupUser> getWaitingUsers(Long groupId) {
+    public List<GroupUser> getWaitingUsers(String groupId) {
         return entityManager.createQuery(
                 "from GroupUser gu where gu.group.id = :groupId and gu.isMember = false",
                 GroupUser.class
@@ -47,7 +47,7 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
         .getResultList();
     }
 
-    public List<GroupUser> getUserGroups(Long userId) {
+    public List<GroupUser> getUserGroups(String userId) {
         return entityManager
                 .createQuery(
                 "from GroupUser gu where gu.user.id = :userId and gu.isMember = true",

@@ -9,6 +9,7 @@ import org.chat.exceptions.ResourceNotFoundException;
 import org.chat.repositories.UserRepository;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,7 +34,7 @@ public class LoginSignupService {
             throw new InvalidCredentialsException("Invalid username or password");
         }
 
-        return jwtService.generateToken(username, String.valueOf(user.id));
+        return jwtService.generateToken(username, user.getId());
     }
 
     @Transactional
@@ -60,6 +61,7 @@ public class LoginSignupService {
         }
 
         user = new User();
+        user.setId(UUID.randomUUID().toString());
         user.setUsername(username);
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
 

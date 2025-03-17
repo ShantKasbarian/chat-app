@@ -1,4 +1,4 @@
 package org.chat.models;
 
-public record ContactDto(Long id ,Long userId, String username) {
+public record ContactDto(String id ,String userId, String username) {
 }

@@ -51,11 +51,12 @@ public class MessageController {
     @ResponseStatus(201)
     @Transactional
     public MessageDto sendMessage(MessageDto messageDto) {
-        String userId = token.getClaim("userId");
-        return messageConverter.convertToModel(messageService.writeMessage(
-                messageDto.message(),
-                messageDto.recipientUsername(),
-                Long.valueOf(userId))
+        return messageConverter.convertToModel(
+                messageService.writeMessage(
+                    messageDto.message(),
+                    messageDto.recipientUsername(),
+                    token.getClaim("userId")
+                )
         );
     }
 
@@ -63,8 +64,7 @@ public class MessageController {
     @Path("/{username}")
     @ResponseStatus(200)
     public List<MessageDto> getMessages(@PathParam("username") String username) {
-        String userId = token.getClaim("userId");
-        return messageService.getMessages(Long.valueOf(userId), username);
+        return messageService.getMessages(token.getClaim("userId"), username);
     }
 
     @POST
@@ -72,13 +72,11 @@ public class MessageController {
     @Path("/group")
     @Transactional
     public GroupMessageDto messageGroup(GroupMessageDto messageDto) {
-        String userId = token.getClaim("userId");
-
         return groupMessageConverter.convertToModel(
                 messageService.messageGroup(
                     messageDto.message(),
                     messageDto.groupName(),
-                    Long.valueOf(userId)
+                    token.getClaim("userId")
                 )
         );
     }
@@ -89,7 +87,6 @@ public class MessageController {
     public List<GroupMessageDto> getGroupMessages(
             @PathParam("groupName") String groupName
     ) {
-        String userId = token.getClaim("userId");
-        return messageService.getGroupMessages(groupName, Long.valueOf(userId));
+        return messageService.getGroupMessages(groupName, token.getClaim("userId"));
     }
 }

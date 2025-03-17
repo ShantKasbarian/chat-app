@@ -1,7 +1,7 @@
 package org.chat.models;
 
 public record UserDto(
-        Long id,
+        String id,
         String username,
         String password
 ) {

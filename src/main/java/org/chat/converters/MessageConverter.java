@@ -14,10 +14,10 @@ public class MessageConverter implements
     public MessageDto convertToModel(Message entity) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         return new MessageDto(
-                entity.id,
-                entity.getSender().id,
+                entity.getId(),
+                entity.getSender().getId(),
                 entity.getSender().getUsername(),
-                entity.getRecipient().id,
+                entity.getRecipient().getId(),
                 entity.getRecipient().getUsername(),
                 entity.getMessage(),
                 entity.getTime().format(formatter)
