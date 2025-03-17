@@ -2,14 +2,16 @@ package org.chat.services;
 
 import io.quarkus.runtime.Startup;
 import jakarta.transaction.Transactional;
-import org.chat.converters.MessageRepresentationConverter;
+import org.chat.converters.GroupMessageConverter;
+import org.chat.converters.MessageConverter;
 import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
 import org.chat.entities.Message;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidInfoException;
 import org.chat.exceptions.InvalidRoleException;
-import org.chat.models.MessageRepresentationDto;
+import org.chat.models.GroupMessageDto;
+import org.chat.models.MessageDto;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
 import org.chat.repositories.MessageRepository;
@@ -22,28 +24,36 @@ import java.util.List;
 @Startup
 public class MessageService {
     private final MessageRepository messageRepository;
+
     private final UserRepository userRepository;
+
     private final GroupRepository groupRepository;
+
     private final GroupUserRepository groupUserRepository;
-    private final MessageRepresentationConverter messageRepresentationConverter;
+
+    private final MessageConverter messageConverter;
+
+    private final GroupMessageConverter groupMessageConverter;
 
     public MessageService(
             MessageRepository messageRepository,
             UserRepository userRepository,
             GroupRepository groupRepository,
             GroupUserRepository groupUserRepository,
-            MessageRepresentationConverter messageRepresentationConverter
+            MessageConverter messageConverter,
+            GroupMessageConverter groupMessageConverter
     ) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.groupUserRepository = groupUserRepository;
-        this.messageRepresentationConverter = messageRepresentationConverter;
+        this.messageConverter = messageConverter;
+        this.groupMessageConverter = groupMessageConverter;
     }
 
     @Transactional
-    public String writeMessage(Message message, String recipientUsername, Long currentUserId) {
-        if (message.getMessage() == null || message.getMessage().isEmpty()) {
+    public String writeMessage(String content, String recipientUsername, Long currentUserId) {
+        if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
 
@@ -54,29 +64,31 @@ public class MessageService {
         User recipient = userRepository.findByUsername(recipientUsername);
         User sender = userRepository.findById(currentUserId);
 
+        Message message = new Message();
         message.setRecipient(recipient);
         message.setSender(sender);
+        message.setMessage(content);
         message.setTime(LocalDateTime.now());
         messageRepository.save(message);
 
         return "message has been sent";
     }
 
-    public List<MessageRepresentationDto> getMessages(int userId, String recipientUsername) {
+    public List<MessageDto> getMessages(int userId, String recipientUsername) {
         User recipient = userRepository.findByUsername(recipientUsername);
 
-        List<MessageRepresentationDto> messages =
+        return
                 messageRepository.getMessages(userId, recipient.getId())
                         .stream()
-                        .map(messageRepresentationConverter::convertToModel)
-                        .sorted(Comparator.comparing(MessageRepresentationDto::time))
-                        .toList();
+                        .map(messageConverter::convertToModel)
+                        .sorted(Comparator.comparing(MessageDto::time))
+                        .toList()
+                        .reversed();
 
-        return messages.reversed();
     }
 
-    public String messageGroup(Message message, String groupName, Long senderId) {
-        if (message.getMessage() == null || message.getMessage().isEmpty()) {
+    public String messageGroup(String content, String groupName, Long senderId) {
+        if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
 
@@ -86,7 +98,9 @@ public class MessageService {
 
         Group group = groupRepository.findByName(groupName);
 
+        Message message = new Message();
         message.setSender(userRepository.findById(senderId));
+        message.setMessage(content);
         message.setGroup(group);
         message.setTime(LocalDateTime.now());
 
@@ -94,7 +108,7 @@ public class MessageService {
         return "message has been sent";
     }
 
-    public List<MessageRepresentationDto> getGroupMessages(String groupName, int userId) {
+    public List<GroupMessageDto> getGroupMessages(String groupName, int userId) {
         if (groupName == null) {
             throw new InvalidInfoException("group name not specified");
         }
@@ -108,8 +122,8 @@ public class MessageService {
 
         return messageRepository.getGroupMessages(group.getId())
                 .stream()
-                .map(messageRepresentationConverter::convertToModel)
-                .sorted(Comparator.comparing(MessageRepresentationDto::time))
+                .map(groupMessageConverter::convertToModel)
+                .sorted(Comparator.comparing(GroupMessageDto::time))
                 .toList()
                 .reversed();
     }

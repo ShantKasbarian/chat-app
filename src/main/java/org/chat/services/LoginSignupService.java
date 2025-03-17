@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 @Startup
 public class LoginSignupService {
     private final UserRepository userRepository;
+
     private final JwtService jwtService;
 
     public LoginSignupService(

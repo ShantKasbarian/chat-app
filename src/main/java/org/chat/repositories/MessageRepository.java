@@ -3,11 +3,8 @@ package org.chat.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import org.chat.entities.Message;
-import org.chat.models.MessageRepresentationDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @ApplicationScoped

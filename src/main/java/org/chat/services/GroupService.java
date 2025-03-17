@@ -15,7 +15,9 @@ import java.util.*;
 @Startup
 public class GroupService {
     private final GroupRepository groupRepository;
+
     private final GroupUserRepository groupUserRepository;
+
     private final UserRepository userRepository;
 
     public GroupService(
