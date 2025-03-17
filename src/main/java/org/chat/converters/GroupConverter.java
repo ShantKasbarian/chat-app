@@ -2,13 +2,13 @@ package org.chat.converters;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.Group;
-import org.chat.entities.GroupUser;
 import org.chat.models.GroupDto;
 
-import java.util.Optional;
-
 @ApplicationScoped
-public class GroupConverter implements Converter<Group, GroupDto> {
+public class GroupConverter implements
+        ToEntityConverter<Group, GroupDto>,
+        ToModelConverter<GroupDto, Group>
+{
 
     @Override
     public Group convertToEntity(GroupDto model) {

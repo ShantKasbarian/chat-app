@@ -10,8 +10,6 @@ import jakarta.ws.rs.core.Response;
 import org.chat.models.UserDto;
 import org.chat.services.LoginSignupService;
 
-import java.net.URI;
-
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

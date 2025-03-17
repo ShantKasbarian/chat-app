@@ -11,6 +11,7 @@ import java.util.List;
 @Startup
 public class UserService {
     private final UserRepository userRepository;
+
     private final ContactRepository contactRepository;
 
     public UserService(

@@ -2,24 +2,24 @@ package org.chat.converters;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entities.Message;
-import org.chat.models.MessageDto;
+import org.chat.models.GroupMessageDto;
 
 import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
-public class MessageConverter implements
-        ToModelConverter<MessageDto, Message> {
+public class GroupMessageConverter implements
+        ToModelConverter<GroupMessageDto, Message> {
 
     @Override
-    public MessageDto convertToModel(Message entity) {
+    public GroupMessageDto convertToModel(Message entity) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        return new MessageDto(
+        return new GroupMessageDto(
                 entity.getId(),
                 entity.getSender().getId(),
-                entity.getSender().getUsername(),
-                entity.getRecipient().getId(),
-                entity.getRecipient().getUsername(),
+                entity.getSender().getName(),
                 entity.getMessage(),
+                entity.getGroup().getId(),
+                entity.getGroup().getName(),
                 entity.getTime().format(formatter)
         );
     }

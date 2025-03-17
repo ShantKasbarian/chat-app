@@ -5,7 +5,7 @@ import org.chat.entities.User;
 import org.chat.models.UserDto;
 
 @ApplicationScoped
-public class UserConverter implements Converter<User, UserDto> {
+public class UserConverter implements ToEntityConverter<User, UserDto> {
     @Override
     public User convertToEntity(UserDto model) {
         User entity = new User();
@@ -14,14 +14,5 @@ public class UserConverter implements Converter<User, UserDto> {
         entity.setPassword(model.password());
 
         return entity;
-    }
-
-    @Override
-    public UserDto convertToModel(User entity) {
-        return new UserDto(
-                entity.getId(),
-                entity.getUsername(),
-                entity.getPassword()
-        );
     }
 }

@@ -17,8 +17,10 @@ import java.util.List;
 @Authenticated
 public class UserController {
     private final UserService userService;
+
     @Context
     private final SecurityContext securityContext;
+
     private final JsonWebToken token;
 
     public UserController(
