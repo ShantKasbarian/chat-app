@@ -6,7 +6,6 @@ import org.chat.entities.GroupUser;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidGroupException;
 import org.chat.exceptions.InvalidRoleException;
-import org.chat.exceptions.ResourceNotFoundException;
 import org.chat.exceptions.UnableToJoinGroupException;
 import org.chat.repositories.GroupRepository;
 import org.chat.repositories.GroupUserRepository;
@@ -148,6 +147,7 @@ class GroupServiceTest {
         String response = groupService.joinGroup(group.getName(), user1.getId());
 
         assertEquals(expected, response);
+        verify(groupUserRepository, times(1)).persist(any(GroupUser.class));
     }
 
     @Test
