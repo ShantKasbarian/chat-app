@@ -18,10 +18,8 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
     }
 
     public GroupUser findByGroupIdUserId(String groupId, String userId) {
-        GroupUser groupUser = null;
         try {
-             groupUser =
-                    entityManager
+             return entityManager
                             .createQuery(
                         "from GroupUser gu where gu.group.id = :groupId and gu.user.id = :userId",
                         GroupUser.class
@@ -34,8 +32,6 @@ public class GroupUserRepository implements PanacheRepository<GroupUser> {
         catch (NoResultException e) {
             throw new ResourceNotFoundException("user is not part of this group");
         }
-
-        return groupUser;
     }
 
     public List<GroupUser> getWaitingUsers(String groupId) {

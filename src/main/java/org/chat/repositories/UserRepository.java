@@ -17,7 +17,7 @@ public class UserRepository implements PanacheRepository<User> {
     }
 
     public User findById(String id) {
-        User user = find("id",id).firstResult();
+        User user = find("id", id).firstResult();
 
         if (user == null) {
             throw new ResourceNotFoundException("user not found");
