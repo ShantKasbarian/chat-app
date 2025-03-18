@@ -34,7 +34,7 @@ public class UserService {
 
     @Transactional
     public Contact addContact(String userId, String recipientUsername) {
-        if (recipientUsername == null) {
+        if (recipientUsername == null || recipientUsername.isEmpty()) {
             throw new InvalidInfoException("Invalid recipientUsername");
         }
 
