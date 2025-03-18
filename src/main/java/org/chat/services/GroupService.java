@@ -33,8 +33,12 @@ public class GroupService {
 
     @Transactional
     public Group createGroup(final Group group, String[] creators, String userId) {
-        if (group.getName() == null || group.getName().isEmpty()) {
+        if (group == null || group.getName() == null || group.getName().isEmpty()) {
             throw new InvalidGroupException("Invalid group name");
+        }
+
+        if (creators == null) {
+            creators = new String[]{};
         }
 
         Group g = null;
@@ -80,17 +84,9 @@ public class GroupService {
         }
         catch (ResourceNotFoundException e) {}
 
-        if (groupUser != null && groupUser.getIsMember()) {
-            throw new UnableToJoinGroupException("you're already a member of this group");
+        if (groupUser != null) {
+            throw new UnableToJoinGroupException("you're already a member of this group or have submitted a request to join group");
         }
-
-        else if (
-                groupUser != null &&
-                !groupUser.getIsMember()
-        ) {
-            throw new UnableToJoinGroupException("you have already submitted a request to join this group");
-        }
-
 
         groupUserRepository.persist(new GroupUser(UUID.randomUUID().toString(), group, user, false, false));
 
@@ -117,6 +113,11 @@ public class GroupService {
         User recipient = userRepository.findByUsername(userName);
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), recipient.getId());
+
+        if (groupUser.getIsMember()) {
+            throw new UnableToJoinGroupException("this user is already a member");
+        }
+
         groupUser.setIsCreator(false);
         groupUser.setIsMember(true);
 
