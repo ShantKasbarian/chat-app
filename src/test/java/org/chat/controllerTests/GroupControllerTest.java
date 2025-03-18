@@ -5,7 +5,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.SecurityContext;
 import org.chat.config.JwtService;
 import org.chat.controllers.GroupController;
@@ -13,7 +12,6 @@ import org.chat.converters.GroupConverter;
 import org.chat.entities.Group;
 import org.chat.entities.User;
 import org.chat.models.GroupDto;
-import org.chat.repositories.GroupUserRepository;
 import org.chat.services.GroupService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,9 +40,6 @@ class GroupControllerTest {
     @InjectMock
     private JsonWebToken token;
 
-    @InjectMock
-    private GroupUserRepository groupUserRepository;
-
     @Inject
     private JwtService jwtService;
 
@@ -71,7 +66,6 @@ class GroupControllerTest {
     }
 
     @Test
-    @Transactional
     void create() {
         when(groupConverter.convertToModel(group)).thenReturn(groupDto);
         when(groupService.createGroup(group, new String[]{}, user.getId()))
