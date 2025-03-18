@@ -58,7 +58,7 @@ public class MessageService {
             throw new InvalidInfoException("Message is empty");
         }
 
-        if (recipientUsername == null) {
+        if (recipientUsername == null || recipientUsername.isEmpty()) {
             throw new InvalidInfoException("username not specified");
         }
 
@@ -93,11 +93,16 @@ public class MessageService {
             throw new InvalidInfoException("Message is empty");
         }
 
-        if (groupName == null) {
+        if (groupName == null || groupName.isEmpty()) {
             throw new InvalidInfoException("group name not specified");
         }
 
         Group group = groupRepository.findByName(groupName);
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), senderId);
+
+        if (groupUser == null || !groupUser.getIsMember()) {
+            throw new InvalidRoleException("you are not a member of this group");
+        }
 
         Message message = new Message();
         message.setId(UUID.randomUUID().toString());
@@ -111,7 +116,7 @@ public class MessageService {
     }
 
     public List<GroupMessageDto> getGroupMessages(String groupName, String userId) {
-        if (groupName == null) {
+        if (groupName == null || groupName.isEmpty()) {
             throw new InvalidInfoException("group name not specified");
         }
 
