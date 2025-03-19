@@ -29,7 +29,7 @@ To create tables in your database execute the following scripts in this exact or
     (
         id character varying(255) NOT NULL,
         password character varying(255) COLLATE pg_catalog."default",
-        username character varying(255) COLLATE pg_catalog."default",
+        username character varying(20) COLLATE pg_catalog."default",
         CONSTRAINT users_pkey PRIMARY KEY (id)
     )
     
