@@ -1,6 +1,6 @@
 package org.chat.services;
 
-import io.quarkus.runtime.Startup;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.chat.config.JwtService;
 import org.chat.entities.User;
@@ -12,7 +12,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Startup
+@ApplicationScoped
 public class LoginSignupService {
     private final UserRepository userRepository;
 

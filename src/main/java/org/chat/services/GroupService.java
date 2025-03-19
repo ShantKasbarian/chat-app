@@ -1,6 +1,6 @@
 package org.chat.services;
 
-import io.quarkus.runtime.Startup;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
@@ -12,7 +12,7 @@ import org.chat.repositories.UserRepository;
 
 import java.util.*;
 
-@Startup
+@ApplicationScoped
 public class GroupService {
     private final GroupRepository groupRepository;
 
@@ -32,7 +32,7 @@ public class GroupService {
     }
 
     @Transactional
-    public Group createGroup(final Group group, String[] creators, String userId) {
+    public Group createGroup(Group group, String[] creators, String userId) {
         if (group == null || group.getName() == null || group.getName().isEmpty()) {
             throw new InvalidGroupException("Invalid group name");
         }

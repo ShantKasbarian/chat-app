@@ -1,6 +1,6 @@
 package org.chat.services;
 
-import io.quarkus.runtime.Startup;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.chat.converters.GroupMessageConverter;
 import org.chat.converters.MessageConverter;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Startup
+@ApplicationScoped
 public class MessageService {
     private final MessageRepository messageRepository;
 

@@ -1,6 +1,6 @@
 package org.chat.services;
 
-import io.quarkus.runtime.Startup;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.chat.entities.Contact;
 import org.chat.entities.User;
@@ -11,7 +11,7 @@ import org.chat.repositories.UserRepository;
 import java.util.List;
 import java.util.UUID;
 
-@Startup
+@ApplicationScoped
 public class UserService {
     private final UserRepository userRepository;
 
