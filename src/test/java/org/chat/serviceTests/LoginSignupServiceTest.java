@@ -7,6 +7,7 @@ import org.chat.repositories.UserRepository;
 import org.chat.services.LoginSignupService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -36,7 +37,29 @@ class LoginSignupServiceTest {
         user = new User();
         user.setId(UUID.randomUUID().toString());
         user.setUsername("userUser");
-        user.setPassword("Password123+");
+        user.setPassword(BCrypt.hashpw("Password123+", BCrypt.gensalt()));
+    }
+
+    @Test
+    void login() {
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(user);
+
+        String expected = "some token";
+
+        when(jwtService.generateToken(user.getUsername(), user.getId()))
+                .thenReturn(expected);
+
+        String response = loginSignupService.login(user.getUsername(), "Password123+");
+
+        assertEquals(expected, response);
+    }
+
+    @Test
+    void loginShouldThrowInvalidCredentialsExceptionWithWrongPassword() {
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(user);
+        assertThrows(InvalidCredentialsException.class, () -> loginSignupService.login(user.getUsername(), "somePassword"));
     }
 
     @Test
