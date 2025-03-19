@@ -76,6 +76,10 @@ public class MessageService {
     }
 
     public List<MessageDto> getMessages(String userId, String recipientUsername, int page, int size) {
+        if (page == 0) {
+            page = 1;
+        }
+
         User recipient = userRepository.findByUsername(recipientUsername);
 
         return messageRepository.getMessages(userId, recipient.getId(), page, size)
@@ -115,6 +119,10 @@ public class MessageService {
     public List<GroupMessageDto> getGroupMessages(String groupName, String userId, int page, int size) {
         if (groupName == null || groupName.isEmpty()) {
             throw new InvalidInfoException("group name not specified");
+        }
+
+        if (page == 0) {
+            page = 1;
         }
 
         Group group = groupRepository.findByName(groupName);
