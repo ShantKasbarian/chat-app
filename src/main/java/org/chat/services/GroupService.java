@@ -74,7 +74,6 @@ public class GroupService {
         }
         catch (ResourceNotFoundException e) {}
 
-
         if (groupUser != null) {
             throw new UnableToJoinGroupException("you're already a member of this group or have submitted a request to join group");
         }

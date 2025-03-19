@@ -151,7 +151,7 @@ class MessageServiceTest {
         );
 
         when(userRepository.findByUsername(user1.getUsername())).thenReturn(user1);
-        when(messageRepository.getMessages(user2.getId(), user1.getId(), 0, 10))
+        when(messageRepository.getMessages(user2.getId(), user1.getId(), 1, 10))
                 .thenReturn(messages);
         when(messageConverter.convertToModel(message1)).thenReturn(messageDto1);
         when(messageConverter.convertToModel(message2)).thenReturn(messageDto2);
@@ -298,11 +298,11 @@ class MessageServiceTest {
                                 true
                         )
                 );
-        when(messageRepository.getGroupMessages(group.getId(), 0, 10)).thenReturn(messages);
+        when(messageRepository.getGroupMessages(group.getId(), 1, 2)).thenReturn(messages);
         when(groupMessageConverter.convertToModel(message1)).thenReturn(messageDto1);
         when(groupMessageConverter.convertToModel(message2)).thenReturn(messageDto2);
 
-        List<GroupMessageDto> response = messageService.getGroupMessages(group.getName(), user2.getId(), 0, 10);
+        List<GroupMessageDto> response = messageService.getGroupMessages(group.getName(), user2.getId(), 0, 2);
 
         assertEquals(messages.size(), response.size());
     }
