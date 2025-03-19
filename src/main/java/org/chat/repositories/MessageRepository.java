@@ -39,7 +39,7 @@ public class MessageRepository implements PanacheRepository<Message> {
                         Message.class
                 )
                 .setParameter("groupId", groupId)
-                .setFirstResult(page)
+                .setFirstResult(offset)
                 .setMaxResults(size)
                 .getResultList();
     }
