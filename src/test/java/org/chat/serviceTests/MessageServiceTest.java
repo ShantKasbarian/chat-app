@@ -151,12 +151,12 @@ class MessageServiceTest {
         );
 
         when(userRepository.findByUsername(user1.getUsername())).thenReturn(user1);
-        when(messageRepository.getMessages(user2.getId(), user1.getId()))
+        when(messageRepository.getMessages(user2.getId(), user1.getId(), 0, 10))
                 .thenReturn(messages);
         when(messageConverter.convertToModel(message1)).thenReturn(messageDto1);
         when(messageConverter.convertToModel(message2)).thenReturn(messageDto2);
 
-        List<MessageDto> response = messageService.getMessages(user2.getId(), user1.getUsername());
+        List<MessageDto> response = messageService.getMessages(user2.getId(), user1.getUsername(), 0, 10);
 
         assertEquals(messages.size(), response.size());
     }
@@ -298,11 +298,11 @@ class MessageServiceTest {
                                 true
                         )
                 );
-        when(messageRepository.getGroupMessages(group.getId())).thenReturn(messages);
+        when(messageRepository.getGroupMessages(group.getId(), 0, 10)).thenReturn(messages);
         when(groupMessageConverter.convertToModel(message1)).thenReturn(messageDto1);
         when(groupMessageConverter.convertToModel(message2)).thenReturn(messageDto2);
 
-        List<GroupMessageDto> response = messageService.getGroupMessages(group.getName(), user2.getId());
+        List<GroupMessageDto> response = messageService.getGroupMessages(group.getName(), user2.getId(), 0, 10);
 
         assertEquals(messages.size(), response.size());
     }
@@ -324,16 +324,16 @@ class MessageServiceTest {
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.getGroupMessages(group.getName(), user1.getId()));
+        assertThrows(InvalidRoleException.class, () -> messageService.getGroupMessages(group.getName(), user1.getId(), 0, 10));
     }
 
     @Test
     void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupNameIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages(null, user1.getId()));
+        assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages(null, user1.getId(), 0, 10));
     }
 
     @Test
     void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupNameIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages("", user1.getId()));
+        assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages("", user1.getId(), 0, 10));
     }
 }

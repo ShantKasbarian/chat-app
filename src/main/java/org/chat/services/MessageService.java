@@ -18,7 +18,6 @@ import org.chat.repositories.MessageRepository;
 import org.chat.repositories.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,15 +75,13 @@ public class MessageService {
         return message;
     }
 
-    public List<MessageDto> getMessages(String userId, String recipientUsername) {
+    public List<MessageDto> getMessages(String userId, String recipientUsername, int page, int size) {
         User recipient = userRepository.findByUsername(recipientUsername);
 
-        return messageRepository.getMessages(userId, recipient.getId())
+        return messageRepository.getMessages(userId, recipient.getId(), page, size)
                         .stream()
                         .map(messageConverter::convertToModel)
-                        .sorted(Comparator.comparing(MessageDto::time))
-                        .toList()
-                        .reversed();
+                        .toList();
     }
 
     @Transactional
@@ -115,7 +112,7 @@ public class MessageService {
         return message;
     }
 
-    public List<GroupMessageDto> getGroupMessages(String groupName, String userId) {
+    public List<GroupMessageDto> getGroupMessages(String groupName, String userId, int page, int size) {
         if (groupName == null || groupName.isEmpty()) {
             throw new InvalidInfoException("group name not specified");
         }
@@ -127,11 +124,9 @@ public class MessageService {
             throw new InvalidRoleException("you're not in group");
         }
 
-        return messageRepository.getGroupMessages(group.getId())
+        return messageRepository.getGroupMessages(group.getId(), page, size)
                 .stream()
                 .map(groupMessageConverter::convertToModel)
-                .sorted(Comparator.comparing(GroupMessageDto::time))
-                .toList()
-                .reversed();
+                .toList();
     }
 }

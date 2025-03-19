@@ -128,7 +128,7 @@ class MessageControllerTest {
         List<MessageDto> messages = new ArrayList<>();
         messages.add(messageDto);
 
-        when(messageService.getMessages(sender.getId(), recipient.getUsername()))
+        when(messageService.getMessages(sender.getId(), recipient.getUsername(), 0, 10))
                 .thenReturn(messages);
 
         String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());
@@ -166,7 +166,7 @@ class MessageControllerTest {
         List<GroupMessageDto> messages = new ArrayList<>();
         messages.add(groupMessageDto);
 
-        when(messageService.getGroupMessages(group.getName(), sender.getId()))
+        when(messageService.getGroupMessages(group.getName(), sender.getId(), 0, 10))
                 .thenReturn(messages);
 
         String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());

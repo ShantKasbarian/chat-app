@@ -48,7 +48,7 @@ To create tables in your database execute the following scripts in this exact or
         recipient_id character varying(255),
         sender_id character varying(255),
         group_id character varying(255),
-        sent_time time without time zone,
+        timestamp without time zone,
         CONSTRAINT messages_pkey PRIMARY KEY (id),
         CONSTRAINT group_fkey FOREIGN KEY (group_id)
             REFERENCES public.groups (id) MATCH SIMPLE
