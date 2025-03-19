@@ -1,6 +1,8 @@
 package org.chat.serviceTests;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.chat.config.JwtService;
+import org.chat.entities.Group;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidCredentialsException;
 import org.chat.repositories.UserRepository;
@@ -28,6 +30,9 @@ class LoginSignupServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private PanacheQuery<User> mockQuery;
+
     private User user;
 
     @BeforeEach
@@ -38,6 +43,8 @@ class LoginSignupServiceTest {
         user.setId(UUID.randomUUID().toString());
         user.setUsername("userUser");
         user.setPassword(BCrypt.hashpw("Password123+", BCrypt.gensalt()));
+
+        when(userRepository.find(anyString(), anyString())).thenReturn(mockQuery);
     }
 
     @Test
@@ -64,7 +71,7 @@ class LoginSignupServiceTest {
 
     @Test
     void createUser() {
-        when(userRepository.findByUsername("user")).thenReturn(null);
+        when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(null);
         doNothing().when(userRepository).persist(user);
 
         String expected = "user successfully registered";
@@ -76,35 +83,35 @@ class LoginSignupServiceTest {
 
     @Test
     void createUserShouldThrowInvalidCredentialsExceptionWhenUserWithSameUsernameExists() {
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(user);
+        when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(user);
         assertThrows(InvalidCredentialsException.class, () -> loginSignupService.createUser(user.getUsername(), user.getPassword()));
     }
 
     @Test
     void createUserShouldThrowInvalidCredentialsExceptionWhenUsernameIsLessThan5Characters() {
         user.setUsername("u");
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(user);
+        when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(null);
         assertThrows(InvalidCredentialsException.class, () -> loginSignupService.createUser(user.getUsername(), user.getPassword()));
     }
 
     @Test
     void createUserShouldThrowInvalidCredentialsExceptionWhenUsernameIsGreaterThan20Characters() {
         user.setUsername("UserUserUserUserUserUser");
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(user);
+        when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(null);
         assertThrows(InvalidCredentialsException.class, () -> loginSignupService.createUser(user.getUsername(), user.getPassword()));
     }
 
     @Test
     void createUserShouldThrowInvalidCredentialsExceptionWhenPasswordIsInvalid() {
         user.setPassword("Password");
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(user);
+        when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(null);
         assertThrows(InvalidCredentialsException.class, () -> loginSignupService.createUser(user.getUsername(), user.getPassword()));
     }
 
     @Test
     void createUserShouldThrowInvalidCredentialsExceptionWhenPasswordIsNull() {
         user.setPassword("Password");
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(user);
+        when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(user);
         assertThrows(InvalidCredentialsException.class, () -> loginSignupService.createUser(user.getUsername(), null));
     }
 }

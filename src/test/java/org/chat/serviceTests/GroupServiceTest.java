@@ -1,5 +1,6 @@
 package org.chat.serviceTests;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.persistence.EntityManager;
 import org.chat.entities.Group;
 import org.chat.entities.GroupUser;
@@ -40,6 +41,9 @@ class GroupServiceTest {
 
     @Mock
     private EntityManager entityManager;
+
+    @Mock
+    private PanacheQuery<Group> mockQuery;
 
     private Group group;
 
@@ -84,11 +88,13 @@ class GroupServiceTest {
         when(groupRepository.getEntityManager()).thenReturn(entityManager);
         when(userRepository.getEntityManager()).thenReturn(entityManager);
         when(groupUserRepository.getEntityManager()).thenReturn(entityManager);
+
+        when(groupRepository.find(anyString(), anyString())).thenReturn(mockQuery);
     }
 
     @Test
     void createGroup() {
-        when(groupRepository.findByName(group.getName())).thenReturn(null);
+        when(groupRepository.find("name", group.getName()).firstResult()).thenReturn(null);
         doNothing().when(groupRepository).persist(group);
 
         when(userRepository.findById(user1.getId())).thenReturn(user1);
@@ -130,7 +136,8 @@ class GroupServiceTest {
 
     @Test
     void createGroupShouldThrowInvalidGroupExceptionWithGroupAlreadyExists() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.find("name", group.getName()).firstResult())
+        .thenReturn(group);
         assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new String[]{}, user1.getId()));
     }
 
