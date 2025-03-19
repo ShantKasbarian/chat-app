@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional;
 import org.chat.config.JwtService;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidCredentialsException;
-import org.chat.exceptions.ResourceNotFoundException;
 import org.chat.repositories.UserRepository;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -39,13 +38,8 @@ public class LoginSignupService {
 
     @Transactional
     public String createUser(String username, String password) {
-        User user = null;
-        try {
-            user = userRepository.findByUsername(username.trim());
-        }
-        catch (ResourceNotFoundException ignored) {
-        }
-        if (user != null ||
+        if (
+                userRepository.find("username", username).firstResult() != null ||
                 (
                         username.length() < 5 ||
                         username.length() > 20
@@ -60,7 +54,7 @@ public class LoginSignupService {
             throw new InvalidCredentialsException("Invalid password");
         }
 
-        user = new User();
+        User user = new User();
         user.setId(UUID.randomUUID().toString());
         user.setUsername(username);
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));

@@ -15,39 +15,32 @@ public class MessageRepository implements PanacheRepository<Message> {
         this.entityManager = entityManager;
     }
 
-    public List<Message> getMessages(String currentUserId, String receiverId) {
-        List<Message> messages =
-                entityManager
-                    .createQuery(
-                            "from Message m where m.sender.id =:sender and m.recipient.id =:recipient",
-                            Message.class
-                    )
-                    .setParameter("sender", currentUserId)
-                    .setParameter("recipient", receiverId)
-                    .getResultList();
+    public List<Message> getMessages(String currentUserId, String receiverId, int page, int size) {
+        int offset = (page - 1) * size;
 
-        List<Message> messageList2 =
-                entityManager
-                        .createQuery(
-                            "from Message m where m.sender.id =:sender and m.recipient.id =:recipient",
-                        Message.class
-                )
-                .setParameter("sender", receiverId)
-                .setParameter("recipient", currentUserId)
-                .getResultList();
-
-        messages.addAll(messageList2);
-
-        return messages;
+        return entityManager
+            .createQuery(
+                    "from Message m where m.sender.id =:sender and m.recipient.id =:recipient or m.sender.id =:recipient and m.recipient.id =:sender order by m.time DESC",
+                    Message.class
+            )
+            .setParameter("sender", currentUserId)
+            .setParameter("recipient", receiverId)
+            .setFirstResult(offset)
+            .setMaxResults(size)
+            .getResultList();
     }
 
-    public List<Message> getGroupMessages(String groupId) {
+        public List<Message> getGroupMessages(String groupId, int page, int size) {
+        int offset = (page - 1) * size;
+
         return entityManager
                 .createQuery(
-                        "from Message m where m.group.id = :groupId",
+                        "from Message m where m.group.id = :groupId order by m.time DESC",
                         Message.class
                 )
                 .setParameter("groupId", groupId)
+                .setFirstResult(page)
+                .setMaxResults(size)
                 .getResultList();
     }
 }

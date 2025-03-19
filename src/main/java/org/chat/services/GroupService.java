@@ -41,13 +41,7 @@ public class GroupService {
             creators = new String[]{};
         }
 
-        Group g = null;
-        try {
-            g = groupRepository.findByName(group.getName());
-
-        } catch (Exception e) {}
-
-        if (g != null) {
+        if (groupRepository.find("name", group.getName()).firstResult() != null) {
             throw new InvalidGroupException("Group already exists");
         }
 
@@ -58,16 +52,12 @@ public class GroupService {
         List<GroupUser> creatorsList = new ArrayList<>(
             Arrays.stream(creators)
                 .map(userRepository::findByUsername)
-                .filter(creator -> creator != null)
+                .filter(creator -> !creator.getId().equals(userId))
                 .map(creator -> new GroupUser(UUID.randomUUID().toString(), group, creator, true, true))
                 .toList()
         );
 
-        GroupUser currentGroupUser = new GroupUser(UUID.randomUUID().toString(), group, currentUser, true, true);
-
-        if (!creatorsList.contains(currentGroupUser)) {
-            creatorsList.add(currentGroupUser);
-        }
+        creatorsList.add(new GroupUser(UUID.randomUUID().toString(), group, currentUser, true, true));
 
         groupUserRepository.persist(creatorsList);
 
@@ -77,17 +67,19 @@ public class GroupService {
     @Transactional
     public String joinGroup(String groupName, String userId) {
         Group group = groupRepository.findByName(groupName);
-        User user = userRepository.findById(userId);
+
         GroupUser groupUser = null;
         try {
             groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
         }
         catch (ResourceNotFoundException e) {}
 
+
         if (groupUser != null) {
             throw new UnableToJoinGroupException("you're already a member of this group or have submitted a request to join group");
         }
 
+        User user = userRepository.findById(userId);
         groupUserRepository.persist(new GroupUser(UUID.randomUUID().toString(), group, user, false, false));
 
         return "request to join group has been submitted, waiting for one of the group creators to accept";

@@ -63,8 +63,13 @@ public class MessageController {
     @GET
     @Path("/{username}")
     @ResponseStatus(200)
-    public List<MessageDto> getMessages(@PathParam("username") String username) {
-        return messageService.getMessages(token.getClaim("userId"), username);
+    public List<MessageDto> getMessages(
+            @PathParam("username") String username,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
+
+    ) {
+        return messageService.getMessages(token.getClaim("userId"), username, page, size);
     }
 
     @POST
@@ -85,8 +90,10 @@ public class MessageController {
     @ResponseStatus(200)
     @Path("/group/{groupName}")
     public List<GroupMessageDto> getGroupMessages(
-            @PathParam("groupName") String groupName
+            @PathParam("groupName") String groupName,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
     ) {
-        return messageService.getGroupMessages(groupName, token.getClaim("userId"));
+        return messageService.getGroupMessages(groupName, token.getClaim("userId"), page, size);
     }
 }

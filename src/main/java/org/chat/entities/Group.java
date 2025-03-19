@@ -28,8 +28,4 @@ public class Group {
 
     @OneToMany(mappedBy = "group")
     private List<GroupUser> users;
-
-    public Group(String name) {
-        this.name = name;
-    }
 }
