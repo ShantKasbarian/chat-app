@@ -1,4 +1,4 @@
-package org.chat.controllerTests;
+package org.chat.controllerTests.IT;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,7 +28,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class MessageControllerTest {
+class MessageControllerIT {
     @Inject
     private MessageController messageController;
 

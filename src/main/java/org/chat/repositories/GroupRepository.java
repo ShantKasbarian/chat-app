@@ -8,6 +8,7 @@ import org.chat.entities.Group;
 import org.chat.exceptions.ResourceNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class GroupRepository implements PanacheRepository<Group> {
@@ -31,10 +32,14 @@ public class GroupRepository implements PanacheRepository<Group> {
         }
     }
 
+    public Optional<Group> findById(String id) {
+        return Optional.of(entityManager.find(Group.class, id));
+    }
+
     public List<Group> getGroups(String groupName) {
         return entityManager
                 .createQuery(
-                        "select g.name from Group g where upper(g.name) like upper(:groupName)",
+                        "from Group g where upper(g.name) like upper(:groupName)",
                         Group.class
                 )
                 .setParameter("groupName", "%" + groupName + "%")

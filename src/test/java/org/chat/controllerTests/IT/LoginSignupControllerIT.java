@@ -1,4 +1,4 @@
-package org.chat.controllerTests;
+package org.chat.controllerTests.IT;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -15,10 +15,8 @@ import org.mockito.Mockito;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @QuarkusTest
-class LoginSignupControllerTest {
+class LoginSignupControllerIT {
     @Inject
     private LoginSignupController loginSignupController;
 

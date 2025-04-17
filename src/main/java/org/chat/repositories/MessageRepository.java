@@ -30,7 +30,7 @@ public class MessageRepository implements PanacheRepository<Message> {
             .getResultList();
     }
 
-        public List<Message> getGroupMessages(String groupId, int page, int size) {
+    public List<Message> getGroupMessages(String groupId, int page, int size) {
         int offset = (page - 1) * size;
 
         return entityManager

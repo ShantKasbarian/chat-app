@@ -24,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +70,7 @@ class MessageServiceTest {
 
     @Test
     void writeMessage() {
-        when(userRepository.findByUsername(user1.getUsername())).thenReturn(user1);
+        when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(userRepository.findById(user2.getId())).thenReturn(user2);
 
         Message message = new Message();
@@ -80,7 +81,7 @@ class MessageServiceTest {
         message.setTime(LocalDateTime.now());
         doNothing().when(messageRepository).persist(message);
 
-        Message response = messageService.writeMessage(message.getMessage(), user1.getUsername(), user2.getId());
+        Message response = messageService.writeMessage(message.getMessage(), user1.getId(), user2.getId());
 
         assertEquals(message.getMessage(), response.getMessage());
         assertEquals(message.getSender().getId(), response.getSender().getId());
@@ -91,21 +92,21 @@ class MessageServiceTest {
 
     @Test
     void writeMessageShouldThrowInvalidInfoExceptionWhenMessageIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage(null, user2.getUsername(),user1.getId()));
+        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage(null, user2.getId(),user1.getId()));
     }
 
     @Test
     void writeMessageShouldThrowInvalidInfoExceptionWhenMessageIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("", user2.getUsername(),user1.getId()));
+        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("", user2.getId(),user1.getId()));
     }
 
     @Test
-    void writeMessageShouldThrowInvalidInfoExceptionWhenUsernameIsNull() {
+    void writeMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
         assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("some message", null, user1.getId()));
     }
 
     @Test
-    void writeMessageShouldThrowInvalidInfoExceptionWhenUsernameIsEmpty() {
+    void writeMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsEmpty() {
         assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("some message", "", user1.getId()));
     }
 
@@ -150,13 +151,13 @@ class MessageServiceTest {
                 message2.getTime().toString()
         );
 
-        when(userRepository.findByUsername(user1.getUsername())).thenReturn(user1);
+        when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(messageRepository.getMessages(user2.getId(), user1.getId(), 1, 10))
                 .thenReturn(messages);
         when(messageConverter.convertToModel(message1)).thenReturn(messageDto1);
         when(messageConverter.convertToModel(message2)).thenReturn(messageDto2);
 
-        List<MessageDto> response = messageService.getMessages(user2.getId(), user1.getUsername(), 0, 10);
+        List<MessageDto> response = messageService.getMessages(user2.getId(), user1.getId(), 0, 10);
 
         assertEquals(messages.size(), response.size());
     }
@@ -176,12 +177,12 @@ class MessageServiceTest {
 
         GroupUser groupUser = new GroupUser(UUID.randomUUID().toString(), group, user2, false, true);
 
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId())).thenReturn(groupUser);
         when(userRepository.findById(user2.getId())).thenReturn(user2);
         doNothing().when(messageRepository).persist(message);
 
-        Message response = messageService.messageGroup(message.getMessage(), group.getName(), user2.getId());
+        Message response = messageService.messageGroup(message.getMessage(), group.getId(), user2.getId());
 
         assertEquals(message.getMessage(), response.getMessage());
         assertEquals(message.getSender().getId(), response.getSender().getId());
@@ -201,12 +202,12 @@ class MessageServiceTest {
     }
 
     @Test
-    void messageGroupShouldThrowInvalidInfoExceptionWhenGroupNameIsEmpty() {
+    void messageGroupShouldThrowInvalidInfoExceptionWhenGroupIdIsEmpty() {
         assertThrows(InvalidInfoException.class, () -> messageService.messageGroup("some message", "", user1.getId()));
     }
 
     @Test
-    void messageGroupShouldThrowInvalidInfoExceptionWhenGroupNameIsNull() {
+    void messageGroupShouldThrowInvalidInfoExceptionWhenGroupIdIsNull() {
         assertThrows(InvalidInfoException.class, () -> messageService.messageGroup("some message", null, user1.getId()));
     }
 
@@ -216,11 +217,11 @@ class MessageServiceTest {
         group.setId(UUID.randomUUID().toString());
         group.setName("group");
 
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(null);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.messageGroup("some message", "group", user1.getId()));
+        assertThrows(InvalidRoleException.class, () -> messageService.messageGroup("some message", group.getId(), user1.getId()));
     }
 
     @Test
@@ -236,11 +237,11 @@ class MessageServiceTest {
         groupUser.setIsCreator(false);
         groupUser.setIsMember(false);
 
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.messageGroup("some message", "group", user1.getId()));
+        assertThrows(InvalidRoleException.class, () -> messageService.messageGroup("some message", group.getId(), user1.getId()));
     }
 
     @Test
@@ -288,7 +289,7 @@ class MessageServiceTest {
                 message2.getTime().toString()
         );
 
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(
                         new GroupUser(
@@ -302,7 +303,7 @@ class MessageServiceTest {
         when(groupMessageConverter.convertToModel(message1)).thenReturn(messageDto1);
         when(groupMessageConverter.convertToModel(message2)).thenReturn(messageDto2);
 
-        List<GroupMessageDto> response = messageService.getGroupMessages(group.getName(), user2.getId(), 0, 2);
+        List<GroupMessageDto> response = messageService.getGroupMessages(group.getId(), user2.getId(), 0, 2);
 
         assertEquals(messages.size(), response.size());
     }
@@ -320,20 +321,20 @@ class MessageServiceTest {
         groupUser.setIsCreator(false);
         groupUser.setIsMember(false);
 
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.getGroupMessages(group.getName(), user1.getId(), 0, 10));
+        assertThrows(InvalidRoleException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
     }
 
     @Test
-    void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupNameIsNull() {
+    void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupIdIsNull() {
         assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages(null, user1.getId(), 0, 10));
     }
 
     @Test
-    void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupNameIsEmpty() {
+    void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupIdIsEmpty() {
         assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages("", user1.getId(), 0, 10));
     }
 }
