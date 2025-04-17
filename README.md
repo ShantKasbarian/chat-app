@@ -122,10 +122,10 @@ To create tables in your database execute the following scripts in this exact or
     Response:
         String similar to this "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0ODAwMCIsInVwbiI6IkNvYmxlcG90IiwidXNlcklkIjoiMiIsImdyb3VwcyI6WyJ1c2VyIl0sImV4cCI6MTc0MDY1MjU1MCwiaWF0IjoxNzQwNjQ4OTUwLCJqdGkiOiIxYj"
         
-    http://localhost:your-port/user/{username}/add/contact
+    http://localhost:your-port/user/{userId}/add/contact
     Method: POST
     Description: Allows user to add another user to their contacts list
-    Payload: String username: "your-friend-username"
+    Payload: String userId: "your-friend-userId"
     Response:
         {
             "id": "6550ce1e-5874-4b26-83c5-86f906beec2e",
@@ -138,8 +138,16 @@ To create tables in your database execute the following scripts in this exact or
     Description: Allows user to check contacts their contacts
     Response:
         [
-            "contact1-username",
-            "contact2-username"
+            {
+                "id": "aaaa58fa-c5d1-42e8-aa48-a964e676a440",
+                "userId": "2d8d1c70-d8ae-4c97-917f-a4edf0a479f5",
+                "username": "username1"
+            },
+            {
+                "id": "bbba58fa-c5d1-42e8-aa48-a964e676a440",
+                "userId": "3d9d1c70-d8ae-4c97-917f-a4edf0a479f5",
+                "username": "username2"
+            }
         ]
         
     http://localhost:your-port/user/{username}/search
@@ -147,9 +155,15 @@ To create tables in your database execute the following scripts in this exact or
     Description: Allows user to search for users by username
     Payload: String username: "username"
     Response:
-        [
-            "username1",
-            "username2"
+        [            
+            {
+                "id": "d6df32ab-25dd-4691-934e-f1727b2ebcf6",
+                "username": "username1"
+            },
+            {
+                "id": "bdebb3c1-7b88-4dd5-b5db-3258c6a44fc2",
+                "username": "username2"
+            }
         ]
     
     http://localhost:your-port/group/create
@@ -163,52 +177,88 @@ To create tables in your database execute the following scripts in this exact or
     Response:
         {
             "id": "4b61c427-1936-46be-bd2a-a8a9e4ec4e33",
-            "name": "groupName",
-            "creators": [creators]
+            "name": "groupName"
         }
     
-    http://localhost:your-port/group/{groupName}/join
+    http://localhost:your-port/group/{groupId}/join
     Method: POST  
     Description: Allows user to join a group as a member
-    Payload: String groupName: "your-group-name"
+    Payload: String groupId: "your-group-id"
     Response:
-        String "request to join group has been submitted, 
-            waiting for one of the group creators to accept" 
+        {
+            "id": "f013d0c6-edc8-45f7-ad66-ddb6bb75907b",
+            "groupId": "3ece348c-e2f1-466d-ae6f-578827e356dd",
+            "groupName": "groupName",
+            "userId": "bdebb3c1-7b88-4dd5-b5db-3258c6a44fc2",
+            "username": "username",
+            "isMember": false,
+            "isCreator": false
+        }
      
-    http://localhost:your-port/group/{groupName}/leave
+    http://localhost:your-port/group/{groupId}/leave
     Method: DELETE
     Description: Allows user to leave a group
-    Payload: String groupName: "your-group-name"
+    Payload: String groupId: "your-group-id"
     
-    http://localhost:your-port/group/{groupName}/waiting/users
+    http://localhost:your-port/group/{groupId}/waiting/users
     Method: GET
-    Payload: String groupName: "your-groupName"
+    Payload: String groupId: "your-groupId"
     Description: Allows creators of the group to check pending join requests
     Response:
         [
-            "username1",
-            "username2"
+            {
+                "id": "f013d0c6-edc8-45f7-ad66-ddb6bb75907b",
+                "groupId": "3ece348c-e2f1-466d-ae6f-578827e356dd",
+                "groupName": "groupName",
+                "userId": "bdebb3c1-7b88-4dd5-b5db-3258c6a44fc2",
+                "username": "username1",
+                "isMember": false,
+                "isCreator": false
+            },
+            {
+                "id": "fl17d0c6-edc8-45f7-ad66-ddb6bb75907b",
+                "groupId": "3ece348c-e2f1-466d-ae6f-578827e356dd",
+                "groupName": "groupName",
+                "userId": "bdebb3c1-7b88-4dd5-b5db-3258c6a44fc2",
+                "username": "username2",
+                "isMember": false,
+                "isCreator": false
+            }
         ]
     
-    http://localhost:your-port/group/{groupName}/accept/user/{username}
+    http://localhost:your-port/group/{groupId}/accept/user/{userId}
     Method: PUT
     Description: Allows creators of the group to accept a join group request
-    Payload: String groupName: "groupName", String username: "username"
+    Payload: String groupId: "groupId", String userId: "userId"
     Response:
-        String "user has been accepted"
+        {
+            "id": "f013d0c6-edc8-45f7-ad66-ddb6bb75907b",
+            "groupId": "3ece348c-e2f1-466d-ae6f-578827e356dd",
+            "groupName": "gr1",
+            "userId": "bdebb3c1-7b88-4dd5-b5db-3258c6a44fc2",
+            "username": "username",
+            "isMember": true,
+            "isCreator": false
+        }
     
-    http://localhost:your-port/group/{groupName}/reject/user/{username}
+    http://localhost:your-port/group/{groupId}/reject/user/{userId}
     Method: DELETE
     Description: Allows creators of the group to reject a join group request
-    Payload: String groupName: "groupName", String username: "username"
+    Payload: String groupId: "groupId", String userId: "userId"
     
     http://localhost:your-port/group/joined
     Method: GET
     Description: Allows user to check joined groups
     Response:
         [
-            "groupName1",
-            "groupName2"
+            {
+                "id": "3ece348c-e2f1-466d-ae6f-578827e356dd",
+                "name": "groupName1"
+            },
+            {
+                "id": "66702469-fa49-4ab1-b103-1d5caab51c7a",
+                "name": "groupName2"
+            }
         ]
 
     http://localhost:your-port/message/send
@@ -217,7 +267,7 @@ To create tables in your database execute the following scripts in this exact or
     Payload:
         {
             "message": "your-message",
-            "receiverUsername": "username"
+            "receiverId": "receiver-id"
         }
     Response
         {
@@ -230,10 +280,10 @@ To create tables in your database execute the following scripts in this exact or
             "time": "sent time in dd-MM-yyyy HH:mm:ss fromat"
         }
 
-    http://localhost:your-port/message/{username}
+    http://localhost:your-port/message/{userId}
     Method: GET
     Description: Allows user to check sent and received messages from another user
-    Payload: String username: "username"
+    Payload: String userId: "userId"
     Response:
         [
             {
@@ -244,7 +294,7 @@ To create tables in your database execute the following scripts in this exact or
                 "recipientUsername": "recipientUsername",
                 "message": "some message",
                 "time": "sent time in dd-MM-yyyy HH:mm:ss fromat"
-            }
+            },
             {
                 "messageId": "d8b4956c-f37b-449e-9c0c-6152cd6d9685",
                 "senderId": "2d8d1c70-d8ae-4c97-917f-a4edf0a479f5",
@@ -262,7 +312,7 @@ To create tables in your database execute the following scripts in this exact or
     Payload:
         {
             "message": "message",
-            "groupName": "group-name"
+            "groupId": "group-id"
         }
     Response: 
         {
@@ -275,10 +325,10 @@ To create tables in your database execute the following scripts in this exact or
                 "time": "sent time in dd-MM-yyyy HH:mm:ss fromat"
         }
     
-    http://localhost:your-port/message/group/{groupName}
+    http://localhost:your-port/message/group/{groupId}
     Method: GET
     Description: Allows user to check group messages
-    Payload: String groupName: "group-name"
+    Payload: String groupId: "group-id"
     Response:
         [
             {
@@ -306,8 +356,14 @@ To create tables in your database execute the following scripts in this exact or
     Payload: String groupName: "group-name"
     Response:
         [
-            "group-name1",
-            "group-name2"
+            {
+                "id": "3ece348c-e2f1-466d-ae6f-578827e356dd",
+                "name": "groupName1 matching the inputed pattern"
+            },
+            {
+                "id": "66702469-fa49-4ab1-b103-1d5caab51c7a",
+                "name": "groupName2 matching the inputed pattern"
+            }
         ]
 
     
