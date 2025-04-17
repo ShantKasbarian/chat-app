@@ -20,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -99,7 +100,7 @@ class GroupServiceTest {
 
         when(userRepository.findById(user1.getId())).thenReturn(user1);
 
-        when(userRepository.findByUsername(user2.getUsername())).thenReturn(user2);
+        when(userRepository.findById(user2.getId())).thenReturn(user2);
 
         groupUser1.setIsCreator(true);
         groupUser1.setIsMember(true);
@@ -110,7 +111,7 @@ class GroupServiceTest {
 
         doNothing().when(groupUserRepository).persist(groupUsers);
 
-        Group response = groupService.createGroup(group, new String[]{user2.getUsername()}, user1.getId());
+        Group response = groupService.createGroup(group, new String[]{user2.getId()}, user1.getId());
 
         assertEquals(group.getId(), response.getId());
         assertEquals(group.getName(), response.getName());
@@ -143,37 +144,38 @@ class GroupServiceTest {
 
     @Test
     void joinGroup() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(null);
 
         doNothing().when(groupUserRepository).persist(groupUser1);
 
-        String expected = "request to join group has been submitted, waiting for one of the group creators to accept";
-        String response = groupService.joinGroup(group.getName(), user1.getId());
+        GroupUser response = groupService.joinGroup(group.getId(), user1.getId());
 
-        assertEquals(expected, response);
+        assertNotNull(response);
+        assertEquals(group.getId(), response.getGroup().getId());
+        assertEquals(user1.getId(), response.getUser().getId());
         verify(groupUserRepository, times(1)).persist(any(GroupUser.class));
     }
 
     @Test
     void joinGroupShouldThrowUnableToJoinGroupException() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId())).thenReturn(groupUser1);
 
-        assertThrows(UnableToJoinGroupException.class, () -> groupService.joinGroup(group.getName(), user1.getId()));
+        assertThrows(UnableToJoinGroupException.class, () -> groupService.joinGroup(group.getId(), user1.getId()));
     }
 
     @Test
     void leaveGroup() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser1);
         doNothing().when(groupUserRepository).delete(groupUser1);
 
-        String response = groupService.leaveGroup(group.getName(), user1.getId());
+        String response = groupService.leaveGroup(group.getId(), user1.getId());
 
         assertEquals("you left the group", response);
         verify(groupUserRepository, times(1)).delete(groupUser1);
@@ -181,56 +183,56 @@ class GroupServiceTest {
 
     @Test
     void acceptToGroup() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
 
-        when(userRepository.findByUsername(user1.getUsername())).thenReturn(user1);
+        when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser1);
 
         when(entityManager.merge(groupUser1)).thenReturn(groupUser1);
 
-        String expected = "user has been accepted";
-        String response = groupService.acceptToGroup(group.getName(), user2.getId(), user1.getUsername());
+        GroupUser response = groupService.acceptToGroup(group.getId(), user2.getId(), user1.getId());
 
-        assertEquals(expected, response);
+        assertNotNull(response);
+        assertEquals(groupUser1.getId(), response.getId());
         verify(entityManager, times(1)).merge(groupUser1);
     }
 
     @Test
     void acceptToGroupShouldThrowInvalidRoleException() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user3.getId()))
                 .thenReturn(groupUser3);
 
-        assertThrows(InvalidRoleException.class, () -> groupService.acceptToGroup(group.getName(), user3.getId(), user1.getUsername()));
+        assertThrows(InvalidRoleException.class, () -> groupService.acceptToGroup(group.getId(), user3.getId(), user1.getId()));
     }
 
     @Test
     void acceptToGroupShouldThrowUnableToJoinGroupExceptionWithUserAlreadyMember() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
-        when(userRepository.findByUsername(user3.getUsername())).thenReturn(user3);
+        when(userRepository.findById(user3.getId())).thenReturn(user3);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user3.getId()))
                 .thenReturn(groupUser3);
 
-        assertThrows(UnableToJoinGroupException.class, () -> groupService.acceptToGroup(group.getName(), user2.getId(), user3.getUsername()));
+        assertThrows(UnableToJoinGroupException.class, () -> groupService.acceptToGroup(group.getId(), user2.getId(), user3.getId()));
     }
 
     @Test
     void rejectFromEnteringGroup() {
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
-        when(userRepository.findByUsername(user1.getName())).thenReturn(user1);
+        when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser1);
         doNothing().when(groupUserRepository).delete(groupUser1);
 
         String expected = "user has been rejected";
-        String response = groupService.rejectFromEnteringGroup(group.getName(), user2.getId(), user1.getUsername());
+        String response = groupService.rejectFromEnteringGroup(group.getId(), user2.getId(), user1.getId());
 
         assertEquals(expected, response);
         verify(groupUserRepository, times(1)).delete(groupUser1);
@@ -241,13 +243,14 @@ class GroupServiceTest {
         List<GroupUser> users = new ArrayList<>();
         users.add(groupUser1);
 
-        when(groupRepository.findByName(group.getName())).thenReturn(group);
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
         when(groupUserRepository.getWaitingUsers(group.getId())).thenReturn(users);
 
-        List<String> response = groupService.getWaitingUsers(group.getName(), user2.getId());
+        List<GroupUser> response = groupService.getWaitingUsers(group.getId(), user2.getId());
 
+        assertNotNull(response);
         assertEquals(users.size(), response.size());
     }
 
@@ -258,7 +261,7 @@ class GroupServiceTest {
         when(groupUserRepository.getUserGroups(user2.getId()))
                 .thenReturn(groups);
 
-        List<String> response = groupService.getUserJoinedGroups(user2.getId());
+        List<Group> response = groupService.getUserJoinedGroups(user2.getId());
 
         assertEquals(groups.size(), response.size());
     }
@@ -273,8 +276,9 @@ class GroupServiceTest {
 
         when(groupRepository.getGroups("gr")).thenReturn(groups);
 
-        List<String> response = groupService.getGroups("gr");
+        List<Group> response = groupService.getGroups("gr");
 
+        assertNotNull(response);
         assertEquals(groups.size(), response.size());
     }
 }

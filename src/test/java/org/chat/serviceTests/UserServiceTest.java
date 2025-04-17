@@ -51,7 +51,7 @@ class UserServiceTest {
         contacts.add(new Contact(UUID.randomUUID().toString(), user2, user1));
 
         when(contactRepository.getContacts(user2.getId())).thenReturn(contacts);
-        List<String> response = userService.getContacts(user2.getId());
+        List<Contact> response = userService.getContacts(user2.getId());
 
         assertEquals(contacts.size(), response.size());
     }
@@ -59,12 +59,12 @@ class UserServiceTest {
     @Test
     void addContact() {
         when(userRepository.findById(user1.getId())).thenReturn(user1);
-        when(userRepository.findByUsername(user2.getUsername())).thenReturn(user2);
+        when(userRepository.findById(user2.getId())).thenReturn(user2);
 
         Contact contact = new Contact(UUID.randomUUID().toString(), user1, user2);
         doNothing().when(contactRepository).persist(contact);
 
-        Contact response = userService.addContact(user1.getId(), user2.getUsername());
+        Contact response = userService.addContact(user1.getId(), user2.getId());
 
         assertEquals(user1.getId(), response.getUser().getId());
         assertEquals(user2.getId(), response.getContact().getId());
@@ -72,12 +72,12 @@ class UserServiceTest {
     }
 
     @Test
-    void addContactShouldThrowInvalidInfoExceptionWhenRecipientNameIsNull() {
+    void addContactShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
         assertThrows(InvalidInfoException.class, () -> userService.addContact(user1.getId(), null));
     }
 
     @Test
-    void addContactShouldThrowInvalidInfoExceptionWhenRecipientNameIsEmpty() {
+    void addContactShouldThrowInvalidInfoExceptionWhenRecipientIdIsEmpty() {
         assertThrows(InvalidInfoException.class, () -> userService.addContact(user1.getId(), ""));
     }
 
@@ -89,8 +89,9 @@ class UserServiceTest {
 
         when(userRepository.searchByUsername("u")).thenReturn(users);
 
-        List<String> response = userService.searchUserByUsername("u");
+        List<User> response = userService.searchUserByUsername("u");
 
+        assertNotNull(response);
         assertEquals(users.size(), response.size());
     }
 }

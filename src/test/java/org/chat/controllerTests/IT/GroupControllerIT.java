@@ -1,4 +1,4 @@
-package org.chat.controllerTests;
+package org.chat.controllerTests.IT;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -9,9 +9,12 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.chat.config.JwtService;
 import org.chat.controllers.GroupController;
 import org.chat.converters.GroupConverter;
+import org.chat.converters.GroupUserConverter;
 import org.chat.entities.Group;
+import org.chat.entities.GroupUser;
 import org.chat.entities.User;
 import org.chat.models.GroupDto;
+import org.chat.models.GroupUserDto;
 import org.chat.services.GroupService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @QuarkusTest
-class GroupControllerTest {
+class GroupControllerIT {
     @Inject
     private GroupController groupController;
 
@@ -43,11 +46,20 @@ class GroupControllerTest {
     @Inject
     private JwtService jwtService;
 
+    @InjectMock
+    private GroupUserConverter groupUserConverter;
+
     private Group group;
 
     private GroupDto groupDto;
 
     private User user;
+
+    private User user2;
+
+    private GroupUser groupUser;
+
+    private GroupUserDto groupUserDto;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +68,12 @@ class GroupControllerTest {
         user.setUsername("username");
         user.setPassword("Password123+");
 
+        user2 = new User();
+        user2.setId(UUID.randomUUID().toString());
+        user2.setUsername("username2");
+        user2.setPassword("Password123+");
+
+
         group = new Group();
         group.setId(UUID.randomUUID().toString());
         group.setName("group");
@@ -63,6 +81,18 @@ class GroupControllerTest {
         groupDto = new GroupDto();
         groupDto.setId(group.getId());
         groupDto.setName(group.getName());
+
+        groupUser = new GroupUser(UUID.randomUUID().toString(), group, user2, true, false);
+        groupUserDto =
+                new GroupUserDto(
+                        groupUser.getId(),
+                        groupUser.getGroup().getId(),
+                        groupUser.getGroup().getName(),
+                        groupUser.getUser().getId(),
+                        groupUser.getUser().getUsername(),
+                        groupUser.getIsCreator(),
+                        groupUser.getIsMember()
+                );
     }
 
     @Test
@@ -85,8 +115,9 @@ class GroupControllerTest {
 
     @Test
     void joinGroup() {
-        when(groupService.joinGroup(group.getName(), user.getId()))
-                .thenReturn("request to join group has been submitted, waiting for one of the group creators to accept");
+        when(groupUserConverter.convertToModel(groupUser)).thenReturn(groupUserDto);
+        when(groupService.joinGroup(group.getId(), user.getId()))
+                .thenReturn(new GroupUser());
 
         String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
 
@@ -101,7 +132,7 @@ class GroupControllerTest {
 
     @Test
     void leaveGroup() {
-        when(groupService.leaveGroup(group.getName(), user.getId()))
+        when(groupService.leaveGroup(group.getId(), user.getId()))
                 .thenReturn("you left the group");
 
         String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
@@ -110,15 +141,16 @@ class GroupControllerTest {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .delete("/group/"+ group.getName() + "/leave")
+                .delete("/group/"+ group.getId() + "/leave")
                 .then()
                 .statusCode(204);
     }
 
     @Test
     void acceptUserToGroup() {
-        when(groupService.acceptToGroup(group.getName(), user.getId(), "username"))
-                .thenReturn("user has been accepted");
+        when(groupUserConverter.convertToModel(groupUser)).thenReturn(groupUserDto);
+        when(groupService.acceptToGroup(group.getId(), user.getId(), user2.getId()))
+                .thenReturn(groupUser);
 
         String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
 
@@ -126,7 +158,7 @@ class GroupControllerTest {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .put("/group/"+ group.getName() + "/accept/user/" + user.getUsername())
+                .put("/group/"+ group.getId() + "/accept/user/" + user2.getId())
                 .then()
                 .statusCode(200);
     }
@@ -142,19 +174,19 @@ class GroupControllerTest {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .delete("/group/"+ group.getName() + "/reject/user/" + user.getUsername())
+                .delete("/group/"+ group.getId() + "/reject/user/" + user2.getId())
                 .then()
                 .statusCode(204);
     }
 
     @Test
     void getWaitingUsers() {
-        List<String> users = new ArrayList<>();
-        users.add("user1");
-        users.add("user2");
-        users.add("user3");
+        List<GroupUser> users = new ArrayList<>();
+        users.add(new GroupUser());
+        users.add(new GroupUser());
+        users.add(new GroupUser());
 
-        when(groupService.getWaitingUsers(group.getName(), user.getId()))
+        when(groupService.getWaitingUsers(group.getId(), user.getId()))
                 .thenReturn(users);
 
         String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
@@ -163,17 +195,17 @@ class GroupControllerTest {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .get("/group/"+ group.getName() + "/waiting/users")
+                .get("/group/"+ group.getId() + "/waiting/users")
                 .then()
                 .statusCode(200);
     }
 
     @Test
     void getJoinedGroups() {
-        List<String> groups = new ArrayList<>();
-        groups.add("group1");
-        groups.add("group2");
-        groups.add("group3");
+        List<Group> groups = new ArrayList<>();
+        groups.add(new Group());
+        groups.add(new Group());
+        groups.add(new Group());
 
         when(groupService.getUserJoinedGroups(user.getId()))
                 .thenReturn(groups);
@@ -191,10 +223,10 @@ class GroupControllerTest {
 
     @Test
     void getGroups() {
-        List<String> groups = new ArrayList<>();
-        groups.add("group1");
-        groups.add("group2");
-        groups.add("group3");
+        List<Group> groups = new ArrayList<>();
+        groups.add(new Group());
+        groups.add(new Group());
+        groups.add(new Group());
 
         when(groupService.getGroups("g"))
                 .thenReturn(groups);

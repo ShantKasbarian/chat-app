@@ -2,6 +2,7 @@ package org.chat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.chat.converters.GroupMessageConverter;
 import org.chat.converters.MessageConverter;
 import org.chat.entities.Group;
@@ -10,6 +11,7 @@ import org.chat.entities.Message;
 import org.chat.entities.User;
 import org.chat.exceptions.InvalidInfoException;
 import org.chat.exceptions.InvalidRoleException;
+import org.chat.exceptions.ResourceNotFoundException;
 import org.chat.models.GroupMessageDto;
 import org.chat.models.MessageDto;
 import org.chat.repositories.GroupRepository;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
+@RequiredArgsConstructor
 public class MessageService {
     private final MessageRepository messageRepository;
 
@@ -35,33 +38,17 @@ public class MessageService {
 
     private final GroupMessageConverter groupMessageConverter;
 
-    public MessageService(
-            MessageRepository messageRepository,
-            UserRepository userRepository,
-            GroupRepository groupRepository,
-            GroupUserRepository groupUserRepository,
-            MessageConverter messageConverter,
-            GroupMessageConverter groupMessageConverter
-    ) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-        this.groupRepository = groupRepository;
-        this.groupUserRepository = groupUserRepository;
-        this.messageConverter = messageConverter;
-        this.groupMessageConverter = groupMessageConverter;
-    }
-
     @Transactional
-    public Message writeMessage(String content, String recipientUsername, String currentUserId) {
+    public Message writeMessage(String content, String recipientId, String currentUserId) {
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
 
-        if (recipientUsername == null || recipientUsername.isEmpty()) {
+        if (recipientId == null || recipientId.isEmpty()) {
             throw new InvalidInfoException("username not specified");
         }
 
-        User recipient = userRepository.findByUsername(recipientUsername);
+        User recipient = userRepository.findById(recipientId);
         User sender = userRepository.findById(currentUserId);
 
         Message message = new Message();
@@ -75,30 +62,31 @@ public class MessageService {
         return message;
     }
 
-    public List<MessageDto> getMessages(String userId, String recipientUsername, int page, int size) {
+    public List<MessageDto> getMessages(String userId, String recipientId, int page, int size) {
         if (page == 0) {
             page = 1;
         }
 
-        User recipient = userRepository.findByUsername(recipientUsername);
+        User recipient = userRepository.findById(recipientId);
 
-        return messageRepository.getMessages(userId, recipient.getId(), page, size)
+        return messageRepository.getMessages(userId, recipientId, page, size)
                         .stream()
                         .map(messageConverter::convertToModel)
                         .toList();
     }
 
     @Transactional
-    public Message messageGroup(String content, String groupName, String senderId) {
+    public Message messageGroup(String content, String groupId, String senderId) {
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException("Message is empty");
         }
 
-        if (groupName == null || groupName.isEmpty()) {
-            throw new InvalidInfoException("group name not specified");
+        if (groupId == null || groupId.isEmpty()) {
+            throw new InvalidInfoException("group id not specified");
         }
 
-        Group group = groupRepository.findByName(groupName);
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("group not found"));
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), senderId);
 
         if (groupUser == null || !groupUser.getIsMember()) {
@@ -116,8 +104,8 @@ public class MessageService {
         return message;
     }
 
-    public List<GroupMessageDto> getGroupMessages(String groupName, String userId, int page, int size) {
-        if (groupName == null || groupName.isEmpty()) {
+    public List<GroupMessageDto> getGroupMessages(String groupId, String userId, int page, int size) {
+        if (groupId == null || groupId.isEmpty()) {
             throw new InvalidInfoException("group name not specified");
         }
 
@@ -125,14 +113,15 @@ public class MessageService {
             page = 1;
         }
 
-        Group group = groupRepository.findByName(groupName);
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("group not found"));
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId);
 
         if (!groupUser.getIsMember()) {
             throw new InvalidRoleException("you're not in group");
         }
 
-        return messageRepository.getGroupMessages(group.getId(), page, size)
+        return messageRepository.getGroupMessages(groupId, page, size)
                 .stream()
                 .map(groupMessageConverter::convertToModel)
                 .toList();
