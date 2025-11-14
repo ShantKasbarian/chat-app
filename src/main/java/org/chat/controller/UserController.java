@@ -11,7 +11,7 @@ import org.chat.converter.ContactConverter;
 import org.chat.converter.UserConverter;
 import org.chat.model.ContactDto;
 import org.chat.model.UserDto;
-import org.chat.service.UserService;
+import org.chat.service.impl.UserServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
@@ -25,7 +25,7 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Authenticated
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
     @Context
     private final SecurityContext securityContext;

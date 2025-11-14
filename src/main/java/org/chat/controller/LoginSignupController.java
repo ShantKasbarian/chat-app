@@ -9,14 +9,14 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.chat.model.UserDto;
-import org.chat.service.LoginSignupService;
+import org.chat.service.impl.AuthenticationServiceImpl;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor
 public class LoginSignupController {
-    private final LoginSignupService loginSignupService;
+    private final AuthenticationServiceImpl loginSignupService;
 
     @Path("/login")
     @PermitAll

@@ -15,7 +15,7 @@ import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.model.GroupMessageDto;
 import org.chat.model.MessageDto;
-import org.chat.service.MessageService;
+import org.chat.service.impl.MessageServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ class MessageControllerIT {
     private MessageController messageController;
 
     @InjectMock
-    private MessageService messageService;
+    private MessageServiceImpl messageService;
 
     @InjectMock
     private MessageConverter messageConverter;

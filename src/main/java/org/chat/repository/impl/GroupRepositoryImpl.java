@@ -18,6 +18,8 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     private static final String GET_GROUPS_BY_NAME = "from Group g where upper(g.name) like upper(:" + GROUP_NAME_PARAMETER + ")";
 
+    private static final String NAME_COLUMN = "name";
+
     private final EntityManager entityManager;
 
     @Override
@@ -27,6 +29,17 @@ public class GroupRepositoryImpl implements GroupRepository {
         Optional<Group> group = Optional.of(entityManager.find(Group.class, id));
 
         log.debug("fetched group with id {}", id);
+
+        return group;
+    }
+
+    @Override
+    public Optional<Group> findByName(String name) {
+        log.debug("fetching group with name {}", name);
+
+        Optional<Group> group = Optional.of(find(NAME_COLUMN, name).firstResult());
+
+        log.debug("fetched group with name {}", name);
 
         return group;
     }

@@ -5,7 +5,7 @@ import org.chat.entity.User;
 import org.chat.exception.InvalidInfoException;
 import org.chat.repository.impl.ContactRepositoryImpl;
 import org.chat.repository.impl.UserRepositoryImpl;
-import org.chat.service.UserService;
+import org.chat.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -19,9 +19,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class UserServiceTest {
+class UserServiceImplTest {
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Mock
     private UserRepositoryImpl userRepository;

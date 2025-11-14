@@ -11,7 +11,7 @@ import org.chat.converter.GroupMessageConverter;
 import org.chat.converter.MessageConverter;
 import org.chat.model.GroupMessageDto;
 import org.chat.model.MessageDto;
-import org.chat.service.MessageService;
+import org.chat.service.impl.MessageServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
@@ -25,7 +25,7 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Authenticated
 @RequiredArgsConstructor
 public class MessageController {
-    private final MessageService messageService;
+    private final MessageServiceImpl messageService;
 
     private final MessageConverter messageConverter;
 

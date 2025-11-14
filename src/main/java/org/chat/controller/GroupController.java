@@ -11,7 +11,7 @@ import org.chat.converter.GroupConverter;
 import org.chat.converter.GroupUserConverter;
 import org.chat.model.GroupDto;
 import org.chat.model.GroupUserDto;
-import org.chat.service.GroupService;
+import org.chat.service.impl.GroupServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
@@ -25,7 +25,7 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Authenticated
 @RequiredArgsConstructor
 public class GroupController {
-    private final GroupService groupService;
+    private final GroupServiceImpl groupService;
 
     private final GroupConverter groupConverter;
 

@@ -11,7 +11,7 @@ import org.chat.exception.UnableToJoinGroupException;
 import org.chat.repository.impl.GroupRepositoryImpl;
 import org.chat.repository.impl.GroupUserRepositoryImpl;
 import org.chat.repository.impl.UserRepositoryImpl;
-import org.chat.service.GroupService;
+import org.chat.service.impl.GroupServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -27,9 +27,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class GroupServiceTest {
+class GroupServiceImplTest {
     @InjectMocks
-    private GroupService groupService;
+    private GroupServiceImpl groupService;
 
     @Mock
     private GroupRepositoryImpl groupRepository;

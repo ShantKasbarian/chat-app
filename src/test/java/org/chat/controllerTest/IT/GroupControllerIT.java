@@ -15,7 +15,7 @@ import org.chat.entity.GroupUser;
 import org.chat.entity.User;
 import org.chat.model.GroupDto;
 import org.chat.model.GroupUserDto;
-import org.chat.service.GroupService;
+import org.chat.service.impl.GroupServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class GroupControllerIT {
     private GroupController groupController;
 
     @InjectMock
-    private GroupService groupService;
+    private GroupServiceImpl groupService;
 
     @InjectMock
     private GroupConverter groupConverter;

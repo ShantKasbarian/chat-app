@@ -14,7 +14,7 @@ import org.chat.repository.impl.GroupRepositoryImpl;
 import org.chat.repository.impl.GroupUserRepositoryImpl;
 import org.chat.repository.impl.MessageRepositoryImpl;
 import org.chat.repository.impl.UserRepositoryImpl;
-import org.chat.service.MessageService;
+import org.chat.service.impl.MessageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -30,9 +30,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class MessageServiceTest {
+class MessageServiceImplTest {
     @InjectMocks
-    private MessageService messageService;
+    private MessageServiceImpl messageService;
 
     @Mock
     private MessageRepositoryImpl messageRepository;

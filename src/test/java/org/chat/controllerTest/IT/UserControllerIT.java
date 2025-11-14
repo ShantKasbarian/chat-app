@@ -14,7 +14,7 @@ import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.model.ContactDto;
 import org.chat.model.UserDto;
-import org.chat.service.UserService;
+import org.chat.service.impl.UserServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class UserControllerIT {
     private UserController userController;
 
     @InjectMock
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @InjectMock
     private SecurityContext securityContext;

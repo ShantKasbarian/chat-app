@@ -8,7 +8,7 @@ import jakarta.inject.Inject;
 import org.chat.controller.LoginSignupController;
 import org.chat.entity.User;
 import org.chat.model.UserDto;
-import org.chat.service.LoginSignupService;
+import org.chat.service.impl.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,7 +21,7 @@ class LoginSignupControllerIT {
     private LoginSignupController loginSignupController;
 
     @InjectMock
-    private LoginSignupService loginSignupService;
+    private AuthenticationServiceImpl loginSignupService;
 
     private User user;
 

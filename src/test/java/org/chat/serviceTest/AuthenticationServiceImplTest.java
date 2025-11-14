@@ -5,7 +5,7 @@ import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
 import org.chat.repository.impl.UserRepositoryImpl;
-import org.chat.service.LoginSignupService;
+import org.chat.service.impl.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -19,9 +19,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class LoginSignupServiceTest {
+class AuthenticationServiceImplTest {
     @InjectMocks
-    private LoginSignupService loginSignupService;
+    private AuthenticationServiceImpl loginSignupService;
 
     @Mock
     private UserRepositoryImpl userRepository;
