@@ -11,50 +11,43 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
     public Response toResponse(Throwable throwable) {
         switch (throwable) {
             case InvalidCredentialsException e -> {
-                return Response
-                        .status(Response.Status.UNAUTHORIZED)
+                return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(e.getMessage())
                         .build();
             }
 
             case InvalidRoleException e -> {
-                return Response
-                        .status(Response.Status.FORBIDDEN)
+                return Response.status(Response.Status.FORBIDDEN)
                         .entity(e.getMessage())
                         .build();
             }
 
             case ResourceNotFoundException e -> {
-                return Response
-                        .status(Response.Status.NOT_FOUND)
+                return Response.status(Response.Status.NOT_FOUND)
                         .entity(e.getMessage())
                         .build();
             }
 
             case InvalidGroupException e -> {
-                return Response
-                        .status(Response.Status.BAD_REQUEST)
+                return Response.status(Response.Status.BAD_REQUEST)
                         .entity(e.getMessage())
                         .build();
             }
 
             case InvalidInfoException e -> {
-                return Response
-                        .status(Response.Status.BAD_REQUEST)
+                return Response.status(Response.Status.BAD_REQUEST)
                         .entity(e.getMessage())
                         .build();
             }
 
             case UnableToJoinGroupException e -> {
-                return Response
-                        .status(Response.Status.CONFLICT)
+                return Response.status(Response.Status.CONFLICT)
                         .entity(e.getMessage())
                         .build();
             }
 
             default -> {
-                return Response
-                        .status(Response.Status.INTERNAL_SERVER_ERROR)
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                         .entity(throwable.getMessage())
                         .build();
             }

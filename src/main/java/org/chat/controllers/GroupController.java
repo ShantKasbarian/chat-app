@@ -17,6 +17,8 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
 
+import static org.chat.config.JwtService.USER_ID_CLAIM;
+
 @Path("/group")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -43,7 +45,7 @@ public class GroupController {
                 groupService.createGroup(
                     groupConverter.convertToEntity(groupDto),
                     groupDto.getCreators(),
-                    token.getClaim("userId")
+                    token.getClaim(USER_ID_CLAIM)
                 )
         );
     }
@@ -54,7 +56,7 @@ public class GroupController {
     @Transactional
     public GroupUserDto joinGroup(@PathParam("groupId") String groupId) {
         return groupUserConverter.convertToModel(
-                groupService.joinGroup(groupId, token.getClaim("userId"))
+                groupService.joinGroup(groupId, token.getClaim(USER_ID_CLAIM))
         );
     }
 
@@ -63,7 +65,7 @@ public class GroupController {
     @ResponseStatus(204)
     @Transactional
     public String leaveGroup(@PathParam("groupId") String groupId) {
-        return groupService.leaveGroup(groupId, token.getClaim("userId"));
+        return groupService.leaveGroup(groupId, token.getClaim(USER_ID_CLAIM));
     }
 
     @PUT
@@ -77,7 +79,7 @@ public class GroupController {
         return groupUserConverter.convertToModel(
                 groupService.acceptToGroup(
                     groupId,
-                    token.getClaim("userId"),
+                    token.getClaim(USER_ID_CLAIM),
                     userId
                 )
         );
@@ -93,7 +95,7 @@ public class GroupController {
     ) {
         return groupService.rejectFromEnteringGroup(
                 groupId,
-                token.getClaim("userId"),
+                token.getClaim(USER_ID_CLAIM),
                 userId
         );
     }
@@ -101,10 +103,8 @@ public class GroupController {
     @GET
     @Path("/{groupId}/waiting/users")
     @ResponseStatus(200)
-    public List<GroupUserDto> getWaitingUsers(
-            @PathParam("groupId") String groupId
-    ) {
-        return groupService.getWaitingUsers(groupId, token.getClaim("userId"))
+    public List<GroupUserDto> getWaitingUsers(@PathParam("groupId") String groupId) {
+        return groupService.getWaitingUsers(groupId, token.getClaim(USER_ID_CLAIM))
                 .stream()
                 .map(groupUserConverter::convertToModel)
                 .toList();
@@ -114,7 +114,7 @@ public class GroupController {
     @Path("/joined")
     @ResponseStatus(200)
     public List<GroupDto> getJoinedGroups() {
-        return groupService.getUserJoinedGroups(token.getClaim("userId"))
+        return groupService.getUserJoinedGroups(token.getClaim(USER_ID_CLAIM))
                 .stream()
                 .map(groupConverter::convertToModel)
                 .toList();

@@ -18,6 +18,8 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
 
+import static org.chat.config.JwtService.USER_ID_CLAIM;
+
 @Path("/user")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -41,7 +43,7 @@ public class UserController {
     @Transactional
     public ContactDto addContact(@PathParam("userId") String userId) {
         return contactConverter.convertToModel(
-                userService.addContact(token.getClaim("userId"), userId)
+                userService.addContact(token.getClaim(USER_ID_CLAIM), userId)
         );
     }
 
@@ -49,7 +51,7 @@ public class UserController {
     @Path("/contacts")
     @ResponseStatus(200)
     public List<ContactDto> getContacts() {
-        return userService.getContacts(token.getClaim("userId"))
+        return userService.getContacts(token.getClaim(USER_ID_CLAIM))
                 .stream()
                 .map(contactConverter::convertToModel)
                 .toList();

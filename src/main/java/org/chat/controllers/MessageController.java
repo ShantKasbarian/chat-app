@@ -17,6 +17,8 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
 
+import static org.chat.config.JwtService.USER_ID_CLAIM;
+
 @Path("/message")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -43,7 +45,7 @@ public class MessageController {
                 messageService.writeMessage(
                     messageDto.message(),
                     messageDto.recipientId(),
-                    token.getClaim("userId")
+                    token.getClaim(USER_ID_CLAIM)
                 )
         );
     }
@@ -57,7 +59,7 @@ public class MessageController {
             @QueryParam("size") @DefaultValue("10") int size
 
     ) {
-        return messageService.getMessages(token.getClaim("userId"), userId, page, size);
+        return messageService.getMessages(token.getClaim(USER_ID_CLAIM), userId, page, size);
     }
 
     @POST
@@ -69,7 +71,7 @@ public class MessageController {
                 messageService.messageGroup(
                     messageDto.message(),
                     messageDto.groupId(),
-                    token.getClaim("userId")
+                    token.getClaim(USER_ID_CLAIM)
                 )
         );
     }
@@ -82,6 +84,6 @@ public class MessageController {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        return messageService.getGroupMessages(groupId, token.getClaim("userId"), page, size);
+        return messageService.getGroupMessages(groupId, token.getClaim(USER_ID_CLAIM), page, size);
     }
 }
