@@ -3,16 +3,18 @@ package org.chat.repositoryTest;
 import com.google.inject.Inject;
 import io.quarkus.test.junit.QuarkusTest;
 import org.chat.entity.User;
+import org.chat.repository.impl.ContactRepositoryImpl;
+import org.chat.repository.impl.UserRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-class ContactRepositoryTest {
+class ContactRepositoryImplTest {
     @Inject
-    private ContactRepository contactRepository;
+    private ContactRepositoryImpl contactRepository;
 
     @Inject
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     private User user1;
 

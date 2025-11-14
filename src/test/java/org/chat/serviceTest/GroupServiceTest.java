@@ -8,9 +8,9 @@ import org.chat.entity.User;
 import org.chat.exception.InvalidGroupException;
 import org.chat.exception.InvalidRoleException;
 import org.chat.exception.UnableToJoinGroupException;
-import org.chat.repository.GroupRepository;
-import org.chat.repository.GroupUserRepository;
-import org.chat.repository.UserRepository;
+import org.chat.repository.impl.GroupRepositoryImpl;
+import org.chat.repository.impl.GroupUserRepositoryImpl;
+import org.chat.repository.impl.UserRepositoryImpl;
 import org.chat.service.GroupService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,13 +32,13 @@ class GroupServiceTest {
     private GroupService groupService;
 
     @Mock
-    private GroupRepository groupRepository;
+    private GroupRepositoryImpl groupRepository;
 
     @Mock
-    private GroupUserRepository groupUserRepository;
+    private GroupUserRepositoryImpl groupUserRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Mock
     private EntityManager entityManager;

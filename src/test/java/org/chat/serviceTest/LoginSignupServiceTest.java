@@ -4,7 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
-import org.chat.repository.UserRepository;
+import org.chat.repository.impl.UserRepositoryImpl;
 import org.chat.service.LoginSignupService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class LoginSignupServiceTest {
     private LoginSignupService loginSignupService;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Mock
     private JwtService jwtService;

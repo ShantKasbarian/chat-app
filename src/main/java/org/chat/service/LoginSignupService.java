@@ -2,6 +2,7 @@ package org.chat.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
@@ -13,18 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
+@RequiredArgsConstructor
 public class LoginSignupService {
     private final UserRepository userRepository;
 
     private final JwtService jwtService;
-
-    public LoginSignupService(
-            UserRepository userRepository,
-            JwtService jwtService
-    ) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-    }
 
     public String login(String username, String password) {
         User user = userRepository.findByUsername(username);

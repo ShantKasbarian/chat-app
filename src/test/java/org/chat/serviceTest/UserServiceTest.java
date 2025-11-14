@@ -3,8 +3,8 @@ package org.chat.serviceTest;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.exception.InvalidInfoException;
-import org.chat.repository.ContactRepository;
-import org.chat.repository.UserRepository;
+import org.chat.repository.impl.ContactRepositoryImpl;
+import org.chat.repository.impl.UserRepositoryImpl;
 import org.chat.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,10 +24,10 @@ class UserServiceTest {
     private UserService userService;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Mock
-    private ContactRepository contactRepository;
+    private ContactRepositoryImpl contactRepository;
 
     private User user1;
 
