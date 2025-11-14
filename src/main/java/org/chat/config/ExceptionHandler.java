@@ -3,7 +3,7 @@ package org.chat.config;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import org.chat.exceptions.*;
+import org.chat.exception.*;
 
 @Provider
 public class ExceptionHandler implements ExceptionMapper<Throwable> {

@@ -1,0 +1,132 @@
+package org.chat.controller;
+
+import io.quarkus.security.Authenticated;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.SecurityContext;
+import lombok.RequiredArgsConstructor;
+import org.chat.converter.GroupConverter;
+import org.chat.converter.GroupUserConverter;
+import org.chat.model.GroupDto;
+import org.chat.model.GroupUserDto;
+import org.chat.service.GroupService;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.resteasy.reactive.ResponseStatus;
+
+import java.util.List;
+
+import static org.chat.config.JwtService.USER_ID_CLAIM;
+
+@Path("/group")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Authenticated
+@RequiredArgsConstructor
+public class GroupController {
+    private final GroupService groupService;
+
+    private final GroupConverter groupConverter;
+
+    @Context
+    private final SecurityContext securityContext;
+
+    private final JsonWebToken token;
+
+    private final GroupUserConverter groupUserConverter;
+
+    @POST
+    @Path("/create")
+    @ResponseStatus(201)
+    @Transactional
+    public GroupDto create(GroupDto groupDto) {
+        return groupConverter.convertToModel(
+                groupService.createGroup(
+                    groupConverter.convertToEntity(groupDto),
+                    groupDto.getCreators(),
+                    token.getClaim(USER_ID_CLAIM)
+                )
+        );
+    }
+
+    @POST
+    @Path("/{groupId}/join")
+    @ResponseStatus(201)
+    @Transactional
+    public GroupUserDto joinGroup(@PathParam("groupId") String groupId) {
+        return groupUserConverter.convertToModel(
+                groupService.joinGroup(groupId, token.getClaim(USER_ID_CLAIM))
+        );
+    }
+
+    @DELETE
+    @Path("/{groupId}/leave")
+    @ResponseStatus(204)
+    @Transactional
+    public String leaveGroup(@PathParam("groupId") String groupId) {
+        return groupService.leaveGroup(groupId, token.getClaim(USER_ID_CLAIM));
+    }
+
+    @PUT
+    @Path("/{groupId}/accept/user/{userId}")
+    @ResponseStatus(200)
+    @Transactional
+    public GroupUserDto acceptUserToGroup(
+            @PathParam("groupId") String groupId,
+            @PathParam("userId") String userId
+    ) {
+        return groupUserConverter.convertToModel(
+                groupService.acceptToGroup(
+                    groupId,
+                    token.getClaim(USER_ID_CLAIM),
+                    userId
+                )
+        );
+    }
+
+    @DELETE
+    @Path("/{groupId}/reject/user/{userId}")
+    @ResponseStatus(204)
+    @Transactional
+    public String rejectUserFromGroup(
+            @PathParam("groupId") String groupId,
+            @PathParam("userId") String userId
+    ) {
+        return groupService.rejectFromEnteringGroup(
+                groupId,
+                token.getClaim(USER_ID_CLAIM),
+                userId
+        );
+    }
+
+    @GET
+    @Path("/{groupId}/waiting/users")
+    @ResponseStatus(200)
+    public List<GroupUserDto> getWaitingUsers(@PathParam("groupId") String groupId) {
+        return groupService.getWaitingUsers(groupId, token.getClaim(USER_ID_CLAIM))
+                .stream()
+                .map(groupUserConverter::convertToModel)
+                .toList();
+    }
+
+    @GET
+    @Path("/joined")
+    @ResponseStatus(200)
+    public List<GroupDto> getJoinedGroups() {
+        return groupService.getUserJoinedGroups(token.getClaim(USER_ID_CLAIM))
+                .stream()
+                .map(groupConverter::convertToModel)
+                .toList();
+    }
+
+    @GET
+    @Path("/{groupName}/search")
+    @ResponseStatus(200)
+    public List<GroupDto> getGroups(@PathParam("groupName") String groupName) {
+        return groupService.getGroups(groupName)
+                .stream()
+                .map(groupConverter::convertToModel)
+                .toList();
+    }
+}
