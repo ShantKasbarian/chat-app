@@ -26,12 +26,12 @@ public class AuthenticationController {
     @POST
     public Response login(UserDto userDto) {
         log.info("/auth/login with POST called");
-        var response = Response.ok(authenticationService.login(userDto.username(), userDto.password()))
-                .build();
+
+        var tokenDto = authenticationService.login(userDto.username(), userDto.password());
 
         log.info("/auth/login with POST is returning a {}", TokenDto.class.getName());
 
-        return response;
+        return Response.ok(tokenDto).build();
     }
 
     @Path("/signup")
@@ -40,12 +40,12 @@ public class AuthenticationController {
     public Response signup(UserDto userDto) {
         log.info("/auth/signup with POST called");
 
-        var response = Response.status(Response.Status.CREATED)
-                .entity(authenticationService.createUser(userDto.username(), userDto.password()))
-                .build();
+        var tokenDto = authenticationService.createUser(userDto.username(), userDto.password());
 
         log.info("/auth/signup with POST is returning a {}", TokenDto.class.getName());
 
-        return response;
+        return Response.status(Response.Status.CREATED)
+                .entity(tokenDto)
+                .build();
     }
 }

@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,141 +44,134 @@ public class GroupController {
     private final ToModelConverter<GroupUserDto, GroupUser> groupUserToModelConverter;
 
     @POST
-    @ResponseStatus(201)
     @Transactional
-    public GroupDto create(GroupDto groupDto) {
+    public Response create(GroupDto groupDto) {
         log.info("/groups with POST called");
 
-        var response = groupToModelConverter.convertToModel(
+        var group = groupToModelConverter.convertToModel(
                 groupService.createGroup(
-                    groupDtoToEntityConverter.convertToEntity(groupDto),
-                    groupDto.getCreators(),
-                    token.getClaim(USER_ID_CLAIM)
+                        groupDtoToEntityConverter.convertToEntity(groupDto),
+                        groupDto.getCreators(),
+                        token.getClaim(USER_ID_CLAIM)
                 )
         );
 
         log.info("/groups with POST returning a {}", GroupDto.class.getName());
 
-        return response;
+        return Response.status(Response.Status.CREATED)
+                .entity(group)
+                .build();
     }
 
     @POST
     @Path("/{groupId}/join")
     @ResponseStatus(201)
     @Transactional
-    public GroupUserDto joinGroup(@PathParam("groupId") String groupId) {
+    public Response joinGroup(@PathParam("groupId") String groupId) {
         log.info("/groups/{groupId}/join with POST called");
 
-        var response = groupUserToModelConverter.convertToModel(
+        var groupUserDto = groupUserToModelConverter.convertToModel(
                 groupService.joinGroup(groupId, token.getClaim(USER_ID_CLAIM))
         );
 
         log.info("/groups/{groupId}/join with POST returning a {}", GroupUserDto.class.getName());
 
-        return response;
+        return Response.status(Response.Status.CREATED)
+                .entity(groupUserDto)
+                .build();
     }
 
     @DELETE
     @Path("/{groupId}/leave")
     @ResponseStatus(204)
     @Transactional
-    public String leaveGroup(@PathParam("groupId") String groupId) {
+    public void leaveGroup(@PathParam("groupId") String groupId) {
         log.info("/groups/{groupId}/leave with DELETE called");
 
-        var response = groupService.leaveGroup(groupId, token.getClaim(USER_ID_CLAIM));
+        groupService.leaveGroup(groupId, token.getClaim(USER_ID_CLAIM));
 
         log.info("/groups/{groupId}/leave with DELETE user left group");
-
-        return response;
     }
 
     @PUT
     @Path("/{groupId}/accept/user/{userId}")
-    @ResponseStatus(200)
     @Transactional
-    public GroupUserDto acceptUserToGroup(
+    public Response acceptUserToGroup(
             @PathParam("groupId") String groupId,
             @PathParam("userId") String userId
     ) {
         log.info("/groups/{groupId}/accept/user/{userId} with PUT called");
 
-        var response = groupUserToModelConverter.convertToModel(
+        var groupUserDto = groupUserToModelConverter.convertToModel(
                 groupService.acceptToGroup(
-                    groupId,
-                    token.getClaim(USER_ID_CLAIM),
-                    userId
+                    groupId, token.getClaim(USER_ID_CLAIM), userId
                 )
         );
 
         log.info("/groups/{groupId}/accept/user/{userId} with PUT returning a {}", GroupUserDto.class.getName());
 
-        return response;
+        return Response.ok(groupUserDto).build();
     }
 
     @DELETE
     @Path("/{groupId}/reject/user/{userId}")
     @ResponseStatus(204)
     @Transactional
-    public String rejectUserFromGroup(
+    public void rejectUserFromGroup(
             @PathParam("groupId") String groupId,
             @PathParam("userId") String userId
     ) {
         log.info("/groups/{groupId}/reject/user/{userId} with DELETE called");
 
-        var response = groupService.rejectFromEnteringGroup(
+        groupService.rejectFromEnteringGroup(
                 groupId, token.getClaim(USER_ID_CLAIM), userId
         );
 
         log.info("/groups/{groupId}/reject/user/{userId} with DELETE returning a response");
-
-        return response;
     }
 
     @GET
     @Path("/{groupId}/waiting/users")
-    @ResponseStatus(200)
-    public List<GroupUserDto> getWaitingUsers(@PathParam("groupId") String groupId) {
+    public Response getWaitingUsers(@PathParam("groupId") String groupId) {
         log.info("/groups/{groupId}/waiting/users with GET called");
 
-        var response = groupService.getWaitingUsers(groupId, token.getClaim(USER_ID_CLAIM))
+        var users = groupService.getWaitingUsers(groupId, token.getClaim(USER_ID_CLAIM))
                 .stream()
                 .map(groupUserToModelConverter::convertToModel)
                 .toList();
 
         log.info("/groups/{groupId}/waiting/users with GET returning a {} of {}", List.class.getName(), GroupUserDto.class);
 
-        return response;
+        return Response.ok(users).build();
     }
 
     @GET
     @Path("/joined")
-    @ResponseStatus(200)
-    public List<GroupDto> getJoinedGroups() {
+    public Response getJoinedGroups() {
         log.info("/groups/joined with GET called");
 
-        var response = groupService.getUserJoinedGroups(token.getClaim(USER_ID_CLAIM))
+        var groups = groupService.getUserJoinedGroups(token.getClaim(USER_ID_CLAIM))
                 .stream()
                 .map(groupToModelConverter::convertToModel)
                 .toList();
 
         log.info("/groups/joined with GET returning a {} of {}", List.class.getName(), GroupDto.class.getName());
 
-        return response;
+        return Response.ok(groups).build();
     }
 
     @GET
-    @Path("/{groupName}/search")
-    @ResponseStatus(200)
-    public List<GroupDto> getGroups(@PathParam("groupName") String groupName) {
+    @Path("/{groupName}")
+    public Response getGroups(@PathParam("groupName") String groupName) {
         log.info("/groups/{groupName}/search with GET called");
 
-        var response = groupService.getGroups(groupName)
+        var groups = groupService.getGroups(groupName)
                 .stream()
                 .map(groupToModelConverter::convertToModel)
                 .toList();
 
         log.info("/groups/{groupName}/search with GET returning a {} of {}", List.class.getName(), GroupDto.class.getName());
 
-        return response;
+        return Response.ok(groups).build();
     }
 }

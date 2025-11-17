@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,6 @@ import org.chat.model.ContactDto;
 import org.chat.model.UserDto;
 import org.chat.service.impl.UserServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
 
@@ -40,9 +40,8 @@ public class UserController {
 
     @POST
     @Path("/{userId}/contact")
-    @ResponseStatus(201)
     @Transactional
-    public ContactDto addContact(@PathParam("userId") String userId) {
+    public Response addContact(@PathParam("userId") String userId) {
         log.info("/users/{userId}/contact with POST called");
 
         var contact = contactConverter.convertToModel(
@@ -51,13 +50,14 @@ public class UserController {
 
         log.info("/users/{userId}/contact with POST returning a {}", ContactDto.class.getName());
 
-        return contact;
+        return Response.status(Response.Status.CREATED)
+                .entity(contact)
+                .build();
     }
 
     @GET
     @Path("/contacts")
-    @ResponseStatus(200)
-    public List<ContactDto> getContacts() {
+    public Response getContacts() {
         log.info("/users/contacts with GET called");
 
         var contacts = userService.getContacts(token.getClaim(USER_ID_CLAIM))
@@ -67,13 +67,12 @@ public class UserController {
 
         log.info("/users/contacts returning a {} of {}", List.class.getName(), ContactDto.class.getName());
 
-        return contacts;
+        return Response.ok(contacts).build();
     }
 
     @GET
     @Path("/{username}")
-    @ResponseStatus(200)
-    public List<UserDto> searchUserByUsername(@PathParam("username") String username) {
+    public Response searchUserByUsername(@PathParam("username") String username) {
         log.info("/users/{username} with GET called");
 
         var users = userService.searchUserByUsername(username)
@@ -82,6 +81,6 @@ public class UserController {
 
         log.info("/users/{username} with GET returning a {} of {}", List.class.getName(), UserDto.class.getName());
 
-        return users;
+        return Response.ok(users).build();
     }
 }

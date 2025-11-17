@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +43,8 @@ public class MessageController {
     private final JsonWebToken token;
 
     @POST
-    @ResponseStatus(201)
     @Transactional
-    public MessageDto sendMessage(MessageDto messageDto) {
+    public Response sendMessage(MessageDto messageDto) {
         log.info("/messages with POST called");
 
         var message = messageConverter.convertToModel(
@@ -57,13 +57,14 @@ public class MessageController {
 
         log.info("/messages with POST returning a {}", MessageDto.class.getName());
 
-        return message;
+        return Response.status(Response.Status.CREATED)
+                .entity(message)
+                .build();
     }
 
     @GET
     @Path("/{userId}")
-    @ResponseStatus(200)
-    public List<MessageDto> getMessages(
+    public Response getMessages(
             @PathParam("userId") String userId,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
@@ -75,14 +76,13 @@ public class MessageController {
 
         log.info("/messages/{userId} returning a {} of {}", List.class.getName(), MessageDto.class.getName());
 
-        return messages;
+        return Response.ok(messages).build();
     }
 
     @POST
-    @ResponseStatus(201)
     @Path("/group")
     @Transactional
-    public GroupMessageDto messageGroup(GroupMessageDto messageDto) {
+    public Response messageGroup(GroupMessageDto messageDto) {
         log.info("/messages/group with POST called");
 
         var message = groupMessageConverter.convertToModel(
@@ -95,13 +95,14 @@ public class MessageController {
 
         log.info("/messages/group returning a {}", MessageDto.class.getName());
 
-        return message;
+        return Response.status(Response.Status.CREATED)
+                .entity(message)
+                .build();
     }
 
     @GET
-    @ResponseStatus(200)
     @Path("/group/{groupId}")
-    public List<GroupMessageDto> getGroupMessages(
+    public Response getGroupMessages(
             @PathParam("groupId") String groupId,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
@@ -112,6 +113,6 @@ public class MessageController {
 
         log.info("/messages/group/{groupId} with GET returning a {} of {}", List.class.getName(), GroupMessageDto.class.getName());
 
-        return messages;
+        return Response.ok(messages).build();
     }
 }

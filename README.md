@@ -97,7 +97,7 @@ To create tables in your database execute the following scripts in this exact or
     )
 
 ```endpoints:
-    http://localhost:your-port/auth/signup
+    http://localhost:8080/auth/signup
     Method: POST
     Description: Allows new user to create an account
     Payload:
@@ -111,7 +111,7 @@ To create tables in your database execute the following scripts in this exact or
     note: username must be unique and password must include
     at least 1 uppercase, 1 lowercase, 1 number, 1 special character
 
-    http://localhost:your-port/auth/login
+    http://localhost:8080/auth/login
     Method: POST
     Description: Allows user to login
     Payload:
@@ -122,7 +122,7 @@ To create tables in your database execute the following scripts in this exact or
     Response:
         String similar to this "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0ODAwMCIsInVwbiI6IkNvYmxlcG90IiwidXNlcklkIjoiMiIsImdyb3VwcyI6WyJ1c2VyIl0sImV4cCI6MTc0MDY1MjU1MCwiaWF0IjoxNzQwNjQ4OTUwLCJqdGkiOiIxYj"
         
-    http://localhost:your-port/user/{userId}/add/contact
+    http://localhost:8080/users/{userId}/contact
     Method: POST
     Description: Allows user to add another user to their contacts list
     Payload: String userId: "your-friend-userId"
@@ -133,7 +133,7 @@ To create tables in your database execute the following scripts in this exact or
             "username": "username"
         }
 
-    http://localhost:your-port/user/contacts
+    http://localhost:8080/users/contacts
     Method: GET
     Description: Allows user to check contacts their contacts
     Response:
@@ -150,7 +150,7 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
         
-    http://localhost:your-port/user/{username}/search
+    http://localhost:8080/users/{username}
     Method: GET
     Description: Allows user to search for users by username
     Payload: String username: "username"
@@ -166,7 +166,7 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
     
-    http://localhost:your-port/group/create
+    http://localhost:8080/groups
     Method: POST
     Description: Allows user create a group to chat with multiple other users
     Payload:
@@ -180,7 +180,7 @@ To create tables in your database execute the following scripts in this exact or
             "name": "groupName"
         }
     
-    http://localhost:your-port/group/{groupId}/join
+    http://localhost:8080/groups/{groupId}/join
     Method: POST  
     Description: Allows user to join a group as a member
     Payload: String groupId: "your-group-id"
@@ -195,12 +195,12 @@ To create tables in your database execute the following scripts in this exact or
             "isCreator": false
         }
      
-    http://localhost:your-port/group/{groupId}/leave
+    http://localhost:8080/groups/{groupId}/leave
     Method: DELETE
     Description: Allows user to leave a group
     Payload: String groupId: "your-group-id"
     
-    http://localhost:your-port/group/{groupId}/waiting/users
+    http://localhost:8080/groups/{groupId}/waiting/users
     Method: GET
     Payload: String groupId: "your-groupId"
     Description: Allows creators of the group to check pending join requests
@@ -226,7 +226,7 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
     
-    http://localhost:your-port/group/{groupId}/accept/user/{userId}
+    http://localhost:8080/groups/{groupId}/accept/user/{userId}
     Method: PUT
     Description: Allows creators of the group to accept a join group request
     Payload: String groupId: "groupId", String userId: "userId"
@@ -241,12 +241,12 @@ To create tables in your database execute the following scripts in this exact or
             "isCreator": false
         }
     
-    http://localhost:your-port/group/{groupId}/reject/user/{userId}
+    http://localhost:8080/groups/{groupId}/reject/user/{userId}
     Method: DELETE
     Description: Allows creators of the group to reject a join group request
     Payload: String groupId: "groupId", String userId: "userId"
     
-    http://localhost:your-port/group/joined
+    http://localhost:8080/groups/joined
     Method: GET
     Description: Allows user to check joined groups
     Response:
@@ -261,7 +261,7 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
 
-    http://localhost:your-port/message/send
+    http://localhost:8080/messages
     Method: POST
     Description: Allows user to send message to another user
     Payload:
@@ -280,7 +280,7 @@ To create tables in your database execute the following scripts in this exact or
             "time": "sent time in dd-MM-yyyy HH:mm:ss fromat"
         }
 
-    http://localhost:your-port/message/{userId}
+    http://localhost:8080/messages/{userId}
     Method: GET
     Description: Allows user to check sent and received messages from another user
     Payload: String userId: "userId"
@@ -306,7 +306,7 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
     
-    http://localhost:your-port/message/group
+    http://localhost:8080/messages/group
     Method: POST
     Description: Allows a member of the group to send message to other members of the same group
     Payload:
@@ -325,7 +325,7 @@ To create tables in your database execute the following scripts in this exact or
                 "time": "sent time in dd-MM-yyyy HH:mm:ss fromat"
         }
     
-    http://localhost:your-port/message/group/{groupId}
+    http://localhost:8080/messages/group/{groupId}
     Method: GET
     Description: Allows user to check group messages
     Payload: String groupId: "group-id"
@@ -351,7 +351,7 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
     
-    http://localhost:your-port/group/{groupName}/search
+    http://localhost:8080/groups/{groupName}
     Description: Allows user to search for groups
     Payload: String groupName: "group-name"
     Response:
