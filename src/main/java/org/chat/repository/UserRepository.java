@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface UserRepository extends PanacheRepository<User> {
     User findById(String id);
+    boolean existsById(String id);
     User findByUsername(String username);
     List<User> searchByUsername(String username);
 }

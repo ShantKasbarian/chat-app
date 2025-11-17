@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface GroupRepository extends PanacheRepository<Group> {
     Optional<Group> findById(String id);
+    boolean existsById(String id);
     Optional<Group> findByName(String name);
     List<Group> getGroups(String groupName);
 }

@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
+import org.chat.model.TokenDto;
 import org.chat.repository.impl.UserRepositoryImpl;
 import org.chat.service.impl.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class AuthenticationServiceImplTest {
+    private static final String TEST_TOKEN = "test token";
+
     @InjectMocks
     private AuthenticationServiceImpl loginSignupService;
 
@@ -56,9 +59,10 @@ class AuthenticationServiceImplTest {
         when(jwtService.generateToken(user.getUsername(), user.getId()))
                 .thenReturn(expected);
 
-        String response = loginSignupService.login(user.getUsername(), "Password123+");
+        TokenDto response = loginSignupService.login(user.getUsername(), "Password123+");
 
-        assertEquals(expected, response);
+        assertNotNull(response);
+        assertEquals(expected, response.token());
     }
 
     @Test
@@ -72,11 +76,13 @@ class AuthenticationServiceImplTest {
     void createUser() {
         when(userRepository.find("username", user.getUsername()).firstResult()).thenReturn(null);
         doNothing().when(userRepository).persist(user);
+        when(jwtService.generateToken(anyString(), anyString())).thenReturn(TEST_TOKEN);
 
         String expected = "user successfully registered";
-        String response = loginSignupService.createUser(user.getUsername(), user.getPassword());
+        TokenDto response = loginSignupService.createUser(user.getUsername(), user.getPassword());
 
-        assertEquals(expected, response);
+        assertNotNull(response);
+        assertEquals(TEST_TOKEN, response.token());
         verify(userRepository, times(1)).persist(any(User.class));
     }
 

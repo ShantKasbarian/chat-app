@@ -137,8 +137,7 @@ class GroupServiceImplTest {
 
     @Test
     void createGroupShouldThrowInvalidGroupExceptionWithGroupAlreadyExists() {
-        when(groupRepository.find("name", group.getName()).firstResult())
-        .thenReturn(group);
+        when(groupRepository.findByName(group.getName())).thenReturn(Optional.ofNullable(group));
         assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new String[]{}, user1.getId()));
     }
 
@@ -170,7 +169,7 @@ class GroupServiceImplTest {
 
     @Test
     void leaveGroup() {
-        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
+        when(groupRepository.existsById(group.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser1);
         doNothing().when(groupUserRepository).delete(groupUser1);
@@ -187,7 +186,7 @@ class GroupServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
 
-        when(userRepository.findById(user1.getId())).thenReturn(user1);
+        when(userRepository.existsById(user1.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser1);
 
@@ -210,11 +209,11 @@ class GroupServiceImplTest {
     }
 
     @Test
-    void acceptToGroupShouldThrowUnableToJoinGroupExceptionWithUserAlreadyMember() {
+    void acceptToGroupShouldThrowUnableToJoinGroupExceptionWhenUserAlreadyMember() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
-        when(userRepository.findById(user3.getId())).thenReturn(user3);
+        when(userRepository.existsById(user3.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user3.getId()))
                 .thenReturn(groupUser3);
 
@@ -243,7 +242,7 @@ class GroupServiceImplTest {
         List<GroupUser> users = new ArrayList<>();
         users.add(groupUser1);
 
-        when(groupRepository.findById(group.getId())).thenReturn(Optional.ofNullable(group));
+        when(groupRepository.existsById(group.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(groupUser2);
         when(groupUserRepository.getWaitingUsers(group.getId())).thenReturn(users);

@@ -19,7 +19,9 @@ public class UserRepositoryImpl implements UserRepository {
 
     private static final String PATTERN_PARAMETER = "pattern";
 
-    private static final String SEARCH_BY_USERNAME = "from User u where upper(u.username) LIKE upper(:" + PATTERN_PARAMETER + ")";
+    private static final String SEARCH_BY_USERNAME = "FROM User u WHERE UPPER(u.username) LIKE UPPER(:" + PATTERN_PARAMETER + ")";
+
+    private static final String EXISTS_BY_ID_QUERY = "SELECT COUNT(u) = 1 FROM USER u WHERE u.id = :" + ID_PARAMETER;
 
     private final EntityManager entityManager;
 
@@ -36,6 +38,20 @@ public class UserRepositoryImpl implements UserRepository {
         log.debug("fetched user with id {}", id);
 
         return user;
+    }
+
+    @Override
+    public boolean existsById(String id) {
+        log.debug("checking if user with id {} exists", id);
+
+        boolean exists = entityManager
+                .createQuery(EXISTS_BY_ID_QUERY, Boolean.class)
+                .setParameter(ID_PARAMETER, id)
+                .getSingleResult();
+
+        log.debug("checked if user with id {} exists", id);
+
+        return exists;
     }
 
     @Override

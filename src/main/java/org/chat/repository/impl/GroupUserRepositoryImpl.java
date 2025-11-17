@@ -19,11 +19,11 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
 
     private static final String USER_ID_PARAMETER = "userId";
 
-    private static final String GET_GROUP_USER = "from GroupUser gu where gu.group.id = " + GROUP_ID_PARAMETER + " and gu.user.id = :" + USER_ID_PARAMETER;
+    private static final String GET_GROUP_USER = "FROM GroupUser gu WHERE gu.group.id = " + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
 
-    private static final String GET_USERS_WITH_SUBMITTED_REQUEST = "from GroupUser gu where gu.group.id = :" + GROUP_ID_PARAMETER + " and gu.isMember = false";
+    private static final String GET_USERS_WITH_SUBMITTED_REQUEST = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.isMember = false";
 
-    private static final String GET_USER_GROUPS = "from GroupUser gu where gu.user.id = :" + USER_ID_PARAMETER + " and gu.isMember = true";
+    private static final String GET_USER_GROUPS = "FROM GroupUser gu WHERE gu.user.id = :" + USER_ID_PARAMETER + " AND gu.isMember = true";
 
     private final EntityManager entityManager;
 

@@ -19,9 +19,9 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     private static final String GROUP_ID_PARAMETER = "groupId";
 
-    private static final String GET_CURRENT_TARGET_USERS_MESSAGES = "from Message m where m.sender.id =:" + SENDER_ID_PARAMETER +" and m.recipient.id =:" + RECIPIENT_ID_PARAMETER +" or m.sender.id =:" + RECIPIENT_ID_PARAMETER + " and m.recipient.id =:" + SENDER_ID_PARAMETER + " order by m.time DESC";
+    private static final String GET_CURRENT_TARGET_USERS_MESSAGES = "FROM Message m WHERE m.sender.id =:" + SENDER_ID_PARAMETER +" AND m.recipient.id =:" + RECIPIENT_ID_PARAMETER +" or m.sender.id =:" + RECIPIENT_ID_PARAMETER + " AND m.recipient.id =:" + SENDER_ID_PARAMETER + " ORDER BY m.time DESC";
 
-    private static final String GET_GROUP_MESSAGES = "from Message m where m.group.id = :" + GROUP_ID_PARAMETER + " order by m.time DESC";
+    private static final String GET_GROUP_MESSAGES = "FROM Message m WHERE m.group.id = :" + GROUP_ID_PARAMETER + " ORDER BY m.time DESC";
 
     private final EntityManager entityManager;
 

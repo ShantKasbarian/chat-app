@@ -3,9 +3,11 @@ package org.chat.service.impl;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
+import org.chat.model.TokenDto;
 import org.chat.repository.UserRepository;
 import org.chat.service.AuthenticationService;
 import org.mindrot.jbcrypt.BCrypt;
@@ -14,16 +16,15 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@ApplicationScoped
+@Slf4j
 @RequiredArgsConstructor
+@ApplicationScoped
 public class AuthenticationServiceImpl implements AuthenticationService {
     private static final String INVALID_CREDENTIALS_MESSAGE = "Invalid username or password";
 
     private static final String INVALID_USERNAME_MESSAGE = "Invalid username";
 
     private static final String INVALID_PASSWORD_MESSAGE = "Invalid password";
-
-    private static final String SUCCESSFUL_USER_REGISTRATION_MESSAGE = "user successfully registered";
 
     private static final String UPPERCASE_REGEX = "[A-Z]";
 
@@ -38,19 +39,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
 
     @Override
-    public String login(String username, String password) {
+    public TokenDto login(String username, String password) {
+        log.info("authenticating user with username {}", username);
+
         User user = userRepository.findByUsername(username);
 
         if (!BCrypt.checkpw(password, user.getPassword())) {
             throw new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE);
         }
 
-        return jwtService.generateToken(username, user.getId());
+        String token = jwtService.generateToken(username, user.getId());
+
+        log.info("authenticated user with username {}", username);
+
+        return new TokenDto(token);
     }
 
     @Override
     @Transactional
-    public String createUser(String username, String password) {
+    public TokenDto createUser(String username, String password) {
+        log.info("registering user with username {}", username);
+
         if (
                 userRepository.find("username", username).firstResult() != null ||
                 (username.length() < 5 || username.length() > 20) ||
@@ -70,7 +79,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userRepository.persist(user);
 
-        return SUCCESSFUL_USER_REGISTRATION_MESSAGE;
+        log.info("registered user with username {}", username);
+
+        log.info("generating token for user with username {}", username);
+
+        String token = jwtService.generateToken(username, user.getId());
+
+        log.info("generated token for user with username {}", username);
+
+        return new TokenDto(token);
     }
 
     private boolean isPasswordValid(String password) {

@@ -3,6 +3,7 @@ package org.chat.service.impl;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.User;
@@ -14,6 +15,7 @@ import org.chat.service.GroupService;
 
 import java.util.*;
 
+@Slf4j
 @ApplicationScoped
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
@@ -46,6 +48,10 @@ public class GroupServiceImpl implements GroupService {
             throw new InvalidGroupException(INVALID_GROUP_NAME_MESSAGE);
         }
 
+        String groupName = group.getName();
+
+        log.info("creating group with name {}", groupName);
+
         if (creators == null) {
             creators = new String[]{};
         }
@@ -70,12 +76,16 @@ public class GroupServiceImpl implements GroupService {
 
         groupUserRepository.persist(creatorsList);
 
+        log.info("created group with name {}", groupName);
+
         return group;
     }
 
     @Override
     @Transactional
     public GroupUser joinGroup(String groupId, String userId) {
+        log.info("joining group with id {}", groupId);
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
 
@@ -95,22 +105,32 @@ public class GroupServiceImpl implements GroupService {
 
         groupUserRepository.persist(groupUser);
 
+        log.info("joined group with id {}", groupId);
+
         return groupUser;
     }
 
     @Override
     @Transactional
     public String leaveGroup(String groupId, String userId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
+        log.info("leaving group with id {}", groupId);
+
+        if (!groupRepository.existsById(groupId)) {
+            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
+        }
 
         groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(groupId, userId));
+
+        log.info("left group with id {}", groupId);
+
         return SUCCESSFUL_LEAVE_GROUP_MESSAGE;
     }
 
     @Override
     @Transactional
     public GroupUser acceptToGroup(String groupId, String creatorId, String userId) {
+        log.info("accepting member with id {} to group with id {}", userId, groupId);
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
         GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
@@ -119,7 +139,9 @@ public class GroupServiceImpl implements GroupService {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        User recipient = userRepository.findById(userId);
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("user not found");
+        }
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
 
@@ -132,12 +154,16 @@ public class GroupServiceImpl implements GroupService {
 
         groupUserRepository.getEntityManager().merge(groupUser);
 
+        log.info("accepted member with id {} to group with id {}", userId, groupId);
+
         return groupUser;
     }
 
     @Override
     @Transactional
     public String rejectFromEnteringGroup(String groupId, String creatorId, String userId) {
+        log.info("rejecting member with id {} join request to group with id {}", userId, groupId);
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
 
@@ -147,39 +173,61 @@ public class GroupServiceImpl implements GroupService {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        User user = userRepository.findById(userId);
+        if (userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("user not found");
+        }
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId);
         groupUserRepository.delete(groupUser);
+
+        log.info("rejected member with id {} join request to group with id {}", userId, groupId);
 
         return USER_REJECTION_MESSAGE;
     }
 
     @Override
     public List<GroupUser> getWaitingUsers(String groupId, String creatorId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
-        GroupUser creator =
-                groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
+        log.info("fetching join requests of group with id {}", groupId);
+
+        if (!groupRepository.existsById(groupId)) {
+            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
+        }
+
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupId, creatorId);
 
         if (!creator.getIsCreator()) {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        return groupUserRepository
-                .getWaitingUsers(group.getId());
+        var users = groupUserRepository.getWaitingUsers(groupId);
+
+        log.info("fetched join requests of group with id {}", groupId);
+
+        return users;
     }
 
     @Override
     public List<Group> getUserJoinedGroups(String userId) {
-        return groupUserRepository.getUserGroups(userId)
+        log.info("fetching joined groups of user with id {}", userId);
+
+        var groups = groupUserRepository.getUserGroups(userId)
                 .stream()
                 .map(GroupUser::getGroup)
                 .toList();
+
+        log.info("fetched joined groups of user with id {}", userId);
+
+        return groups;
     }
 
     @Override
     public List<Group> getGroups(String groupName) {
-        return groupRepository.getGroups(groupName);
+        log.info("fetching groups with name {}", groupName);
+
+        var groups = groupRepository.getGroups(groupName);
+
+        log.info("fetched groups with name {}", groupName);
+
+        return groups;
     }
 }

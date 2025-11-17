@@ -15,7 +15,7 @@ import java.util.List;
 public class ContactRepositoryImpl implements ContactRepository {
     private final static String USER_ID_PARAMETER = "userId";
 
-    private final static String GET_USER_CONTACTS = "from Contact c where c.user.id = :" + USER_ID_PARAMETER;
+    private final static String GET_USER_CONTACTS = "FROM Contact c WHERE c.user.id = :" + USER_ID_PARAMETER;
 
     private final EntityManager entityManager;
 

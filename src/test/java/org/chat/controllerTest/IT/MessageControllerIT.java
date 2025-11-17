@@ -108,7 +108,7 @@ class MessageControllerIT {
     @Test
     void sendMessage() {
         when(messageConverter.convertToModel(message)).thenReturn(messageDto);
-        when(messageService.writeMessage(message.getMessage(), recipient.getUsername(), sender.getId()))
+        when(messageService.sendMessage(message.getMessage(), recipient.getUsername(), sender.getId()))
                 .thenReturn(message);
 
         String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());

@@ -69,7 +69,7 @@ class MessageServiceImplTest {
     }
 
     @Test
-    void writeMessage() {
+    void sendMessage() {
         when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(userRepository.findById(user2.getId())).thenReturn(user2);
 
@@ -81,7 +81,7 @@ class MessageServiceImplTest {
         message.setTime(LocalDateTime.now());
         doNothing().when(messageRepository).persist(message);
 
-        Message response = messageService.writeMessage(message.getMessage(), user1.getId(), user2.getId());
+        Message response = messageService.sendMessage(message.getMessage(), user1.getId(), user2.getId());
 
         assertEquals(message.getMessage(), response.getMessage());
         assertEquals(message.getSender().getId(), response.getSender().getId());
@@ -91,23 +91,23 @@ class MessageServiceImplTest {
     }
 
     @Test
-    void writeMessageShouldThrowInvalidInfoExceptionWhenMessageIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage(null, user2.getId(),user1.getId()));
+    void sendMessageShouldThrowInvalidInfoExceptionWhenMessageIsNull() {
+        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage(null, user2.getId(),user1.getId()));
     }
 
     @Test
-    void writeMessageShouldThrowInvalidInfoExceptionWhenMessageIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("", user2.getId(),user1.getId()));
+    void sendMessageShouldThrowInvalidInfoExceptionWhenMessageIsEmpty() {
+        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage("", user2.getId(),user1.getId()));
     }
 
     @Test
-    void writeMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("some message", null, user1.getId()));
+    void sendMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
+        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage("some message", null, user1.getId()));
     }
 
     @Test
-    void writeMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> messageService.writeMessage("some message", "", user1.getId()));
+    void sendMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsEmpty() {
+        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage("some message", "", user1.getId()));
     }
 
     @Test
@@ -289,7 +289,7 @@ class MessageServiceImplTest {
                 message2.getTime().toString()
         );
 
-        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        when(groupRepository.existsById(group.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId()))
                 .thenReturn(
                         new GroupUser(
@@ -321,7 +321,7 @@ class MessageServiceImplTest {
         groupUser.setIsCreator(false);
         groupUser.setIsMember(false);
 
-        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        when(groupRepository.existsById(group.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser);
 

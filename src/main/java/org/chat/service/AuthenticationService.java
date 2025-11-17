@@ -1,6 +1,8 @@
 package org.chat.service;
 
+import org.chat.model.TokenDto;
+
 public interface AuthenticationService {
-    String login(String username, String password);
-    String createUser(String username, String password);
+    TokenDto login(String username, String password);
+    TokenDto createUser(String username, String password);
 }

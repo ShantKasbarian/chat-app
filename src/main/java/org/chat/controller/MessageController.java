@@ -42,7 +42,7 @@ public class MessageController {
     @Transactional
     public MessageDto sendMessage(MessageDto messageDto) {
         return messageConverter.convertToModel(
-                messageService.writeMessage(
+                messageService.sendMessage(
                     messageDto.message(),
                     messageDto.recipientId(),
                     token.getClaim(USER_ID_CLAIM)

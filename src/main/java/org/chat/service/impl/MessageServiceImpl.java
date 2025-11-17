@@ -3,6 +3,7 @@ package org.chat.service.impl;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMessageConverter;
 import org.chat.converter.MessageConverter;
 import org.chat.entity.Group;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @ApplicationScoped
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
@@ -51,7 +53,9 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public Message writeMessage(String content, String recipientId, String currentUserId) {
+    public Message sendMessage(String content, String recipientId, String currentUserId) {
+        log.info("sending message to user with id {}", recipientId);
+
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException(EMPTY_MESSAGE);
         }
@@ -71,26 +75,35 @@ public class MessageServiceImpl implements MessageService {
         message.setTime(LocalDateTime.now());
 
         messageRepository.persist(message);
+
+        log.info("sent message to user with id {}", recipientId);
+
         return message;
     }
 
     @Override
     public List<MessageDto> getMessages(String userId, String recipientId, int page, int size) {
+        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
+
         if (page == 0) {
             page = 1;
         }
 
-        User recipient = userRepository.findById(recipientId);
-
-        return messageRepository.getMessages(userId, recipientId, page, size)
+        var messages = messageRepository.getMessages(userId, recipientId, page, size)
                         .stream()
                         .map(messageConverter::convertToModel)
                         .toList();
+
+        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
+
+        return messages;
     }
 
     @Override
     @Transactional
     public Message messageGroup(String content, String groupId, String senderId) {
+        log.info("sending message to group with id {}", groupId);
+
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException(EMPTY_MESSAGE);
         }
@@ -101,7 +114,8 @@ public class MessageServiceImpl implements MessageService {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), senderId);
+
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, senderId);
 
         if (groupUser == null || !groupUser.getIsMember()) {
             throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
@@ -115,11 +129,16 @@ public class MessageServiceImpl implements MessageService {
         message.setTime(LocalDateTime.now());
 
         messageRepository.persist(message);
+
+        log.info("sent message to group with id {}", groupId);
+
         return message;
     }
 
     @Override
     public List<GroupMessageDto> getGroupMessages(String groupId, String userId, int page, int size) {
+        log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
+
         if (groupId == null || groupId.isEmpty()) {
             throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
         }
@@ -128,17 +147,23 @@ public class MessageServiceImpl implements MessageService {
             page = 1;
         }
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
+        if (!groupRepository.existsById(groupId)) {
+            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
+        }
+
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId);
 
         if (!groupUser.getIsMember()) {
             throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        return messageRepository.getGroupMessages(groupId, page, size)
+        var messages = messageRepository.getGroupMessages(groupId, page, size)
                 .stream()
                 .map(groupMessageConverter::convertToModel)
                 .toList();
+
+        log.info("fetched messages of group with id {}, page {} and size {}", groupId, page, size);
+
+        return messages;
     }
 }

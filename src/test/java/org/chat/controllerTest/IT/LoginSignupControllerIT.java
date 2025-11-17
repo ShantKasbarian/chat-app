@@ -7,6 +7,7 @@ import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import org.chat.controller.LoginSignupController;
 import org.chat.entity.User;
+import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
 import org.chat.service.impl.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,8 @@ import java.util.UUID;
 
 @QuarkusTest
 class LoginSignupControllerIT {
+    private static final String TEST_TOKEN = "test token";
+
     @Inject
     private LoginSignupController loginSignupController;
 
@@ -40,7 +43,7 @@ class LoginSignupControllerIT {
     @Test
     void login() {
         Mockito.when(loginSignupService.login(user.getUsername(), user.getPassword()))
-                .thenReturn("some token");
+                .thenReturn(new TokenDto(TEST_TOKEN));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -54,7 +57,7 @@ class LoginSignupControllerIT {
     @Test
     void signup() {
         Mockito.when(loginSignupService.createUser(user.getUsername(), user.getPassword()))
-                .thenReturn("user successfully registered");
+                .thenReturn(new TokenDto(TEST_TOKEN));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)

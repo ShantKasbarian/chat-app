@@ -16,7 +16,11 @@ import java.util.Optional;
 public class GroupRepositoryImpl implements GroupRepository {
     private static final String GROUP_NAME_PARAMETER = "groupName";
 
-    private static final String GET_GROUPS_BY_NAME = "from Group g where upper(g.name) like upper(:" + GROUP_NAME_PARAMETER + ")";
+    private static final String ID_PARAMETER = "id";
+
+    private static final String GET_GROUPS_BY_NAME = "FROM Group g WHERE UPPER(g.name) LIKE UPPER(:" + GROUP_NAME_PARAMETER + ")";
+
+    private static final String EXISTS_BY_ID_QUERY = "SELECT COUNT(g) = 1 FROM GROUP g WHERE g.id = :" + ID_PARAMETER;
 
     private static final String NAME_COLUMN = "name";
 
@@ -31,6 +35,19 @@ public class GroupRepositoryImpl implements GroupRepository {
         log.debug("fetched group with id {}", id);
 
         return group;
+    }
+
+    @Override
+    public boolean existsById(String id) {
+        log.debug("checking if group with id {} exists", id);
+
+        boolean exists = entityManager.createQuery(EXISTS_BY_ID_QUERY, Boolean.class)
+                .setParameter(ID_PARAMETER, id)
+                .getSingleResult();
+
+        log.debug("checked if group with id {} exists", id);
+
+        return exists;
     }
 
     @Override
