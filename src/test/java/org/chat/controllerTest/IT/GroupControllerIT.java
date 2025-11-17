@@ -148,7 +148,7 @@ class GroupControllerIT {
     }
 
     @Test
-    void acceptUserToGroup() {
+    void acceptJoinGroup() {
         when(groupUserConverter.convertToModel(groupUser)).thenReturn(groupUserDto);
         when(groupService.acceptJoinGroup(user2.getId(), groupUser.getId()))
                 .thenReturn(groupUser);
@@ -159,13 +159,13 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .put("/groups/"+ group.getId() + "/accept/user/" + user2.getId())
+                .put("/groups/accept/" + user2.getId())
                 .then()
                 .statusCode(200);
     }
 
     @Test
-    void rejectUserFromGroup() {
+    void rejectJoinGroup() {
         when(groupService.rejectJoinGroup(anyString(), anyString()))
                 .thenReturn("user has been rejected");
 
@@ -175,7 +175,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .delete("/groups/"+ group.getId() + "/reject/user/" + user2.getId())
+                .delete("/groups/reject/" + user2.getId())
                 .then()
                 .statusCode(204);
     }
