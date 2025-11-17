@@ -70,8 +70,8 @@ class MessageServiceImplTest {
 
     @Test
     void sendMessage() {
-        when(userRepository.findById(user1.getId())).thenReturn(user1);
-        when(userRepository.findById(user2.getId())).thenReturn(user2);
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.ofNullable(user1));
+        when(userRepository.findById(user2.getId())).thenReturn(Optional.ofNullable(user2));
 
         Message message = new Message();
         message.setId(UUID.randomUUID().toString());
@@ -151,7 +151,7 @@ class MessageServiceImplTest {
                 message2.getTime().toString()
         );
 
-        when(userRepository.findById(user1.getId())).thenReturn(user1);
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.ofNullable(user1));
         when(messageRepository.getMessages(user2.getId(), user1.getId(), 1, 10))
                 .thenReturn(messages);
         when(messageConverter.convertToModel(message1)).thenReturn(messageDto1);
@@ -179,7 +179,7 @@ class MessageServiceImplTest {
 
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user2.getId())).thenReturn(groupUser);
-        when(userRepository.findById(user2.getId())).thenReturn(user2);
+        when(userRepository.findById(user2.getId())).thenReturn(Optional.ofNullable(user2));
         doNothing().when(messageRepository).persist(message);
 
         Message response = messageService.messageGroup(message.getMessage(), group.getId(), user2.getId());

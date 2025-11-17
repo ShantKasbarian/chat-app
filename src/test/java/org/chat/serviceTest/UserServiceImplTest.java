@@ -14,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,8 +59,8 @@ class UserServiceImplTest {
 
     @Test
     void addContact() {
-        when(userRepository.findById(user1.getId())).thenReturn(user1);
-        when(userRepository.findById(user2.getId())).thenReturn(user2);
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.ofNullable(user1));
+        when(userRepository.findById(user2.getId())).thenReturn(Optional.ofNullable(user2));
 
         Contact contact = new Contact(UUID.randomUUID().toString(), user1, user2);
         doNothing().when(contactRepository).persist(contact);

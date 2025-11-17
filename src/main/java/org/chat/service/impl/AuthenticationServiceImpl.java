@@ -42,11 +42,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public TokenDto login(String username, String password) {
         log.info("authenticating user with username {}", username);
 
-        User user = userRepository.findByUsername(username);
-
-        if (!BCrypt.checkpw(password, user.getPassword())) {
-            throw new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE);
-        }
+        User user = userRepository.findByUsername(username)
+                .filter(user1 -> BCrypt.checkpw(password, user1.getPassword()))
+                .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
 
         String token = jwtService.generateToken(username, user.getId());
 

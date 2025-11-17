@@ -2,11 +2,9 @@ package org.chat.repository.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupUser;
-import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.GroupUserRepository;
 
 import java.util.List;
@@ -19,7 +17,7 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
 
     private static final String USER_ID_PARAMETER = "userId";
 
-    private static final String GET_GROUP_USER = "FROM GroupUser gu WHERE gu.group.id = " + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
+    private static final String GET_GROUP_USER = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
 
     private static final String GET_USERS_WITH_SUBMITTED_REQUEST = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.isMember = false";
 
@@ -31,17 +29,10 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     public GroupUser findByGroupIdUserId(String groupId, String userId) {
         log.debug("fetching groupUser with userId {} and groupId {}", userId, groupId);
 
-        GroupUser groupUser = null;
-
-        try {
-             groupUser = entityManager.createQuery(GET_GROUP_USER, GroupUser.class)
-                    .setParameter(GROUP_ID_PARAMETER, groupId)
-                    .setParameter(USER_ID_PARAMETER, userId)
-                    .getSingleResult();
-        }
-        catch (NoResultException e) {
-            throw new ResourceNotFoundException("user is not part of this group");
-        }
+        GroupUser groupUser = entityManager.createQuery(GET_GROUP_USER, GroupUser.class)
+                .setParameter(GROUP_ID_PARAMETER, groupId)
+                .setParameter(USER_ID_PARAMETER, userId)
+                .getSingleResult();
 
         log.debug("fetched groupUser with userId {} and groupId {}", userId, groupId);
 

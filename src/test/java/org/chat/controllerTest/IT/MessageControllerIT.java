@@ -118,7 +118,7 @@ class MessageControllerIT {
                 .header("Authorization", "Bearer " + jwtToken)
                 .body(messageDto)
                 .when()
-                .post("/message/send")
+                .post("/messages")
                 .then()
                 .statusCode(201);
     }
@@ -138,7 +138,7 @@ class MessageControllerIT {
                 .header("Authorization", "Bearer " + jwtToken)
                 .body(messages)
                 .when()
-                .get("/message/" + recipient.getUsername())
+                .get("/messages/" + recipient.getUsername())
                 .then()
                 .statusCode(200);
     }
@@ -156,7 +156,7 @@ class MessageControllerIT {
                 .header("Authorization", "Bearer " + jwtToken)
                 .body(groupMessageDto)
                 .when()
-                .post("/message/group")
+                .post("/messages/group")
                 .then()
                 .statusCode(201);
     }
@@ -176,7 +176,7 @@ class MessageControllerIT {
                 .header("Authorization", "Bearer " + jwtToken)
                 .body(messages)
                 .when()
-                .get("/message/group/" + group.getName())
+                .get("/messages/group/" + group.getName())
                 .then()
                 .statusCode(200);
     }

@@ -96,7 +96,7 @@ class UserControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .post("/user/" + user2.getId() + "/add/contact")
+                .post("/users/" + user2.getId() + "/contact")
                 .then()
                 .statusCode(201);
     }
@@ -115,7 +115,7 @@ class UserControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .get("/user/contacts")
+                .get("/users/contacts")
                 .then()
                 .statusCode(200);
     }
@@ -136,7 +136,7 @@ class UserControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .get("/user/u/search")
+                .get("/users/u")
                 .then()
                 .statusCode(200);
     }

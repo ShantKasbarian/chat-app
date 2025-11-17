@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.exception.InvalidInfoException;
+import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
 import org.chat.service.UserService;
@@ -18,6 +19,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
+    private static final String TARGET_USER_NOT_FOUND_MESSAGE = "target user not found";
+
     private final UserRepository userRepository;
 
     private final ContactRepository contactRepository;
@@ -41,8 +44,11 @@ public class UserServiceImpl implements UserService {
             throw new InvalidInfoException("Invalid recipientId");
         }
 
-        User current = userRepository.findById(userId);
-        User target = userRepository.findById(recipientId);
+        User current = userRepository.findById(userId).get();
+
+        User target = userRepository.findById(recipientId)
+                .orElseThrow(() -> new ResourceNotFoundException(TARGET_USER_NOT_FOUND_MESSAGE));
+
         Contact contact = new Contact(UUID.randomUUID().toString(), current, target);
 
         contactRepository.persist(contact);

@@ -16,13 +16,11 @@ import java.util.Optional;
 public class GroupRepositoryImpl implements GroupRepository {
     private static final String GROUP_NAME_PARAMETER = "groupName";
 
-    private static final String ID_PARAMETER = "id";
+    private static final String ID_COLUMN = "id";
+
+    private static final String NAME_PARAMETER = "name";
 
     private static final String GET_GROUPS_BY_NAME = "FROM Group g WHERE UPPER(g.name) LIKE UPPER(:" + GROUP_NAME_PARAMETER + ")";
-
-    private static final String EXISTS_BY_ID_QUERY = "SELECT COUNT(g) = 1 FROM GROUP g WHERE g.id = :" + ID_PARAMETER;
-
-    private static final String NAME_COLUMN = "name";
 
     private final EntityManager entityManager;
 
@@ -30,7 +28,7 @@ public class GroupRepositoryImpl implements GroupRepository {
     public Optional<Group> findById(String id) {
         log.debug("fetching group with id {}", id);
 
-        Optional<Group> group = Optional.of(entityManager.find(Group.class, id));
+        Optional<Group> group = find(ID_COLUMN, id).firstResultOptional();
 
         log.debug("fetched group with id {}", id);
 
@@ -41,9 +39,7 @@ public class GroupRepositoryImpl implements GroupRepository {
     public boolean existsById(String id) {
         log.debug("checking if group with id {} exists", id);
 
-        boolean exists = entityManager.createQuery(EXISTS_BY_ID_QUERY, Boolean.class)
-                .setParameter(ID_PARAMETER, id)
-                .getSingleResult();
+        boolean exists = count(ID_COLUMN, id) > 0;
 
         log.debug("checked if group with id {} exists", id);
 
@@ -51,14 +47,14 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public Optional<Group> findByName(String name) {
-        log.debug("fetching group with name {}", name);
+    public boolean existsByName(String name) {
+        log.debug("checking if group with name {} exists", name);
 
-        Optional<Group> group = Optional.of(find(NAME_COLUMN, name).firstResult());
+        boolean exists = count(NAME_PARAMETER, name) > 0;
 
-        log.debug("fetched group with name {}", name);
+        log.debug("checked if group with name {} exists", name);
 
-        return group;
+        return exists;
     }
 
     @Override

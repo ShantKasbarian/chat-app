@@ -15,6 +15,7 @@ import org.mockito.Mock;
 
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,7 +53,7 @@ class AuthenticationServiceImplTest {
     @Test
     void login() {
         when(userRepository.findByUsername(user.getUsername()))
-                .thenReturn(user);
+                .thenReturn(Optional.ofNullable(user));
 
         String expected = "some token";
 
@@ -68,7 +69,7 @@ class AuthenticationServiceImplTest {
     @Test
     void loginShouldThrowInvalidCredentialsExceptionWithWrongPassword() {
         when(userRepository.findByUsername(user.getUsername()))
-                .thenReturn(user);
+                .thenReturn(Optional.ofNullable(user));
         assertThrows(InvalidCredentialsException.class, () -> loginSignupService.login(user.getUsername(), "somePassword"));
     }
 

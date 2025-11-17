@@ -107,7 +107,7 @@ public class MessageController {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        log.info("/message/group/{groupId} with GET called");
+        log.info("/messages/group/{groupId} with GET called");
 
         var messages = messageService.getGroupMessages(groupId, token.getClaim(USER_ID_CLAIM), page, size);
 

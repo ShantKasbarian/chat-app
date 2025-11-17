@@ -108,7 +108,7 @@ class GroupControllerIT {
                 .header("Authorization", "Bearer " + jwtToken)
                 .body(groupDto)
                 .when()
-                .post("/group/create")
+                .post("/groups")
                 .then()
                 .statusCode(201);
     }
@@ -125,7 +125,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .post("/group/"+ group.getName() + "/join")
+                .post("/groups/"+ group.getName() + "/join")
                 .then()
                 .statusCode(201);
     }
@@ -141,7 +141,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .delete("/group/"+ group.getId() + "/leave")
+                .delete("/groups/"+ group.getId() + "/leave")
                 .then()
                 .statusCode(204);
     }
@@ -158,7 +158,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .put("/group/"+ group.getId() + "/accept/user/" + user2.getId())
+                .put("/groups/"+ group.getId() + "/accept/user/" + user2.getId())
                 .then()
                 .statusCode(200);
     }
@@ -174,7 +174,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .delete("/group/"+ group.getId() + "/reject/user/" + user2.getId())
+                .delete("/groups/"+ group.getId() + "/reject/user/" + user2.getId())
                 .then()
                 .statusCode(204);
     }
@@ -195,7 +195,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .get("/group/"+ group.getId() + "/waiting/users")
+                .get("/groups/"+ group.getId() + "/waiting/users")
                 .then()
                 .statusCode(200);
     }
@@ -216,7 +216,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .get("/group/joined")
+                .get("/groups/joined")
                 .then()
                 .statusCode(200);
     }
@@ -237,7 +237,7 @@ class GroupControllerIT {
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwtToken)
                 .when()
-                .get("/group/g/search")
+                .get("/groups/g/search")
                 .then()
                 .statusCode(200);
     }

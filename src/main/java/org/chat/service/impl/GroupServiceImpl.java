@@ -1,6 +1,7 @@
 package org.chat.service.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,19 +57,20 @@ public class GroupServiceImpl implements GroupService {
             creators = new String[]{};
         }
 
-        if (groupRepository.findByName(group.getName()).isPresent()) {
+        if (groupRepository.existsByName(group.getName())) {
             throw new InvalidGroupException(GROUP_ALREADY_EXISTS_MESSAGE);
         }
 
         group.setId(UUID.randomUUID().toString());
         groupRepository.persist(group);
-        User currentUser = userRepository.findById(userId);
+
+        User currentUser = userRepository.findById(userId).get();
 
         List<GroupUser> creatorsList = new ArrayList<>(
             Arrays.stream(creators)
                 .map(userRepository::findById)
-                .filter(creator -> !creator.getId().equals(userId))
-                .map(creator -> new GroupUser(UUID.randomUUID().toString(), group, creator, true, true))
+                .filter(creator -> !creator.get().getId().equals(userId))
+                .map(creator -> new GroupUser(UUID.randomUUID().toString(), group, creator.get(), true, true))
                 .toList()
         );
 
@@ -93,13 +95,13 @@ public class GroupServiceImpl implements GroupService {
         try {
             groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
         }
-        catch (ResourceNotFoundException e) {}
+        catch (NoResultException e) {}
 
         if (groupUser != null) {
             throw new UnableToJoinGroupException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        User user = userRepository.findById(userId);
+        User user = userRepository.findById(userId).get();
 
         groupUser = new GroupUser(UUID.randomUUID().toString(), group, user, false, false);
 
@@ -173,7 +175,7 @@ public class GroupServiceImpl implements GroupService {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        if (userRepository.existsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("user not found");
         }
 

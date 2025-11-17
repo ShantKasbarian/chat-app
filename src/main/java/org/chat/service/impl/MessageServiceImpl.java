@@ -29,6 +29,8 @@ import java.util.UUID;
 @ApplicationScoped
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
+    private static final String USER_NOT_FOUND = "user not found";
+
     private static final String EMPTY_MESSAGE = "Message is empty";
 
     private static final String TARGET_USER_NOT_SPECIFIED_MESSAGE = "target user not specified";
@@ -64,8 +66,10 @@ public class MessageServiceImpl implements MessageService {
             throw new InvalidInfoException(TARGET_USER_NOT_SPECIFIED_MESSAGE);
         }
 
-        User recipient = userRepository.findById(recipientId);
-        User sender = userRepository.findById(currentUserId);
+        User recipient = userRepository.findById(recipientId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
+
+        User sender = userRepository.findById(currentUserId).get();
 
         Message message = new Message();
         message.setId(UUID.randomUUID().toString());
@@ -121,9 +125,11 @@ public class MessageServiceImpl implements MessageService {
             throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
         }
 
+        User currentUser = userRepository.findById(senderId).get();
+
         Message message = new Message();
         message.setId(UUID.randomUUID().toString());
-        message.setSender(userRepository.findById(senderId));
+        message.setSender(currentUser);
         message.setMessage(content);
         message.setGroup(group);
         message.setTime(LocalDateTime.now());
