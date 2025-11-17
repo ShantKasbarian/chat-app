@@ -5,7 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.chat.controller.LoginSignupController;
+import org.chat.controller.AuthenticationController;
 import org.chat.entity.User;
 import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
@@ -17,11 +17,11 @@ import org.mockito.Mockito;
 import java.util.UUID;
 
 @QuarkusTest
-class LoginSignupControllerIT {
+class AuthenticationControllerIT {
     private static final String TEST_TOKEN = "test token";
 
     @Inject
-    private LoginSignupController loginSignupController;
+    private AuthenticationController authenticationController;
 
     @InjectMock
     private AuthenticationServiceImpl loginSignupService;

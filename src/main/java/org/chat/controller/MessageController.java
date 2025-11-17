@@ -7,10 +7,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMessageConverter;
 import org.chat.converter.MessageConverter;
+import org.chat.converter.ToModelConverter;
+import org.chat.entity.Message;
 import org.chat.model.GroupMessageDto;
 import org.chat.model.MessageDto;
+import org.chat.service.MessageService;
 import org.chat.service.impl.MessageServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -19,15 +23,16 @@ import java.util.List;
 
 import static org.chat.config.JwtService.USER_ID_CLAIM;
 
-@Path("/message")
+@Slf4j
+@RequiredArgsConstructor
+@Path("/messages")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
-@RequiredArgsConstructor
 public class MessageController {
-    private final MessageServiceImpl messageService;
+    private final MessageService messageService;
 
-    private final MessageConverter messageConverter;
+    private final ToModelConverter<MessageDto, Message> messageConverter;
 
     private final GroupMessageConverter groupMessageConverter;
 
@@ -37,17 +42,22 @@ public class MessageController {
     private final JsonWebToken token;
 
     @POST
-    @Path(("/send"))
     @ResponseStatus(201)
     @Transactional
     public MessageDto sendMessage(MessageDto messageDto) {
-        return messageConverter.convertToModel(
+        log.info("/messages with POST called");
+
+        var message = messageConverter.convertToModel(
                 messageService.sendMessage(
                     messageDto.message(),
                     messageDto.recipientId(),
                     token.getClaim(USER_ID_CLAIM)
                 )
         );
+
+        log.info("/messages with POST returning a {}", MessageDto.class.getName());
+
+        return message;
     }
 
     @GET
@@ -59,7 +69,13 @@ public class MessageController {
             @QueryParam("size") @DefaultValue("10") int size
 
     ) {
-        return messageService.getMessages(token.getClaim(USER_ID_CLAIM), userId, page, size);
+        log.info("/messages/{userId} with GET called");
+
+        var messages = messageService.getMessages(token.getClaim(USER_ID_CLAIM), userId, page, size);
+
+        log.info("/messages/{userId} returning a {} of {}", List.class.getName(), MessageDto.class.getName());
+
+        return messages;
     }
 
     @POST
@@ -67,13 +83,19 @@ public class MessageController {
     @Path("/group")
     @Transactional
     public GroupMessageDto messageGroup(GroupMessageDto messageDto) {
-        return groupMessageConverter.convertToModel(
+        log.info("/messages/group with POST called");
+
+        var message = groupMessageConverter.convertToModel(
                 messageService.messageGroup(
                     messageDto.message(),
                     messageDto.groupId(),
                     token.getClaim(USER_ID_CLAIM)
                 )
         );
+
+        log.info("/messages/group returning a {}", MessageDto.class.getName());
+
+        return message;
     }
 
     @GET
@@ -84,6 +106,12 @@ public class MessageController {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        return messageService.getGroupMessages(groupId, token.getClaim(USER_ID_CLAIM), page, size);
+        log.info("/message/group/{groupId} with GET called");
+
+        var messages = messageService.getGroupMessages(groupId, token.getClaim(USER_ID_CLAIM), page, size);
+
+        log.info("/messages/group/{groupId} with GET returning a {} of {}", List.class.getName(), GroupMessageDto.class.getName());
+
+        return messages;
     }
 }
