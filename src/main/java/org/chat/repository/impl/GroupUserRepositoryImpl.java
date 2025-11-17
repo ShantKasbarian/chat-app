@@ -8,11 +8,14 @@ import org.chat.entity.GroupUser;
 import org.chat.repository.GroupUserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
 public class GroupUserRepositoryImpl implements GroupUserRepository {
+    private static final String ID_COLUMN = "id";
+
     private static final String GROUP_ID_PARAMETER = "groupId";
 
     private static final String USER_ID_PARAMETER = "userId";
@@ -24,6 +27,17 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     private static final String GET_USER_GROUPS = "FROM GroupUser gu WHERE gu.user.id = :" + USER_ID_PARAMETER + " AND gu.isMember = true";
 
     private final EntityManager entityManager;
+
+    @Override
+    public Optional<GroupUser> findById(String id) {
+        log.info("fetching groupUser with id {}", id);
+
+        Optional<GroupUser> groupUser = find(ID_COLUMN, id).firstResultOptional();
+
+        log.info("fetched groupUser with id {}", id);
+
+        return groupUser;
+    }
 
     @Override
     public GroupUser findByGroupIdUserId(String groupId, String userId) {

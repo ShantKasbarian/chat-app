@@ -22,6 +22,8 @@ import java.util.*;
 public class GroupServiceImpl implements GroupService {
     private static final String INVALID_GROUP_NAME_MESSAGE = "Invalid group name";
 
+    private static final String GROUP_USER_NOT_FOUND_MESSAGE = "group user not found";
+
     private static final String GROUP_ALREADY_EXISTS_MESSAGE = "Group already exists";
 
     private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
@@ -130,22 +132,19 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupUser acceptToGroup(String groupId, String creatorId, String userId) {
-        log.info("accepting member with id {} to group with id {}", userId, groupId);
+    public GroupUser acceptJoinGroup(String userId, String groupUserId) {
+        log.info("accepting groupUser with id {} join request", groupUserId);
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
+        GroupUser groupUser = groupUserRepository.findById(groupUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
+
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(
+                groupUser.getGroup().getId(), userId
+        );
 
         if (!creator.getIsCreator()) {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
-
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("user not found");
-        }
-
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
 
         if (groupUser.getIsMember()) {
             throw new UnableToJoinGroupException(TARGET_USER_ALREADY_MEMBER_OF_GROUP);
@@ -156,33 +155,30 @@ public class GroupServiceImpl implements GroupService {
 
         groupUserRepository.getEntityManager().merge(groupUser);
 
-        log.info("accepted member with id {} to group with id {}", userId, groupId);
+        log.info("accepted groupUser with id {} join request", groupUserId);
 
         return groupUser;
     }
 
     @Override
     @Transactional
-    public String rejectFromEnteringGroup(String groupId, String creatorId, String userId) {
-        log.info("rejecting member with id {} join request to group with id {}", userId, groupId);
+    public String rejectJoinGroup(String userId, String groupUserId) {
+        log.info("rejecting groupUser with id {} join request", groupUserId);
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
+        GroupUser groupUser = groupUserRepository.findById(groupUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(group.getId(), creatorId);
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(
+                groupUser.getGroup().getId(), userId
+        );
 
         if (!creator.getIsCreator()) {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("user not found");
-        }
-
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId);
         groupUserRepository.delete(groupUser);
 
-        log.info("rejected member with id {} join request to group with id {}", userId, groupId);
+        log.info("rejected member with id {} to join group", groupUserId);
 
         return USER_REJECTION_MESSAGE;
     }
