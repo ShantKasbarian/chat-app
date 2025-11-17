@@ -9,8 +9,8 @@ public interface GroupService {
     Group createGroup(Group group, String[] creators, String userId);
     GroupUser joinGroup(String groupId, String userId);
     String leaveGroup(String groupId, String userId);
-    GroupUser acceptToGroup(String groupId, String creatorId, String userId);
-    String rejectFromEnteringGroup(String groupId, String creatorId, String userId);
+    GroupUser acceptJoinGroup(String userId, String groupUserId);
+    String rejectJoinGroup(String userId, String groupUserId);
     List<GroupUser> getWaitingUsers(String groupId, String creatorId);
     List<Group> getUserJoinedGroups(String userId);
     List<Group> getGroups(String groupName);

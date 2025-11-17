@@ -20,6 +20,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -149,7 +150,7 @@ class GroupControllerIT {
     @Test
     void acceptUserToGroup() {
         when(groupUserConverter.convertToModel(groupUser)).thenReturn(groupUserDto);
-        when(groupService.acceptToGroup(group.getId(), user.getId(), user2.getId()))
+        when(groupService.acceptJoinGroup(user2.getId(), groupUser.getId()))
                 .thenReturn(groupUser);
 
         String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
@@ -165,7 +166,7 @@ class GroupControllerIT {
 
     @Test
     void rejectUserFromGroup() {
-        when(groupService.rejectFromEnteringGroup(group.getName(), user.getId(), "username"))
+        when(groupService.rejectJoinGroup(anyString(), anyString()))
                 .thenReturn("user has been rejected");
 
         String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());

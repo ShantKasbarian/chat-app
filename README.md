@@ -226,10 +226,10 @@ To create tables in your database execute the following scripts in this exact or
             }
         ]
     
-    http://localhost:8080/groups/{groupId}/accept/user/{userId}
+    http://localhost:8080/groups/accept/{groupUserId}
     Method: PUT
     Description: Allows creators of the group to accept a join group request
-    Payload: String groupId: "groupId", String userId: "userId"
+    Payload: String groupUserId: "groupUserId"
     Response:
         {
             "id": "f013d0c6-edc8-45f7-ad66-ddb6bb75907b",
@@ -241,10 +241,10 @@ To create tables in your database execute the following scripts in this exact or
             "isCreator": false
         }
     
-    http://localhost:8080/groups/{groupId}/reject/user/{userId}
+    http://localhost:8080/groups/reject/{groupUserId}
     Method: DELETE
     Description: Allows creators of the group to reject a join group request
-    Payload: String groupId: "groupId", String userId: "userId"
+    Payload: String groupUserId: "groupUserId"
     
     http://localhost:8080/groups/joined
     Method: GET

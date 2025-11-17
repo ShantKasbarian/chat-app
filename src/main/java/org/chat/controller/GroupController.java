@@ -94,40 +94,32 @@ public class GroupController {
     }
 
     @PUT
-    @Path("/{groupId}/accept/user/{userId}")
+    @Path("/accept/{groupUserId}")
     @Transactional
-    public Response acceptUserToGroup(
-            @PathParam("groupId") String groupId,
-            @PathParam("userId") String userId
-    ) {
-        log.info("/groups/{groupId}/accept/user/{userId} with PUT called");
+    public Response acceptUserToGroup(@PathParam("groupUserId") String groupUserId) {
+        log.info("/groups/accept/{groupUserId} with PUT called");
 
         var groupUserDto = groupUserToModelConverter.convertToModel(
-                groupService.acceptToGroup(
-                    groupId, token.getClaim(USER_ID_CLAIM), userId
+                groupService.acceptJoinGroup(
+                        token.getClaim(USER_ID_CLAIM), groupUserId
                 )
         );
 
-        log.info("/groups/{groupId}/accept/user/{userId} with PUT returning a {}", GroupUserDto.class.getName());
+        log.info("/groups/accept/{groupUserId} with PUT returning a {}", GroupUserDto.class.getName());
 
         return Response.ok(groupUserDto).build();
     }
 
     @DELETE
-    @Path("/{groupId}/reject/user/{userId}")
+    @Path("/reject/{groupUserId}")
     @ResponseStatus(204)
     @Transactional
-    public void rejectUserFromGroup(
-            @PathParam("groupId") String groupId,
-            @PathParam("userId") String userId
-    ) {
-        log.info("/groups/{groupId}/reject/user/{userId} with DELETE called");
+    public void rejectUserFromGroup(@PathParam("groupUserId") String groupUserId) {
+        log.info("/groups/reject/{groupUserId} with DELETE called");
 
-        groupService.rejectFromEnteringGroup(
-                groupId, token.getClaim(USER_ID_CLAIM), userId
-        );
+        groupService.rejectJoinGroup(token.getClaim(USER_ID_CLAIM), groupUserId);
 
-        log.info("/groups/{groupId}/reject/user/{userId} with DELETE returning a response");
+        log.info("/groups/reject/{groupUserId} with DELETE returning a response");
     }
 
     @GET
