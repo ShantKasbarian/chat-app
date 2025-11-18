@@ -1,11 +1,10 @@
 package org.chat.serviceTest;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
 import org.chat.model.TokenDto;
-import org.chat.repository.impl.UserRepositoryImpl;
+import org.chat.repository.UserRepository;
 import org.chat.service.impl.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,13 +27,10 @@ class AuthenticationServiceImplTest {
     private AuthenticationServiceImpl authenticationService;
 
     @Mock
-    private UserRepositoryImpl userRepository;
+    private UserRepository userRepository;
 
     @Mock
     private JwtService jwtService;
-
-    @Mock
-    private PanacheQuery<User> mockQuery;
 
     private User user;
 
@@ -44,10 +40,8 @@ class AuthenticationServiceImplTest {
 
         user = new User();
         user.setId(UUID.randomUUID().toString());
-        user.setUsername("userUser");
+        user.setUsername("John.Doe");
         user.setPassword(BCrypt.hashpw("Password123+", BCrypt.gensalt()));
-
-        when(userRepository.find(anyString(), anyString())).thenReturn(mockQuery);
     }
 
     @Test
@@ -84,7 +78,7 @@ class AuthenticationServiceImplTest {
 
         assertNotNull(response);
         assertEquals(TEST_TOKEN, response.token());
-        verify(userRepository, times(1)).persist(any(User.class));
+        verify(userRepository).persist(any(User.class));
     }
 
     @Test

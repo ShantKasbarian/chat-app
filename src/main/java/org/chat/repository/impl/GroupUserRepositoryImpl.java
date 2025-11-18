@@ -2,6 +2,7 @@ package org.chat.repository.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupUser;
@@ -20,7 +21,9 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
 
     private static final String USER_ID_PARAMETER = "userId";
 
-    private static final String GET_GROUP_USER = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
+    private static final String FIND_BY_GROUP_ID_USER_ID = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
+
+    private static final String EXISTS_BY_GROUP_ID_USER_ID = "SELECT COUNT(gu) > 0 FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
 
     private static final String GET_USERS_WITH_SUBMITTED_REQUEST = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.isMember = false";
 
@@ -43,7 +46,7 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     public GroupUser findByGroupIdUserId(String groupId, String userId) {
         log.debug("fetching groupUser with userId {} and groupId {}", userId, groupId);
 
-        GroupUser groupUser = entityManager.createQuery(GET_GROUP_USER, GroupUser.class)
+        GroupUser groupUser = entityManager.createQuery(FIND_BY_GROUP_ID_USER_ID, GroupUser.class)
                 .setParameter(GROUP_ID_PARAMETER, groupId)
                 .setParameter(USER_ID_PARAMETER, userId)
                 .getSingleResult();
@@ -51,6 +54,25 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
         log.debug("fetched groupUser with userId {} and groupId {}", userId, groupId);
 
         return groupUser;
+    }
+
+    @Override
+    public boolean existsByGroupIdUserId(String groupId, String userId) {
+        try {
+            log.debug("checking if groupUser with userId {} and groupId {}", userId, groupId);
+
+            entityManager.createQuery(EXISTS_BY_GROUP_ID_USER_ID, Boolean.class)
+                    .setParameter(GROUP_ID_PARAMETER, groupId)
+                    .setParameter(USER_ID_PARAMETER, userId)
+                    .getSingleResult();
+
+            log.debug("checked if groupUser with userId {} and groupId {}", userId, groupId);
+        }
+        catch (NoResultException e) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface GroupUserRepository extends PanacheRepository<GroupUser> {
     Optional<GroupUser> findById(String id);
     GroupUser findByGroupIdUserId(String groupId, String userId);
+    boolean existsByGroupIdUserId(String groupId, String userId);
     List<GroupUser> getWaitingUsers(String groupId);
     List<GroupUser> getUserGroups(String userId);
 }

@@ -47,11 +47,11 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public Group createGroup(Group group, String[] creators, String userId) {
-        if (group == null || group.getName() == null || group.getName().isEmpty()) {
+        String groupName = group.getName();
+
+        if (group.getName() == null || groupName.isEmpty()) {
             throw new InvalidGroupException(INVALID_GROUP_NAME_MESSAGE);
         }
-
-        String groupName = group.getName();
 
         log.info("creating group with name {}", groupName);
 
@@ -93,19 +93,13 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
 
-        GroupUser groupUser = null;
-        try {
-            groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
-        }
-        catch (NoResultException e) {}
-
-        if (groupUser != null) {
+        if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
             throw new UnableToJoinGroupException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
         User user = userRepository.findById(userId).get();
 
-        groupUser = new GroupUser(UUID.randomUUID().toString(), group, user, false, false);
+        GroupUser groupUser = new GroupUser(UUID.randomUUID().toString(), group, user, false, false);
 
         groupUserRepository.persist(groupUser);
 
