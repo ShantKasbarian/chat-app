@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface UserRepository extends PanacheRepository<User> {
     Optional<User> findById(String id);
-    boolean existsById(String id);
     Optional<User> findByUsername(String username);
+    boolean existsByUsername(String username);
     List<User> searchByUsername(String username);
 }

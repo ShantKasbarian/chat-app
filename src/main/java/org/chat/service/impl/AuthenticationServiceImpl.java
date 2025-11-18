@@ -59,7 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("registering user with username {}", username);
 
         if (
-                userRepository.find("username", username).firstResult() != null ||
+                userRepository.existsByUsername(username) ||
                 (username.length() < 5 || username.length() > 20) ||
                 username.trim().contains(" ")
         ) {
