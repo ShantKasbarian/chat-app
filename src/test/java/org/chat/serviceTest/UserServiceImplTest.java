@@ -37,6 +37,7 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         user1 = new User();
         user1.setId(UUID.randomUUID().toString());
         user1.setUsername("user1");
@@ -51,7 +52,7 @@ class UserServiceImplTest {
         List<Contact> contacts = new ArrayList<>();
         contacts.add(new Contact(UUID.randomUUID().toString(), user2, user1));
 
-        when(contactRepository.getContacts(user2.getId())).thenReturn(contacts);
+        when(contactRepository.getContacts(anyString())).thenReturn(contacts);
         List<Contact> response = userService.getContacts(user2.getId());
 
         assertEquals(contacts.size(), response.size());
@@ -88,7 +89,7 @@ class UserServiceImplTest {
         users.add(user1);
         users.add(user2);
 
-        when(userRepository.searchByUsername("u")).thenReturn(users);
+        when(userRepository.searchByUsername(anyString())).thenReturn(users);
 
         List<User> response = userService.searchUserByUsername("u");
 
