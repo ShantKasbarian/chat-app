@@ -6,10 +6,10 @@ import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.InvalidInfoException;
 import org.chat.exception.InvalidRoleException;
-import org.chat.repository.impl.GroupRepositoryImpl;
-import org.chat.repository.impl.GroupUserRepositoryImpl;
-import org.chat.repository.impl.MessageRepositoryImpl;
-import org.chat.repository.impl.UserRepositoryImpl;
+import org.chat.repository.GroupRepository;
+import org.chat.repository.GroupUserRepository;
+import org.chat.repository.MessageRepository;
+import org.chat.repository.UserRepository;
 import org.chat.service.impl.MessageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,16 +31,16 @@ class MessageServiceImplTest {
     private MessageServiceImpl messageService;
 
     @Mock
-    private MessageRepositoryImpl messageRepository;
+    private MessageRepository messageRepository;
 
     @Mock
-    private UserRepositoryImpl userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    private GroupRepositoryImpl groupRepository;
+    private GroupRepository groupRepository;
 
     @Mock
-    private GroupUserRepositoryImpl groupUserRepository;
+    private GroupUserRepository groupUserRepository;
 
     private User user1;
 

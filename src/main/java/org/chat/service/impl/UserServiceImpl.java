@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
-import org.chat.exception.InvalidInfoException;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
@@ -37,23 +36,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Contact addContact(String userId, String recipientId) {
-        log.info("adding user with id {} as contact to user with id {}", recipientId, userId);
-
-        if (recipientId == null || recipientId.isEmpty()) {
-            throw new InvalidInfoException("Invalid recipientId");
-        }
+    public Contact addContact(String userId, String targetUserId) {
+        log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
 
         User current = userRepository.findById(userId).get();
 
-        User target = userRepository.findById(recipientId)
+        User target = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new ResourceNotFoundException(TARGET_USER_NOT_FOUND_MESSAGE));
 
         Contact contact = new Contact(UUID.randomUUID().toString(), current, target);
 
         contactRepository.persist(contact);
 
-        log.info("added user with id {} as contact to user with id {}", recipientId, userId);
+        log.info("added user with id {} as contact to user with id {}", targetUserId, userId);
 
         return contact;
     }
