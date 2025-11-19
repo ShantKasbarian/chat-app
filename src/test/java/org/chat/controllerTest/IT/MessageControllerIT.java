@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -125,11 +126,12 @@ class MessageControllerIT {
 
     @Test
     void getMessages() {
-        List<MessageDto> messages = new ArrayList<>();
-        messages.add(messageDto);
+        List<Message> messages = new ArrayList<>();
+        messages.add(message);
 
         when(messageService.getMessages(sender.getId(), recipient.getUsername(), 0, 10))
                 .thenReturn(messages);
+        when(messageConverter.convertToModel(any(Message.class))).thenReturn(messageDto);
 
         String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());
 
@@ -163,8 +165,8 @@ class MessageControllerIT {
 
     @Test
     void getGroupMessages() {
-        List<GroupMessageDto> messages = new ArrayList<>();
-        messages.add(groupMessageDto);
+        List<Message> messages = new ArrayList<>();
+        messages.add(message);
 
         when(messageService.getGroupMessages(group.getName(), sender.getId(), 0, 10))
                 .thenReturn(messages);

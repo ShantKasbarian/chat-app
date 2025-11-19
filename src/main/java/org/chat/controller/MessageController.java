@@ -33,7 +33,7 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 public class MessageController {
     private final MessageService messageService;
 
-    private final ToModelConverter<MessageDto, Message> messageConverter;
+    private final ToModelConverter<MessageDto, Message> messageToModelConverter;
 
     private final GroupMessageConverter groupMessageConverter;
 
@@ -47,7 +47,7 @@ public class MessageController {
     public Response sendMessage(MessageDto messageDto) {
         log.info("/messages with POST called");
 
-        var message = messageConverter.convertToModel(
+        var message = messageToModelConverter.convertToModel(
                 messageService.sendMessage(
                     messageDto.message(),
                     messageDto.recipientId(),
@@ -72,7 +72,12 @@ public class MessageController {
     ) {
         log.info("/messages/{userId} with GET called");
 
-        var messages = messageService.getMessages(token.getClaim(USER_ID_CLAIM), userId, page, size);
+        var messages = messageService.getMessages(
+                token.getClaim(USER_ID_CLAIM), userId, page, size
+        )
+            .stream()
+            .map(messageToModelConverter::convertToModel)
+            .toList();
 
         log.info("/messages/{userId} returning a {} of {}", List.class.getName(), MessageDto.class.getName());
 
@@ -109,7 +114,12 @@ public class MessageController {
     ) {
         log.info("/messages/group/{groupId} with GET called");
 
-        var messages = messageService.getGroupMessages(groupId, token.getClaim(USER_ID_CLAIM), page, size);
+        var messages = messageService.getGroupMessages(
+                groupId, token.getClaim(USER_ID_CLAIM), page, size
+        )
+            .stream()
+            .map(groupMessageConverter::convertToModel)
+            .toList();
 
         log.info("/messages/group/{groupId} with GET returning a {} of {}", List.class.getName(), GroupMessageDto.class.getName());
 

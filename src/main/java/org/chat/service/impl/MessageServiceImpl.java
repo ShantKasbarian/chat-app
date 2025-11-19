@@ -49,8 +49,6 @@ public class MessageServiceImpl implements MessageService {
 
     private final GroupUserRepository groupUserRepository;
 
-    private final MessageConverter messageConverter;
-
     private final GroupMessageConverter groupMessageConverter;
 
     @Override
@@ -86,17 +84,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageDto> getMessages(String userId, String recipientId, int page, int size) {
+    public List<Message> getMessages(String userId, String recipientId, int page, int size) {
         log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
 
         if (page == 0) {
             page = 1;
         }
 
-        var messages = messageRepository.getMessages(userId, recipientId, page, size)
-                        .stream()
-                        .map(messageConverter::convertToModel)
-                        .toList();
+        var messages = messageRepository.getMessages(userId, recipientId, page, size);
 
         log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
 
@@ -142,7 +137,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<GroupMessageDto> getGroupMessages(String groupId, String userId, int page, int size) {
+    public List<Message> getGroupMessages(String groupId, String userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
         if (groupId == null || groupId.isEmpty()) {
@@ -163,10 +158,7 @@ public class MessageServiceImpl implements MessageService {
             throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        var messages = messageRepository.getGroupMessages(groupId, page, size)
-                .stream()
-                .map(groupMessageConverter::convertToModel)
-                .toList();
+        var messages = messageRepository.getGroupMessages(groupId, page, size);
 
         log.info("fetched messages of group with id {}, page {} and size {}", groupId, page, size);
 
