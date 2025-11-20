@@ -17,7 +17,6 @@ import java.util.UUID;
 @Table(name = "contacts")
 public class Contact {
     @Id
-//    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @GeneratedValue(generator = "UUID")
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;

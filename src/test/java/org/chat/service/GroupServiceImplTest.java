@@ -54,6 +54,7 @@ class GroupServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         group = new Group();
         group.setId(UUID.randomUUID());
         group.setName("group");
@@ -71,8 +72,6 @@ class GroupServiceImplTest {
         groupUser1 = new GroupUser(UUID.randomUUID(), group, user1, false, false);
         groupUser2 = new GroupUser(UUID.randomUUID(), group, user2, true, true);
 
-        when(groupRepository.getEntityManager()).thenReturn(entityManager);
-        when(userRepository.getEntityManager()).thenReturn(entityManager);
         when(groupUserRepository.getEntityManager()).thenReturn(entityManager);
     }
 

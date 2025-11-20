@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AuthenticationControllerTest {
@@ -54,6 +55,7 @@ class AuthenticationControllerTest {
         assertNotNull(response);
         assertEquals(tokenDto, response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        verify(authenticationService).login(anyString(), anyString());
     }
 
     @Test
@@ -65,5 +67,6 @@ class AuthenticationControllerTest {
         assertNotNull(response);
         assertEquals(tokenDto, response.getEntity());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        verify(authenticationService).createUser(anyString(), anyString());
     }
 }
