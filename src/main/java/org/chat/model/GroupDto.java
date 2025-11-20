@@ -6,13 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class GroupDto {
-    private String id;
+    private UUID id;
     private String name;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String[] creators;
+    private UUID[] creators;
 }

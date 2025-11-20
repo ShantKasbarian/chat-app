@@ -22,8 +22,6 @@ import java.util.*;
 public class GroupServiceImpl implements GroupService {
     private static final String INVALID_GROUP_NAME_MESSAGE = "Invalid group name";
 
-    private static final String GROUP_USER_NOT_FOUND_MESSAGE = "group user not found";
-
     private static final String GROUP_ALREADY_EXISTS_MESSAGE = "Group already exists";
 
     private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
@@ -46,37 +44,36 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group createGroup(Group group, String[] creators, String userId) {
-        if (group == null || group.getName() == null || group.getName().isEmpty()) {
+    public Group createGroup(Group group, UUID[] creators, UUID userId) {
+        String groupName = group.getName();
+
+        if (group.getName() == null || groupName.isEmpty()) {
             throw new InvalidGroupException(INVALID_GROUP_NAME_MESSAGE);
         }
-
-        String groupName = group.getName();
 
         log.info("creating group with name {}", groupName);
 
         if (creators == null) {
-            creators = new String[]{};
+            creators = new UUID[]{};
         }
 
         if (groupRepository.existsByName(group.getName())) {
             throw new InvalidGroupException(GROUP_ALREADY_EXISTS_MESSAGE);
         }
 
-        group.setId(UUID.randomUUID().toString());
         groupRepository.persist(group);
 
-        User currentUser = userRepository.findById(userId).get();
+        User currentUser = userRepository.findById(userId);
 
         List<GroupUser> creatorsList = new ArrayList<>(
             Arrays.stream(creators)
                 .map(userRepository::findById)
-                .filter(creator -> !creator.get().getId().equals(userId))
-                .map(creator -> new GroupUser(UUID.randomUUID().toString(), group, creator.get(), true, true))
+                .filter(creator -> !creator.getId().equals(userId))
+                .map(creator -> new GroupUser(group, creator, true, true))
                 .toList()
         );
 
-        creatorsList.add(new GroupUser(UUID.randomUUID().toString(), group, currentUser, true, true));
+        creatorsList.add(new GroupUser(group, currentUser, true, true));
 
         groupUserRepository.persist(creatorsList);
 
@@ -87,25 +84,22 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupUser joinGroup(String groupId, String userId) {
+    public GroupUser joinGroup(UUID groupId, UUID userId) {
         log.info("joining group with id {}", groupId);
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
+        Group group = groupRepository.findById(groupId);
 
-        GroupUser groupUser = null;
-        try {
-            groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), userId);
-        }
-        catch (NoResultException e) {}
-
-        if (groupUser != null) {
+        if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
             throw new UnableToJoinGroupException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        User user = userRepository.findById(userId).get();
+        User user = userRepository.findById(userId);
 
-        groupUser = new GroupUser(UUID.randomUUID().toString(), group, user, false, false);
+        GroupUser groupUser = new GroupUser();
+        groupUser.setGroup(group);
+        groupUser.setUser(user);
+        groupUser.setIsCreator(false);
+        groupUser.setIsMember(false);
 
         groupUserRepository.persist(groupUser);
 
@@ -116,7 +110,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String leaveGroup(String groupId, String userId) {
+    public String leaveGroup(UUID groupId, UUID userId) {
         log.info("leaving group with id {}", groupId);
 
         if (!groupRepository.existsById(groupId)) {
@@ -132,11 +126,10 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupUser acceptJoinGroup(String userId, String groupUserId) {
+    public GroupUser acceptJoinGroup(UUID userId, UUID groupUserId) {
         log.info("accepting groupUser with id {} join request", groupUserId);
 
-        GroupUser groupUser = groupUserRepository.findById(groupUserId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
+        GroupUser groupUser = groupUserRepository.findById(groupUserId);
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(
                 groupUser.getGroup().getId(), userId
@@ -162,11 +155,10 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String rejectJoinGroup(String userId, String groupUserId) {
+    public String rejectJoinGroup(UUID userId, UUID groupUserId) {
         log.info("rejecting groupUser with id {} join request", groupUserId);
 
-        GroupUser groupUser = groupUserRepository.findById(groupUserId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
+        GroupUser groupUser = groupUserRepository.findById(groupUserId);
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(
                 groupUser.getGroup().getId(), userId
@@ -184,7 +176,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<GroupUser> getWaitingUsers(String groupId, String creatorId) {
+    public List<GroupUser> getWaitingUsers(UUID groupId, UUID creatorId) {
         log.info("fetching join requests of group with id {}", groupId);
 
         if (!groupRepository.existsById(groupId)) {
@@ -205,7 +197,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<Group> getUserJoinedGroups(String userId) {
+    public List<Group> getUserJoinedGroups(UUID userId) {
         log.info("fetching joined groups of user with id {}", userId);
 
         var groups = groupUserRepository.getUserGroups(userId)

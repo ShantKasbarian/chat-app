@@ -1,4 +1,6 @@
 package org.chat.model;
 
-public record ContactDto(String id ,String userId, String username) {
+import java.util.UUID;
+
+public record ContactDto(UUID id , UUID userId, String username) {
 }

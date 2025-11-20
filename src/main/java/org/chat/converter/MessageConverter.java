@@ -19,7 +19,7 @@ public class MessageConverter implements
                 entity.getSender().getUsername(),
                 entity.getRecipient().getId(),
                 entity.getRecipient().getUsername(),
-                entity.getMessage(),
+                entity.getText(),
                 entity.getTime().format(formatter)
         );
     }

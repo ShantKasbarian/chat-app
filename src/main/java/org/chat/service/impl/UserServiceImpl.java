@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
-import org.chat.exception.InvalidInfoException;
-import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
 import org.chat.service.UserService;
@@ -19,13 +17,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
-    private static final String TARGET_USER_NOT_FOUND_MESSAGE = "target user not found";
-
     private final UserRepository userRepository;
 
     private final ContactRepository contactRepository;
 
-    public List<Contact> getContacts(String userId) {
+    public List<Contact> getContacts(UUID userId) {
         log.info("fetching contacts of user with id {}", userId);
 
         var contacts = contactRepository.getContacts(userId);
@@ -37,23 +33,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Contact addContact(String userId, String recipientId) {
-        log.info("adding user with id {} as contact to user with id {}", recipientId, userId);
+    public Contact addContact(UUID userId, UUID targetUserId) {
+        log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
 
-        if (recipientId == null || recipientId.isEmpty()) {
-            throw new InvalidInfoException("Invalid recipientId");
-        }
+        User current = userRepository.findById(userId);
 
-        User current = userRepository.findById(userId).get();
+        User target = userRepository.findById(targetUserId);
 
-        User target = userRepository.findById(recipientId)
-                .orElseThrow(() -> new ResourceNotFoundException(TARGET_USER_NOT_FOUND_MESSAGE));
-
-        Contact contact = new Contact(UUID.randomUUID().toString(), current, target);
+        Contact contact = new Contact();
+        contact.setUser(current);
+        contact.setContact(target);
 
         contactRepository.persist(contact);
 
-        log.info("added user with id {} as contact to user with id {}", recipientId, userId);
+        log.info("added user with id {} as contact to user with id {}", targetUserId, userId);
 
         return contact;
     }

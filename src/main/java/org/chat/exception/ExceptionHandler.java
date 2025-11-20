@@ -50,7 +50,7 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
 
             default -> {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity(new ErrorMessageDto(INTERNAL_SERVER_ERROR_MESSAGE))
+                        .entity(new ErrorMessageDto(throwable.getMessage()))
                         .build();
             }
         }

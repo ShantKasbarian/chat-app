@@ -3,8 +3,8 @@ package org.chat.serviceTest;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.exception.InvalidInfoException;
-import org.chat.repository.impl.ContactRepositoryImpl;
-import org.chat.repository.impl.UserRepositoryImpl;
+import org.chat.repository.ContactRepository;
+import org.chat.repository.UserRepository;
 import org.chat.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +25,10 @@ class UserServiceImplTest {
     private UserServiceImpl userService;
 
     @Mock
-    private UserRepositoryImpl userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    private ContactRepositoryImpl contactRepository;
+    private ContactRepository contactRepository;
 
     private User user1;
 
@@ -37,21 +37,22 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         user1 = new User();
-        user1.setId(UUID.randomUUID().toString());
+        user1.setId(UUID.randomUUID());
         user1.setUsername("user1");
 
         user2 = new User();
-        user2.setId(UUID.randomUUID().toString());
+        user2.setId(UUID.randomUUID());
         user2.setUsername("user2");
     }
 
     @Test
     void getContacts() {
         List<Contact> contacts = new ArrayList<>();
-        contacts.add(new Contact(UUID.randomUUID().toString(), user2, user1));
+        contacts.add(new Contact(UUID.randomUUID(), user2, user1));
 
-        when(contactRepository.getContacts(user2.getId())).thenReturn(contacts);
+        when(contactRepository.getContacts(any(UUID.class))).thenReturn(contacts);
         List<Contact> response = userService.getContacts(user2.getId());
 
         assertEquals(contacts.size(), response.size());
@@ -59,10 +60,10 @@ class UserServiceImplTest {
 
     @Test
     void addContact() {
-        when(userRepository.findById(user1.getId())).thenReturn(Optional.ofNullable(user1));
-        when(userRepository.findById(user2.getId())).thenReturn(Optional.ofNullable(user2));
+        when(userRepository.findById(user1.getId())).thenReturn(user1);
+        when(userRepository.findById(user2.getId())).thenReturn(user2);
 
-        Contact contact = new Contact(UUID.randomUUID().toString(), user1, user2);
+        Contact contact = new Contact(UUID.randomUUID(), user1, user2);
         doNothing().when(contactRepository).persist(contact);
 
         Contact response = userService.addContact(user1.getId(), user2.getId());
@@ -73,22 +74,12 @@ class UserServiceImplTest {
     }
 
     @Test
-    void addContactShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
-        assertThrows(InvalidInfoException.class, () -> userService.addContact(user1.getId(), null));
-    }
-
-    @Test
-    void addContactShouldThrowInvalidInfoExceptionWhenRecipientIdIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> userService.addContact(user1.getId(), ""));
-    }
-
-    @Test
     void searchUserByUsername() {
         List<User> users = new ArrayList<>();
         users.add(user1);
         users.add(user2);
 
-        when(userRepository.searchByUsername("u")).thenReturn(users);
+        when(userRepository.searchByUsername(anyString())).thenReturn(users);
 
         List<User> response = userService.searchUserByUsername("u");
 

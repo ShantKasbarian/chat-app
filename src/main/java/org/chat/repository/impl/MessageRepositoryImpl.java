@@ -8,6 +8,7 @@ import org.chat.entity.Message;
 import org.chat.repository.MessageRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     private final EntityManager entityManager;
 
     @Override
-    public List<Message> getMessages(String currentUserId, String recipientId, int page, int size) {
+    public List<Message> getMessages(UUID currentUserId, UUID recipientId, int page, int size) {
         log.debug("fetching user with id {} target user with id {} messages", currentUserId, recipientId);
 
         int offset = (page - 1) * size;
@@ -45,7 +46,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public List<Message> getGroupMessages(String groupId, int page, int size) {
+    public List<Message> getGroupMessages(UUID groupId, int page, int size) {
         log.debug("fetching messages of group with id {}", groupId);
 
         int offset = (page - 1) * size;

@@ -1,14 +1,13 @@
 package org.chat.service;
 
 import org.chat.entity.Message;
-import org.chat.model.GroupMessageDto;
-import org.chat.model.MessageDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface MessageService {
-    Message sendMessage(String content, String recipientId, String currentUserId);
-    List<MessageDto> getMessages(String userId, String recipientId, int page, int size);
-    Message messageGroup(String content, String groupId, String senderId);
-    List<GroupMessageDto> getGroupMessages(String groupId, String userId, int page, int size);
+    Message sendMessage(String content, UUID recipientId, UUID currentUserId);
+    List<Message> getMessages(UUID userId, UUID recipientId, int page, int size);
+    Message messageGroup(String content, UUID groupId, UUID senderId);
+    List<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size);
 }

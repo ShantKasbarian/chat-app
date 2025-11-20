@@ -1,10 +1,12 @@
 package org.chat.model;
 
+import java.util.UUID;
+
 public record MessageDto(
-        String messageId,
-        String senderId,
+        UUID messageId,
+        UUID senderId,
         String senderUsername,
-        String recipientId,
+        UUID recipientId,
         String recipientUsername,
         String message,
         String time

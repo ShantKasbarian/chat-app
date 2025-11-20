@@ -1,10 +1,12 @@
 package org.chat.model;
 
+import java.util.UUID;
+
 public record GroupUserDto(
-        String id,
-        String groupId,
+        UUID id,
+        UUID groupId,
         String groupName,
-        String userId,
+        UUID userId,
         String username,
         boolean isMember,
         boolean isCreator

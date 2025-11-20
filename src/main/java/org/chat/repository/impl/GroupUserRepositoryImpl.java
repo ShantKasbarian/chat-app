@@ -2,6 +2,7 @@ package org.chat.repository.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupUser;
@@ -9,18 +10,19 @@ import org.chat.repository.GroupUserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
 public class GroupUserRepositoryImpl implements GroupUserRepository {
-    private static final String ID_COLUMN = "id";
-
     private static final String GROUP_ID_PARAMETER = "groupId";
 
     private static final String USER_ID_PARAMETER = "userId";
 
-    private static final String GET_GROUP_USER = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
+    private static final String FIND_BY_GROUP_ID_USER_ID = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
+
+    private static final String EXISTS_BY_GROUP_ID_USER_ID = "SELECT COUNT(gu) > 0 FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
 
     private static final String GET_USERS_WITH_SUBMITTED_REQUEST = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.isMember = false";
 
@@ -29,21 +31,10 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     private final EntityManager entityManager;
 
     @Override
-    public Optional<GroupUser> findById(String id) {
-        log.info("fetching groupUser with id {}", id);
-
-        Optional<GroupUser> groupUser = find(ID_COLUMN, id).firstResultOptional();
-
-        log.info("fetched groupUser with id {}", id);
-
-        return groupUser;
-    }
-
-    @Override
-    public GroupUser findByGroupIdUserId(String groupId, String userId) {
+    public GroupUser findByGroupIdUserId(UUID groupId, UUID userId) {
         log.debug("fetching groupUser with userId {} and groupId {}", userId, groupId);
 
-        GroupUser groupUser = entityManager.createQuery(GET_GROUP_USER, GroupUser.class)
+        GroupUser groupUser = entityManager.createQuery(FIND_BY_GROUP_ID_USER_ID, GroupUser.class)
                 .setParameter(GROUP_ID_PARAMETER, groupId)
                 .setParameter(USER_ID_PARAMETER, userId)
                 .getSingleResult();
@@ -54,7 +45,21 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     }
 
     @Override
-    public List<GroupUser> getWaitingUsers(String groupId) {
+    public boolean existsByGroupIdUserId(UUID groupId, UUID userId) {
+        log.debug("checking if groupUser with userId {} and groupId {}", userId, groupId);
+
+        boolean exists = entityManager.createQuery(EXISTS_BY_GROUP_ID_USER_ID, Boolean.class)
+                .setParameter(GROUP_ID_PARAMETER, groupId)
+                .setParameter(USER_ID_PARAMETER, userId)
+                .getSingleResult();
+
+        log.debug("checked if groupUser with userId {} and groupId {}", userId, groupId);
+
+        return exists;
+    }
+
+    @Override
+    public List<GroupUser> getWaitingUsers(UUID groupId) {
         log.debug("fetching for users who have submitted request to join group");
 
         var groupUsers = entityManager.createQuery(GET_USERS_WITH_SUBMITTED_REQUEST, GroupUser.class)
@@ -67,7 +72,7 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     }
 
     @Override
-    public List<GroupUser> getUserGroups(String userId) {
+    public List<GroupUser> getUserGroups(UUID userId) {
         log.debug("fetching groupUsers with userId {}", userId);
 
         var groupUsers = entityManager.createQuery(GET_USER_GROUPS, GroupUser.class)

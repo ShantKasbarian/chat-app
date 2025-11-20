@@ -4,8 +4,9 @@ import org.chat.entity.Contact;
 import org.chat.entity.User;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
-    Contact addContact(String userId, String recipientId);
+    Contact addContact(UUID userId, UUID targetUserId);
     List<User> searchUserByUsername(String username);
 }

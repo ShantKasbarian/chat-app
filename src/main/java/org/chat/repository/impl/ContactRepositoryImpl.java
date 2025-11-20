@@ -8,6 +8,7 @@ import org.chat.entity.Contact;
 import org.chat.repository.ContactRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
@@ -20,14 +21,14 @@ public class ContactRepositoryImpl implements ContactRepository {
     private final EntityManager entityManager;
 
     @Override
-    public List<Contact> getContacts(String currentUserId) {
-        log.debug("fetching contacts of user with id {}", currentUserId);
+    public List<Contact> getContacts(UUID id) {
+        log.debug("fetching contacts of user with id {}", id);
 
         var contacts = entityManager.createQuery(GET_USER_CONTACTS, Contact.class)
-                .setParameter(USER_ID_PARAMETER, currentUserId)
+                .setParameter(USER_ID_PARAMETER, id)
                 .getResultList();
 
-        log.debug("fetched contacts of user with id {}", currentUserId);
+        log.debug("fetched contacts of user with id {}", id);
 
         return contacts;
     }

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -14,8 +16,9 @@ import lombok.Setter;
 @Table(name = "group_users")
 public class GroupUser {
     @Id
-    @Column(name = "id")
-    private String id;
+    @GeneratedValue(generator = "UUID")
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
@@ -30,4 +33,11 @@ public class GroupUser {
 
     @Column(name = "is_member")
     private Boolean isMember;
+
+    public GroupUser(Group group, User user, Boolean isCreator, Boolean isMember) {
+        this.group = group;
+        this.user = user;
+        this.isCreator = isCreator;
+        this.isMember = isMember;
+    }
 }

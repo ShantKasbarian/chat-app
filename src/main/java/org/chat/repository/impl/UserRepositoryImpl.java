@@ -14,9 +14,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository {
-    private static final String ID_PARAMETER = "id";
-
-    private static final String USERNAME_PARAMETER = "username";
+    private static final String USERNAME_COLUMN = "username";
 
     private static final String PATTERN_PARAMETER = "pattern";
 
@@ -25,36 +23,25 @@ public class UserRepositoryImpl implements UserRepository {
     private final EntityManager entityManager;
 
     @Override
-    public Optional<User> findById(String id) {
-        log.debug("fetching user with id {}", id);
-
-        Optional<User> user = find(ID_PARAMETER, id).firstResultOptional();
-
-        log.debug("fetched user with id {}", id);
-
-        return user;
-    }
-
-    @Override
-    public boolean existsById(String id) {
-        log.debug("checking if user with id {} exists", id);
-
-        boolean exists = count(ID_PARAMETER, id) > 0;
-
-        log.debug("checked if user with id {} exists", id);
-
-        return exists;
-    }
-
-    @Override
     public Optional<User> findByUsername(String username) {
         log.debug("fetching user with username {}", username);
 
-        Optional<User> user = find(USERNAME_PARAMETER,username).firstResultOptional();
+        Optional<User> user = find(USERNAME_COLUMN, username).firstResultOptional();
 
         log.debug("fetched user with username {}", username);
 
         return user;
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        log.debug("checking if user with id {} exists", username);
+
+        boolean exists = count(USERNAME_COLUMN, username) > 0;
+
+        log.debug("checked if user with id {} exists", username);
+
+        return exists;
     }
 
     @Override

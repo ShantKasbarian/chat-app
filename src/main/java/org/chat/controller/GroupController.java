@@ -1,6 +1,7 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -13,6 +14,7 @@ import org.chat.converter.ToEntityConverter;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
+import org.chat.entity.User;
 import org.chat.model.GroupDto;
 import org.chat.model.GroupUserDto;
 import org.chat.service.GroupService;
@@ -20,6 +22,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.chat.config.JwtService.USER_ID_CLAIM;
 
@@ -45,14 +48,14 @@ public class GroupController {
 
     @POST
     @Transactional
-    public Response create(GroupDto groupDto) {
+    public Response create(@Context JsonWebToken jsonWebToken, GroupDto groupDto) {
         log.info("/groups with POST called");
 
         var group = groupToModelConverter.convertToModel(
                 groupService.createGroup(
                         groupDtoToEntityConverter.convertToEntity(groupDto),
                         groupDto.getCreators(),
-                        token.getClaim(USER_ID_CLAIM)
+                        UUID.fromString(jsonWebToken.getClaim(USER_ID_CLAIM))
                 )
         );
 
@@ -67,11 +70,11 @@ public class GroupController {
     @Path("/{groupId}/join")
     @ResponseStatus(201)
     @Transactional
-    public Response joinGroup(@PathParam("groupId") String groupId) {
+    public Response joinGroup(@PathParam("groupId") UUID groupId) {
         log.info("/groups/{groupId}/join with POST called");
 
         var groupUserDto = groupUserToModelConverter.convertToModel(
-                groupService.joinGroup(groupId, token.getClaim(USER_ID_CLAIM))
+                groupService.joinGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)))
         );
 
         log.info("/groups/{groupId}/join with POST returning a {}", GroupUserDto.class.getName());
@@ -85,10 +88,10 @@ public class GroupController {
     @Path("/{groupId}/leave")
     @ResponseStatus(204)
     @Transactional
-    public void leaveGroup(@PathParam("groupId") String groupId) {
+    public void leaveGroup(@PathParam("groupId") UUID groupId) {
         log.info("/groups/{groupId}/leave with DELETE called");
 
-        groupService.leaveGroup(groupId, token.getClaim(USER_ID_CLAIM));
+        groupService.leaveGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)));
 
         log.info("/groups/{groupId}/leave with DELETE user left group");
     }
@@ -96,12 +99,12 @@ public class GroupController {
     @PUT
     @Path("/accept/{groupUserId}")
     @Transactional
-    public Response acceptUserToGroup(@PathParam("groupUserId") String groupUserId) {
+    public Response acceptUserToGroup(@PathParam("groupUserId") UUID groupUserId) {
         log.info("/groups/accept/{groupUserId} with PUT called");
 
         var groupUserDto = groupUserToModelConverter.convertToModel(
                 groupService.acceptJoinGroup(
-                        token.getClaim(USER_ID_CLAIM), groupUserId
+                    UUID.fromString(token.getClaim(USER_ID_CLAIM)), groupUserId
                 )
         );
 
@@ -114,20 +117,20 @@ public class GroupController {
     @Path("/reject/{groupUserId}")
     @ResponseStatus(204)
     @Transactional
-    public void rejectUserFromGroup(@PathParam("groupUserId") String groupUserId) {
+    public void rejectUserFromGroup(@PathParam("groupUserId") UUID groupUserId) {
         log.info("/groups/reject/{groupUserId} with DELETE called");
 
-        groupService.rejectJoinGroup(token.getClaim(USER_ID_CLAIM), groupUserId);
+        groupService.rejectJoinGroup(UUID.fromString(token.getClaim(USER_ID_CLAIM)), groupUserId);
 
         log.info("/groups/reject/{groupUserId} with DELETE returning a response");
     }
 
     @GET
     @Path("/{groupId}/waiting/users")
-    public Response getWaitingUsers(@PathParam("groupId") String groupId) {
+    public Response getWaitingUsers(@PathParam("groupId") UUID groupId) {
         log.info("/groups/{groupId}/waiting/users with GET called");
 
-        var users = groupService.getWaitingUsers(groupId, token.getClaim(USER_ID_CLAIM))
+        var users = groupService.getWaitingUsers(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)))
                 .stream()
                 .map(groupUserToModelConverter::convertToModel)
                 .toList();
@@ -142,7 +145,7 @@ public class GroupController {
     public Response getJoinedGroups() {
         log.info("/groups/joined with GET called");
 
-        var groups = groupService.getUserJoinedGroups(token.getClaim(USER_ID_CLAIM))
+        var groups = groupService.getUserJoinedGroups(UUID.fromString(token.getClaim(USER_ID_CLAIM)))
                 .stream()
                 .map(groupToModelConverter::convertToModel)
                 .toList();

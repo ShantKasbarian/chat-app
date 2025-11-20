@@ -17,7 +17,7 @@ public class GroupMessageConverter implements
                 entity.getId(),
                 entity.getSender().getId(),
                 entity.getSender().getName(),
-                entity.getMessage(),
+                entity.getText(),
                 entity.getGroup().getId(),
                 entity.getGroup().getName(),
                 entity.getTime().format(formatter)

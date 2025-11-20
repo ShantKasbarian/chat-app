@@ -9,6 +9,7 @@ import lombok.Setter;
 import javax.security.auth.Subject;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -18,8 +19,9 @@ import java.util.List;
 @Table(name = "users")
 public class User implements UserPrincipal {
     @Id
+    @GeneratedValue
     @Column(name = "id")
-    private String id;
+    private UUID id;
 
     @Column(name = "username", unique = true)
     private String username;

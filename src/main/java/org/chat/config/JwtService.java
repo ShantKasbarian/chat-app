@@ -18,7 +18,7 @@ public class JwtService {
         return Jwt.issuer(jwtIssuer)
                 .upn(username)
                 .claim(USER_ID_CLAIM, userId)
-                .expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
+                .expiresAt(Instant.now().plus(10, ChronoUnit.HOURS))
                 .sign();
     }
 }

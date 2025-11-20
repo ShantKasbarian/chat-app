@@ -20,6 +20,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -65,25 +66,25 @@ class GroupControllerIT {
     @BeforeEach
     void setUp() {
         user = new User();
-        user.setId(UUID.randomUUID().toString());
+        user.setId(UUID.randomUUID());
         user.setUsername("username");
         user.setPassword("Password123+");
 
         user2 = new User();
-        user2.setId(UUID.randomUUID().toString());
+        user2.setId(UUID.randomUUID());
         user2.setUsername("username2");
         user2.setPassword("Password123+");
 
 
         group = new Group();
-        group.setId(UUID.randomUUID().toString());
+        group.setId(UUID.randomUUID());
         group.setName("group");
 
         groupDto = new GroupDto();
         groupDto.setId(group.getId());
         groupDto.setName(group.getName());
 
-        groupUser = new GroupUser(UUID.randomUUID().toString(), group, user2, true, false);
+        groupUser = new GroupUser(UUID.randomUUID(), group, user2, true, false);
         groupUserDto =
                 new GroupUserDto(
                         groupUser.getId(),
@@ -99,10 +100,10 @@ class GroupControllerIT {
     @Test
     void create() {
         when(groupConverter.convertToModel(group)).thenReturn(groupDto);
-        when(groupService.createGroup(group, new String[]{}, user.getId()))
+        when(groupService.createGroup(group, new UUID[]{}, user.getId()))
                 .thenReturn(group);
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -120,7 +121,7 @@ class GroupControllerIT {
         when(groupService.joinGroup(group.getId(), user.getId()))
                 .thenReturn(new GroupUser());
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -136,7 +137,7 @@ class GroupControllerIT {
         when(groupService.leaveGroup(group.getId(), user.getId()))
                 .thenReturn("you left the group");
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -153,7 +154,7 @@ class GroupControllerIT {
         when(groupService.acceptJoinGroup(user2.getId(), groupUser.getId()))
                 .thenReturn(groupUser);
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -166,10 +167,10 @@ class GroupControllerIT {
 
     @Test
     void rejectJoinGroup() {
-        when(groupService.rejectJoinGroup(anyString(), anyString()))
+        when(groupService.rejectJoinGroup(any(UUID.class), any(UUID.class)))
                 .thenReturn("user has been rejected");
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -190,7 +191,7 @@ class GroupControllerIT {
         when(groupService.getWaitingUsers(group.getId(), user.getId()))
                 .thenReturn(users);
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -211,7 +212,7 @@ class GroupControllerIT {
         when(groupService.getUserJoinedGroups(user.getId()))
                 .thenReturn(groups);
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -232,7 +233,7 @@ class GroupControllerIT {
         when(groupService.getGroups("g"))
                 .thenReturn(groups);
 
-        String jwtToken = jwtService.generateToken(user.getUsername(), user.getId());
+        String jwtToken = jwtService.generateToken(user.getUsername(), String.valueOf(user.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
