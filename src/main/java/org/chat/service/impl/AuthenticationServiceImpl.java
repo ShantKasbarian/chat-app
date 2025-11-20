@@ -46,7 +46,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .filter(user1 -> BCrypt.checkpw(password, user1.getPassword()))
                 .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
 
-        String token = jwtService.generateToken(username, user.getId());
+        String token = jwtService.generateToken(username, String.valueOf(user.getId()));
 
         log.info("authenticated user with username {}", username);
 
@@ -71,7 +71,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         User user = new User();
-        user.setId(UUID.randomUUID().toString());
         user.setUsername(username);
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
 
@@ -81,7 +80,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         log.info("generating token for user with username {}", username);
 
-        String token = jwtService.generateToken(username, user.getId());
+        String token = jwtService.generateToken(username, String.valueOf(user.getId()));
 
         log.info("generated token for user with username {}", username);
 

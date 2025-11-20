@@ -33,7 +33,7 @@ class AuthenticationControllerIT {
     @BeforeEach
     void setUp() {
         user = new User();
-        user.setId(UUID.randomUUID().toString());
+        user.setId(UUID.randomUUID());
         user.setUsername("username");
         user.setPassword("Password123+");
 

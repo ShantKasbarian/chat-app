@@ -63,19 +63,19 @@ class UserControllerIT {
     @BeforeEach
     void setUp() {
         user1 = new User();
-        user1.setId(UUID.randomUUID().toString());
+        user1.setId(UUID.randomUUID());
         user1.setUsername("username1");
         user1.setPassword("password");
 
         user2 = new User();
-        user2.setId(UUID.randomUUID().toString());
+        user2.setId(UUID.randomUUID());
         user2.setUsername("username2");
         user2.setPassword("password");
 
         userDto1 = new UserDto(user1.getId(), user1.getUsername(), user1.getPassword());
         userDto2 = new UserDto(user2.getId(), user2.getUsername(), user2.getPassword());
 
-        contact = new Contact(UUID.randomUUID().toString(), user1, user2);
+        contact = new Contact(UUID.randomUUID(), user1, user2);
 
         contactDto = new ContactDto(
                 contact.getId(),
@@ -90,7 +90,7 @@ class UserControllerIT {
                 .thenReturn(contact);
         when(contactConverter.convertToModel(contact)).thenReturn(contactDto);
 
-        String jwtToken = jwtService.generateToken(user1.getUsername(), user1.getId());
+        String jwtToken = jwtService.generateToken(user1.getUsername(), String.valueOf(user1.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -109,7 +109,7 @@ class UserControllerIT {
         when(contactConverter.convertToModel(contact)).thenReturn(contactDto);
         when(userService.getContacts(user1.getId())).thenReturn(contacts);
 
-        String jwtToken = jwtService.generateToken(user1.getUsername(), user1.getId());
+        String jwtToken = jwtService.generateToken(user1.getUsername(), String.valueOf(user1.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -130,7 +130,7 @@ class UserControllerIT {
         when(userConverter.convertToModel(user2)).thenReturn(userDto2);
         when(userService.searchUserByUsername("u")).thenReturn(users);
 
-        String jwtToken = jwtService.generateToken(user1.getUsername(), user1.getId());
+        String jwtToken = jwtService.generateToken(user1.getUsername(), String.valueOf(user1.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)

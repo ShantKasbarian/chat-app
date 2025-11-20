@@ -66,19 +66,19 @@ class MessageControllerIT {
     @BeforeEach
     void setUp() {
         sender = new User();
-        sender.setId(UUID.randomUUID().toString());
+        sender.setId(UUID.randomUUID());
         sender.setUsername("username1");
         sender.setPassword("password");
 
         recipient = new User();
-        recipient.setId(UUID.randomUUID().toString());
+        recipient.setId(UUID.randomUUID());
         recipient.setUsername("username2");
         recipient.setPassword("password");
 
         message = new Message();
-        message.setId(UUID.randomUUID().toString());
+        message.setId(UUID.randomUUID());
         message.setSender(sender);
-        message.setMessage("some message");
+        message.setText("some message");
         message.setTime(LocalDateTime.now());
 
         messageDto = new MessageDto(
@@ -87,19 +87,19 @@ class MessageControllerIT {
                 sender.getUsername(),
                 recipient.getId(),
                 recipient.getUsername(),
-                message.getMessage(),
+                message.getText(),
                 message.getTime().toString()
         );
 
         group = new Group();
-        group.setId(UUID.randomUUID().toString());
+        group.setId(UUID.randomUUID());
         group.setName("group");
 
         groupMessageDto = new GroupMessageDto(
                 message.getId(),
                 sender.getId(),
                 sender.getUsername(),
-                message.getMessage(),
+                message.getText(),
                 group.getId(),
                 group.getName(),
                 message.getTime().toString()
@@ -109,10 +109,10 @@ class MessageControllerIT {
     @Test
     void sendMessage() {
         when(messageConverter.convertToModel(message)).thenReturn(messageDto);
-        when(messageService.sendMessage(message.getMessage(), recipient.getUsername(), sender.getId()))
+        when(messageService.sendMessage(message.getText(), recipient.getId(), sender.getId()))
                 .thenReturn(message);
 
-        String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());
+        String jwtToken = jwtService.generateToken(sender.getUsername(), String.valueOf(sender.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -129,11 +129,11 @@ class MessageControllerIT {
         List<Message> messages = new ArrayList<>();
         messages.add(message);
 
-        when(messageService.getMessages(sender.getId(), recipient.getUsername(), 0, 10))
+        when(messageService.getMessages(sender.getId(), recipient.getId(), 0, 10))
                 .thenReturn(messages);
         when(messageConverter.convertToModel(any(Message.class))).thenReturn(messageDto);
 
-        String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());
+        String jwtToken = jwtService.generateToken(sender.getUsername(), String.valueOf(sender.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -148,10 +148,10 @@ class MessageControllerIT {
     @Test
     void messageGroup() {
         when(groupMessageConverter.convertToModel(message)).thenReturn(groupMessageDto);
-        when(messageService.messageGroup(message.getMessage(), group.getName(), sender.getId()))
+        when(messageService.messageGroup(message.getText(), group.getId(), sender.getId()))
                 .thenReturn(message);
 
-        String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());
+        String jwtToken = jwtService.generateToken(sender.getUsername(), String.valueOf(sender.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -168,10 +168,10 @@ class MessageControllerIT {
         List<Message> messages = new ArrayList<>();
         messages.add(message);
 
-        when(messageService.getGroupMessages(group.getName(), sender.getId(), 0, 10))
+        when(messageService.getGroupMessages(group.getId(), sender.getId(), 0, 10))
                 .thenReturn(messages);
 
-        String jwtToken = jwtService.generateToken(sender.getUsername(), sender.getId());
+        String jwtToken = jwtService.generateToken(sender.getUsername(), String.valueOf(sender.getId()));
 
         RestAssured.given()
                 .contentType(ContentType.JSON)

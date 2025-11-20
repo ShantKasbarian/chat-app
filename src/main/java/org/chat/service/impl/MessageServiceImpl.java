@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMessageConverter;
-import org.chat.converter.MessageConverter;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.Message;
@@ -13,8 +12,6 @@ import org.chat.entity.User;
 import org.chat.exception.InvalidInfoException;
 import org.chat.exception.InvalidRoleException;
 import org.chat.exception.ResourceNotFoundException;
-import org.chat.model.GroupMessageDto;
-import org.chat.model.MessageDto;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.MessageRepository;
@@ -53,27 +50,25 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public Message sendMessage(String content, String recipientId, String currentUserId) {
+    public Message sendMessage(String content, UUID recipientId, UUID currentUserId) {
         log.info("sending message to user with id {}", recipientId);
 
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException(EMPTY_MESSAGE);
         }
 
-        if (recipientId == null || recipientId.isEmpty()) {
+        if (recipientId == null) {
             throw new InvalidInfoException(TARGET_USER_NOT_SPECIFIED_MESSAGE);
         }
 
-        User recipient = userRepository.findById(recipientId)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
+        User recipient = userRepository.findById(recipientId);
 
-        User sender = userRepository.findById(currentUserId).get();
+        User sender = userRepository.findById(currentUserId);
 
         Message message = new Message();
-        message.setId(UUID.randomUUID().toString());
         message.setRecipient(recipient);
         message.setSender(sender);
-        message.setMessage(content);
+        message.setText(content);
         message.setTime(LocalDateTime.now());
 
         messageRepository.persist(message);
@@ -84,7 +79,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getMessages(String userId, String recipientId, int page, int size) {
+    public List<Message> getMessages(UUID userId, UUID recipientId, int page, int size) {
         log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
 
         if (page == 0) {
@@ -100,19 +95,18 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public Message messageGroup(String content, String groupId, String senderId) {
+    public Message messageGroup(String content, UUID groupId, UUID senderId) {
         log.info("sending message to group with id {}", groupId);
 
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException(EMPTY_MESSAGE);
         }
 
-        if (groupId == null || groupId.isEmpty()) {
+        if (groupId == null) {
             throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
         }
 
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
+        Group group = groupRepository.findById(groupId);
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, senderId);
 
@@ -120,12 +114,11 @@ public class MessageServiceImpl implements MessageService {
             throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        User currentUser = userRepository.findById(senderId).get();
+        User currentUser = userRepository.findById(senderId);
 
         Message message = new Message();
-        message.setId(UUID.randomUUID().toString());
         message.setSender(currentUser);
-        message.setMessage(content);
+        message.setText(content);
         message.setGroup(group);
         message.setTime(LocalDateTime.now());
 
@@ -137,10 +130,10 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getGroupMessages(String groupId, String userId, int page, int size) {
+    public List<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
-        if (groupId == null || groupId.isEmpty()) {
+        if (groupId == null) {
             throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
         }
 

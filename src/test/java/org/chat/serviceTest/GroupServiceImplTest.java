@@ -56,21 +56,21 @@ class GroupServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         group = new Group();
-        group.setId(UUID.randomUUID().toString());
+        group.setId(UUID.randomUUID());
         group.setName("group");
 
         user1 = new User();
-        user1.setId(UUID.randomUUID().toString());
+        user1.setId(UUID.randomUUID());
         user1.setUsername("user1");
         user1.setPassword("Password123+");
 
         user2 = new User();
-        user2.setId(UUID.randomUUID().toString());
+        user2.setId(UUID.randomUUID());
         user2.setUsername("user2");
         user2.setPassword("Password123+");
 
-        groupUser1 = new GroupUser(UUID.randomUUID().toString(), group, user1, false, false);
-        groupUser2 = new GroupUser(UUID.randomUUID().toString(), group, user2, true, true);
+        groupUser1 = new GroupUser(UUID.randomUUID(), group, user1, false, false);
+        groupUser2 = new GroupUser(UUID.randomUUID(), group, user2, true, true);
 
         when(groupRepository.getEntityManager()).thenReturn(entityManager);
         when(userRepository.getEntityManager()).thenReturn(entityManager);
@@ -82,11 +82,11 @@ class GroupServiceImplTest {
         when(groupRepository.existsByName(anyString())).thenReturn(false);
         doNothing().when(groupRepository).persist(group);
 
-        when(userRepository.findById(anyString())).thenReturn(Optional.ofNullable(user1));
+        when(userRepository.findById(any(UUID.class))).thenReturn(user1);
 
         doNothing().when(groupUserRepository).persist(anyList());
 
-        Group response = groupService.createGroup(group, new String[]{user2.getId()}, user1.getId());
+        Group response = groupService.createGroup(group, new UUID[]{user2.getId()}, user1.getId());
 
         assertEquals(group.getId(), response.getId());
         assertEquals(group.getName(), response.getName());
@@ -98,26 +98,26 @@ class GroupServiceImplTest {
     @Test
     void createGroupShouldThrowInvalidGroupExceptionWhenGroupNameIsNull() {
         group.setName(null);
-        assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new String[]{}, user1.getId()));
+        assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new UUID[]{}, user1.getId()));
     }
 
     @Test
     void createGroupShouldThrowInvalidGroupExceptionWithGroupNameEmpty() {
         group.setName("");
-        assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new String[]{}, user1.getId()));
+        assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new UUID[]{}, user1.getId()));
     }
 
     @Test
     void createGroupShouldThrowInvalidGroupExceptionWithGroupAlreadyExists() {
         when(groupRepository.existsByName(anyString())).thenReturn(true);
-        assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new String[]{}, user1.getId()));
+        assertThrows(InvalidGroupException.class, () -> groupService.createGroup(group, new UUID[]{}, user1.getId()));
     }
 
     @Test
     void joinGroup() {
-        when(groupRepository.findById(anyString())).thenReturn(Optional.ofNullable(group));
-        when(userRepository.findById(anyString())).thenReturn(Optional.ofNullable(user1));
-        when(groupUserRepository.existsByGroupIdUserId(anyString(), anyString()))
+        when(groupRepository.findById(any(UUID.class))).thenReturn(group);
+        when(userRepository.findById(any(UUID.class))).thenReturn(user1);
+        when(groupUserRepository.existsByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(false);
 
         doNothing().when(groupUserRepository).persist(any(GroupUser.class));
@@ -132,9 +132,9 @@ class GroupServiceImplTest {
 
     @Test
     void joinGroupShouldThrowUnableToJoinGroupException() {
-        when(groupRepository.findById(anyString())).thenReturn(Optional.ofNullable(group));
-        when(userRepository.findById(anyString())).thenReturn(Optional.ofNullable(user1));
-        when(groupUserRepository.existsByGroupIdUserId(anyString(), anyString()))
+        when(groupRepository.findById(any(UUID.class))).thenReturn(group);
+        when(userRepository.findById(any(UUID.class))).thenReturn(user1);
+        when(groupUserRepository.existsByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(true);
 
         assertThrows(UnableToJoinGroupException.class, () -> groupService.joinGroup(group.getId(), user1.getId()));
@@ -144,8 +144,8 @@ class GroupServiceImplTest {
     void leaveGroup() {
         String expectedResult = "you left the group";
 
-        when(groupRepository.existsById(anyString())).thenReturn(true);
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupRepository.existsById(any(UUID.class))).thenReturn(true);
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
         doNothing().when(groupUserRepository).delete(groupUser1);
 
@@ -157,13 +157,13 @@ class GroupServiceImplTest {
 
     @Test
     void acceptJoinGroup() {
-        when(groupUserRepository.findById(anyString()))
-                .thenReturn(Optional.ofNullable(groupUser1));
+        when(groupUserRepository.findById(any(UUID.class)))
+                .thenReturn(groupUser1);
 
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser2);
 
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
 
         groupUser1.setIsCreator(true);
@@ -182,9 +182,9 @@ class GroupServiceImplTest {
     void acceptJoinGroupShouldThrowInvalidRoleException() {
         groupUser1.setIsCreator(false);
 
-        when(groupUserRepository.findById(anyString()))
-                .thenReturn(Optional.ofNullable(groupUser2));
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupUserRepository.findById(any(UUID.class)))
+                .thenReturn(groupUser2);
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
 
         assertThrows(InvalidRoleException.class, () -> groupService.acceptJoinGroup(user1.getId(), groupUser2.getId()));
@@ -196,10 +196,10 @@ class GroupServiceImplTest {
         groupUser1.setIsCreator(true);
         groupUser2.setIsMember(true);
 
-        when(groupUserRepository.findById(anyString()))
-                .thenReturn(Optional.ofNullable(groupUser2));
+        when(groupUserRepository.findById(any(UUID.class)))
+                .thenReturn(groupUser2);
 
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
 
         assertThrows(UnableToJoinGroupException.class, () -> groupService.acceptJoinGroup(user1.getId(), groupUser2.getId()));
@@ -213,10 +213,10 @@ class GroupServiceImplTest {
         groupUser1.setIsCreator(true);
         groupUser2.setIsMember(false);
 
-        when(groupUserRepository.findById(anyString()))
-                .thenReturn(Optional.ofNullable(groupUser2));
+        when(groupUserRepository.findById(any(UUID.class)))
+                .thenReturn(groupUser2);
 
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
 
         doNothing().when(groupUserRepository).delete(any(GroupUser.class));
@@ -236,10 +236,10 @@ class GroupServiceImplTest {
         List<GroupUser> users = new ArrayList<>();
         users.add(groupUser2);
 
-        when(groupRepository.existsById(anyString())).thenReturn(true);
-        when(groupUserRepository.findByGroupIdUserId(anyString(), anyString()))
+        when(groupRepository.existsById(any(UUID.class))).thenReturn(true);
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
-        when(groupUserRepository.getWaitingUsers(anyString())).thenReturn(users);
+        when(groupUserRepository.getWaitingUsers(any(UUID.class))).thenReturn(users);
 
         List<GroupUser> response = groupService.getWaitingUsers(group.getId(), user2.getId());
 
@@ -252,7 +252,7 @@ class GroupServiceImplTest {
         List<GroupUser> groups = new ArrayList<>();
         groups.add(groupUser2);
 
-        when(groupUserRepository.getUserGroups(anyString()))
+        when(groupUserRepository.getUserGroups(any(UUID.class)))
                 .thenReturn(groups);
 
         List<Group> response = groupService.getUserJoinedGroups(user2.getId());

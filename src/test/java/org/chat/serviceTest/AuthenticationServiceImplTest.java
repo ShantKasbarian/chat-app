@@ -39,7 +39,7 @@ class AuthenticationServiceImplTest {
         MockitoAnnotations.openMocks(this);
 
         user = new User();
-        user.setId(UUID.randomUUID().toString());
+        user.setId(UUID.randomUUID());
         user.setUsername("John.Doe");
         user.setPassword(BCrypt.hashpw("Password123+", BCrypt.gensalt()));
     }

@@ -14,8 +14,6 @@ import java.util.Optional;
 @AllArgsConstructor
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository {
-    private static final String ID_PARAMETER = "id";
-
     private static final String USERNAME_COLUMN = "username";
 
     private static final String PATTERN_PARAMETER = "pattern";
@@ -23,17 +21,6 @@ public class UserRepositoryImpl implements UserRepository {
     private static final String SEARCH_BY_USERNAME = "FROM User u WHERE UPPER(u.username) LIKE UPPER(:" + PATTERN_PARAMETER + ")";
 
     private final EntityManager entityManager;
-
-    @Override
-    public Optional<User> findById(String id) {
-        log.debug("fetching user with id {}", id);
-
-        Optional<User> user = find(ID_PARAMETER, id).firstResultOptional();
-
-        log.debug("fetched user with id {}", id);
-
-        return user;
-    }
 
     @Override
     public Optional<User> findByUsername(String username) {

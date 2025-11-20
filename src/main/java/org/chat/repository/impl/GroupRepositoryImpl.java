@@ -9,6 +9,7 @@ import org.chat.repository.GroupRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
@@ -25,18 +26,7 @@ public class GroupRepositoryImpl implements GroupRepository {
     private final EntityManager entityManager;
 
     @Override
-    public Optional<Group> findById(String id) {
-        log.debug("fetching group with id {}", id);
-
-        Optional<Group> group = find(ID_COLUMN, id).firstResultOptional();
-
-        log.debug("fetched group with id {}", id);
-
-        return group;
-    }
-
-    @Override
-    public boolean existsById(String id) {
+    public boolean existsById(UUID id) {
         log.debug("checking if group with id {} exists", id);
 
         boolean exists = count(ID_COLUMN, id) > 0;

@@ -10,17 +10,15 @@ import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMessageConverter;
-import org.chat.converter.MessageConverter;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.Message;
 import org.chat.model.GroupMessageDto;
 import org.chat.model.MessageDto;
 import org.chat.service.MessageService;
-import org.chat.service.impl.MessageServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.chat.config.JwtService.USER_ID_CLAIM;
 
@@ -51,7 +49,7 @@ public class MessageController {
                 messageService.sendMessage(
                     messageDto.message(),
                     messageDto.recipientId(),
-                    token.getClaim(USER_ID_CLAIM)
+                    UUID.fromString(token.getClaim(USER_ID_CLAIM))
                 )
         );
 
@@ -65,7 +63,7 @@ public class MessageController {
     @GET
     @Path("/{userId}")
     public Response getMessages(
-            @PathParam("userId") String userId,
+            @PathParam("userId") UUID userId,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
 
@@ -73,7 +71,7 @@ public class MessageController {
         log.info("/messages/{userId} with GET called");
 
         var messages = messageService.getMessages(
-                token.getClaim(USER_ID_CLAIM), userId, page, size
+                UUID.fromString(token.getClaim(USER_ID_CLAIM)), userId, page, size
         )
             .stream()
             .map(messageToModelConverter::convertToModel)
@@ -94,7 +92,7 @@ public class MessageController {
                 messageService.messageGroup(
                     messageDto.message(),
                     messageDto.groupId(),
-                    token.getClaim(USER_ID_CLAIM)
+                    UUID.fromString(token.getClaim(USER_ID_CLAIM))
                 )
         );
 
@@ -108,14 +106,14 @@ public class MessageController {
     @GET
     @Path("/group/{groupId}")
     public Response getGroupMessages(
-            @PathParam("groupId") String groupId,
+            @PathParam("groupId") UUID groupId,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
         log.info("/messages/group/{groupId} with GET called");
 
         var messages = messageService.getGroupMessages(
-                groupId, token.getClaim(USER_ID_CLAIM), page, size
+                groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size
         )
             .stream()
             .map(groupMessageConverter::convertToModel)

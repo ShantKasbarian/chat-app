@@ -17,6 +17,7 @@ import org.chat.service.impl.UserServiceImpl;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.chat.config.JwtService.USER_ID_CLAIM;
 
@@ -41,11 +42,11 @@ public class UserController {
     @POST
     @Path("/{userId}/contact")
     @Transactional
-    public Response addContact(@PathParam("userId") String userId) {
+    public Response addContact(@PathParam("userId") UUID userId) {
         log.info("/users/{userId}/contact with POST called");
 
         var contact = contactConverter.convertToModel(
-                userService.addContact(token.getClaim(USER_ID_CLAIM), userId)
+                userService.addContact(UUID.fromString(token.getClaim(USER_ID_CLAIM)), userId)
         );
 
         log.info("/users/{userId}/contact with POST returning a {}", ContactDto.class.getName());
@@ -60,7 +61,7 @@ public class UserController {
     public Response getContacts() {
         log.info("/users/contacts with GET called");
 
-        var contacts = userService.getContacts(token.getClaim(USER_ID_CLAIM))
+        var contacts = userService.getContacts(UUID.fromString(token.getClaim(USER_ID_CLAIM)))
                 .stream()
                 .map(contactConverter::convertToModel)
                 .toList();

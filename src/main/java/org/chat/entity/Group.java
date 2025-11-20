@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,8 +17,9 @@ import java.util.List;
 @Table(name = "groups")
 public class Group {
     @Id
-    @Column(name = "id")
-    private String id;
+    @GeneratedValue(generator = "UUID")
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "name", unique = true)
     private String name;

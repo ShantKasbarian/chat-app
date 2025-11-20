@@ -39,20 +39,20 @@ class UserServiceImplTest {
         MockitoAnnotations.openMocks(this);
 
         user1 = new User();
-        user1.setId(UUID.randomUUID().toString());
+        user1.setId(UUID.randomUUID());
         user1.setUsername("user1");
 
         user2 = new User();
-        user2.setId(UUID.randomUUID().toString());
+        user2.setId(UUID.randomUUID());
         user2.setUsername("user2");
     }
 
     @Test
     void getContacts() {
         List<Contact> contacts = new ArrayList<>();
-        contacts.add(new Contact(UUID.randomUUID().toString(), user2, user1));
+        contacts.add(new Contact(UUID.randomUUID(), user2, user1));
 
-        when(contactRepository.getContacts(anyString())).thenReturn(contacts);
+        when(contactRepository.getContacts(any(UUID.class))).thenReturn(contacts);
         List<Contact> response = userService.getContacts(user2.getId());
 
         assertEquals(contacts.size(), response.size());
@@ -60,10 +60,10 @@ class UserServiceImplTest {
 
     @Test
     void addContact() {
-        when(userRepository.findById(user1.getId())).thenReturn(Optional.ofNullable(user1));
-        when(userRepository.findById(user2.getId())).thenReturn(Optional.ofNullable(user2));
+        when(userRepository.findById(user1.getId())).thenReturn(user1);
+        when(userRepository.findById(user2.getId())).thenReturn(user2);
 
-        Contact contact = new Contact(UUID.randomUUID().toString(), user1, user2);
+        Contact contact = new Contact(UUID.randomUUID(), user1, user2);
         doNothing().when(contactRepository).persist(contact);
 
         Contact response = userService.addContact(user1.getId(), user2.getId());
@@ -71,16 +71,6 @@ class UserServiceImplTest {
         assertEquals(user1.getId(), response.getUser().getId());
         assertEquals(user2.getId(), response.getContact().getId());
         verify(contactRepository, times(1)).persist(any(Contact.class));
-    }
-
-    @Test
-    void addContactShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
-        assertThrows(InvalidInfoException.class, () -> userService.addContact(user1.getId(), null));
-    }
-
-    @Test
-    void addContactShouldThrowInvalidInfoExceptionWhenRecipientIdIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> userService.addContact(user1.getId(), ""));
     }
 
     @Test

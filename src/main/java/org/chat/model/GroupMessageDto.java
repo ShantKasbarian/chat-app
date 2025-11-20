@@ -1,11 +1,13 @@
 package org.chat.model;
 
+import java.util.UUID;
+
 public record GroupMessageDto(
-        String id,
-        String senderId,
+        UUID id,
+        UUID senderId,
         String senderName,
         String message,
-        String groupId,
+        UUID groupId,
         String groupName,
         String time
 ) {

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,8 +15,9 @@ import java.time.LocalDateTime;
 @Table(name = "messages")
 public class Message {
     @Id
-    @Column(name = "id")
-    private String id;
+    @GeneratedValue(generator = "UUID")
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
@@ -25,8 +27,8 @@ public class Message {
     @JoinColumn(name = "recipient_id")
     private User recipient;
 
-    @Column(name = "message")
-    private String message;
+    @Column(name = "text")
+    private String text;
 
     @Column(name = "sent_time")
     private LocalDateTime time;
