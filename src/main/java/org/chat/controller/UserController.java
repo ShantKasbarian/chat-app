@@ -24,9 +24,9 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/users")
+@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Authenticated
 public class UserController {
     private final UserServiceImpl userService;
 

@@ -1,4 +1,4 @@
-package org.chat.serviceTest;
+package org.chat.service;
 
 import jakarta.persistence.EntityManager;
 import org.chat.entity.Group;
@@ -19,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;

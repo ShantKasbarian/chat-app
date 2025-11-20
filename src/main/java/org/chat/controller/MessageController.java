@@ -25,9 +25,9 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/messages")
+@Authenticated
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 public class MessageController {
     private final MessageService messageService;
 

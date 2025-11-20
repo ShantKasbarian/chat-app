@@ -29,9 +29,9 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/groups")
+@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Authenticated
 public class GroupController {
     private final GroupService groupService;
 

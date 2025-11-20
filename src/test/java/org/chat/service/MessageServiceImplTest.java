@@ -1,4 +1,4 @@
-package org.chat.serviceTest;
+package org.chat.service;
 
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
