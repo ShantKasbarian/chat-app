@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.chat.config.JwtService.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -71,7 +72,7 @@ class GroupControllerTest {
         groupUser = new GroupUser(UUID.randomUUID(), group, user, false, false);
         groupUserDto = new GroupUserDto(groupUser.getId(), group.getId(), group.getName(), user.getId(), user.getUsername(), groupUser.getIsMember(), groupUser.getIsCreator());
 
-        when(jsonWebToken.getClaim(anyString())).thenReturn(user.getId().toString());
+        when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
     }
 
     @Test

@@ -5,11 +5,7 @@ import org.chat.entity.Group;
 import org.chat.model.GroupDto;
 
 @ApplicationScoped
-public class GroupConverter implements
-        ToEntityConverter<Group, GroupDto>,
-        ToModelConverter<GroupDto, Group>
-{
-
+public class GroupConverter implements ToEntityConverter<Group, GroupDto>, ToModelConverter<GroupDto, Group> {
     @Override
     public Group convertToEntity(GroupDto model) {
         Group group = new Group();

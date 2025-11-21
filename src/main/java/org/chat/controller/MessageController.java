@@ -47,8 +47,8 @@ public class MessageController {
 
         var message = messageToModelConverter.convertToModel(
                 messageService.sendMessage(
-                    messageDto.message(),
-                    messageDto.recipientId(),
+                    messageDto.text(),
+                    messageDto.targetUserId(),
                     UUID.fromString(token.getClaim(USER_ID_CLAIM))
                 )
         );
@@ -90,7 +90,7 @@ public class MessageController {
 
         var message = groupMessageConverter.convertToModel(
                 messageService.messageGroup(
-                    messageDto.message(),
+                    messageDto.text(),
                     messageDto.groupId(),
                     UUID.fromString(token.getClaim(USER_ID_CLAIM))
                 )

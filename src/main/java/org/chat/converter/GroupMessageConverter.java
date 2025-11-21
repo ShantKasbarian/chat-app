@@ -7,8 +7,7 @@ import org.chat.model.GroupMessageDto;
 import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
-public class GroupMessageConverter implements
-        ToModelConverter<GroupMessageDto, Message> {
+public class GroupMessageConverter implements ToModelConverter<GroupMessageDto, Message> {
 
     @Override
     public GroupMessageDto convertToModel(Message entity) {

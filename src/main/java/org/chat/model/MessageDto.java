@@ -6,9 +6,9 @@ public record MessageDto(
         UUID messageId,
         UUID senderId,
         String senderUsername,
-        UUID recipientId,
-        String recipientUsername,
-        String message,
+        UUID targetUserId,
+        String targetUsername,
+        String text,
         String time
 ) {
 
