@@ -67,7 +67,7 @@ class UserServiceImplTest {
         Contact response = userService.addContact(user1.getId(), user2.getId());
 
         assertEquals(user1.getId(), response.getUser().getId());
-        assertEquals(user2.getId(), response.getContact().getId());
+        assertEquals(user2.getId(), response.getTarget().getId());
         verify(contactRepository, times(1)).persist(any(Contact.class));
     }
 

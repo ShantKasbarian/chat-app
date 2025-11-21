@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
         Contact contact = new Contact();
         contact.setUser(current);
-        contact.setContact(target);
+        contact.setTarget(target);
 
         contactRepository.persist(contact);
 

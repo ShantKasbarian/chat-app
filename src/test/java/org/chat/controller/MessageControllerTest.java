@@ -75,7 +75,7 @@ class MessageControllerTest {
         message = new Message();
         message.setId(UUID.randomUUID());
         message.setSender(sender);
-        message.setRecipient(target);
+        message.setTarget(target);
         message.setText("some message");
         message.setTime(LocalDateTime.now());
         message.setGroup(group);

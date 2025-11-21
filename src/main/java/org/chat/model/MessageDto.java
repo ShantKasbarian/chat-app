@@ -3,7 +3,7 @@ package org.chat.model;
 import java.util.UUID;
 
 public record MessageDto(
-        UUID messageId,
+        UUID id,
         UUID senderId,
         String senderUsername,
         UUID targetUserId,

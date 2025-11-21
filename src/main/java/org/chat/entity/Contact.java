@@ -26,6 +26,6 @@ public class Contact {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "contact_id")
-    private User contact;
+    @JoinColumn(name = "target_id")
+    private User target;
 }

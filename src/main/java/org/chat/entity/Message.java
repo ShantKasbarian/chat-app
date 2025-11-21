@@ -24,8 +24,8 @@ public class Message {
     private User sender;
 
     @ManyToOne
-    @JoinColumn(name = "recipient_id")
-    private User recipient;
+    @JoinColumn(name = "target_user_id")
+    private User target;
 
     @Column(name = "text")
     private String text;
