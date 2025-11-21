@@ -21,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final ContactRepository contactRepository;
 
+    @Override
     public List<Contact> getContacts(UUID userId) {
         log.info("fetching contacts of user with id {}", userId);
 
