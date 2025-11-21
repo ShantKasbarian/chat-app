@@ -1,8 +1,7 @@
-package org.chat.serviceTest;
+package org.chat.service;
 
 import org.chat.entity.Contact;
 import org.chat.entity.User;
-import org.chat.exception.InvalidInfoException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
 import org.chat.service.impl.UserServiceImpl;
@@ -14,7 +13,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +67,7 @@ class UserServiceImplTest {
         Contact response = userService.addContact(user1.getId(), user2.getId());
 
         assertEquals(user1.getId(), response.getUser().getId());
-        assertEquals(user2.getId(), response.getContact().getId());
+        assertEquals(user2.getId(), response.getTarget().getId());
         verify(contactRepository, times(1)).persist(any(Contact.class));
     }
 

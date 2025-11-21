@@ -1,4 +1,4 @@
-package org.chat.serviceTest;
+package org.chat.service;
 
 import jakarta.persistence.EntityManager;
 import org.chat.entity.Group;
@@ -19,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,6 +54,7 @@ class GroupServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         group = new Group();
         group.setId(UUID.randomUUID());
         group.setName("group");
@@ -72,8 +72,6 @@ class GroupServiceImplTest {
         groupUser1 = new GroupUser(UUID.randomUUID(), group, user1, false, false);
         groupUser2 = new GroupUser(UUID.randomUUID(), group, user2, true, true);
 
-        when(groupRepository.getEntityManager()).thenReturn(entityManager);
-        when(userRepository.getEntityManager()).thenReturn(entityManager);
         when(groupUserRepository.getEntityManager()).thenReturn(entityManager);
     }
 

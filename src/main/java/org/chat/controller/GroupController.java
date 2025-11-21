@@ -29,9 +29,9 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/groups")
+@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Authenticated
 public class GroupController {
     private final GroupService groupService;
 
@@ -39,12 +39,12 @@ public class GroupController {
 
     private final ToEntityConverter<Group, GroupDto> groupDtoToEntityConverter;
 
+    private final ToModelConverter<GroupUserDto, GroupUser> groupUserToModelConverter;
+
     @Context
     private final SecurityContext securityContext;
 
     private final JsonWebToken token;
-
-    private final ToModelConverter<GroupUserDto, GroupUser> groupUserToModelConverter;
 
     @POST
     @Transactional
@@ -96,7 +96,7 @@ public class GroupController {
         log.info("/groups/{groupId}/leave with DELETE user left group");
     }
 
-    @PUT
+    @PATCH
     @Path("/accept/{groupUserId}")
     @Transactional
     public Response acceptUserToGroup(@PathParam("groupUserId") UUID groupUserId) {

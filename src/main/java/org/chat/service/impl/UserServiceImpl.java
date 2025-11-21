@@ -21,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final ContactRepository contactRepository;
 
+    @Override
     public List<Contact> getContacts(UUID userId) {
         log.info("fetching contacts of user with id {}", userId);
 
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
         Contact contact = new Contact();
         contact.setUser(current);
-        contact.setContact(target);
+        contact.setTarget(target);
 
         contactRepository.persist(contact);
 

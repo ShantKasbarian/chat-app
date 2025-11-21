@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
+    List<Contact> getContacts(UUID userId);
     Contact addContact(UUID userId, UUID targetUserId);
     List<User> searchUserByUsername(String username);
 }

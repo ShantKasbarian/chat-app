@@ -1,4 +1,4 @@
-package org.chat.serviceTest;
+package org.chat.service;
 
 import org.chat.config.JwtService;
 import org.chat.entity.User;
