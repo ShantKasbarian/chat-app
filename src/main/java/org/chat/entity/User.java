@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import javax.security.auth.Subject;
 import java.nio.file.attribute.UserPrincipal;
@@ -20,7 +21,8 @@ import java.util.UUID;
 public class User implements UserPrincipal {
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @UuidGenerator
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "username", unique = true)
@@ -43,7 +45,7 @@ public class User implements UserPrincipal {
     @OneToMany(mappedBy = "sender")
     private List<Message> sentMessages;
 
-    @OneToMany(mappedBy = "recipient")
+    @OneToMany(mappedBy = "target")
     private List<Message> receivedMessages;
 
     @Override
