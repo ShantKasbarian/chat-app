@@ -10,4 +10,5 @@ public interface GroupRepository extends PanacheRepositoryBase<Group, UUID> {
     boolean existsById(UUID id);
     boolean existsByName(String name);
     List<Group> getGroups(String groupName);
+    List<Group> getUserGroups(UUID userId);
 }

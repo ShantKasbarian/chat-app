@@ -1,7 +1,6 @@
 package org.chat.service.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -200,10 +199,7 @@ public class GroupServiceImpl implements GroupService {
     public List<Group> getUserJoinedGroups(UUID userId) {
         log.info("fetching joined groups of user with id {}", userId);
 
-        var groups = groupUserRepository.getUserGroups(userId)
-                .stream()
-                .map(GroupUser::getGroup)
-                .toList();
+        var groups = groupRepository.getUserGroups(userId);
 
         log.info("fetched joined groups of user with id {}", userId);
 

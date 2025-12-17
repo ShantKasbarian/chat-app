@@ -10,5 +10,4 @@ public interface GroupUserRepository extends PanacheRepositoryBase<GroupUser, UU
     GroupUser findByGroupIdUserId(UUID groupId, UUID userId);
     boolean existsByGroupIdUserId(UUID groupId, UUID userId);
     List<GroupUser> getWaitingUsers(UUID groupId);
-    List<GroupUser> getUserGroups(UUID userId);
 }

@@ -247,10 +247,10 @@ class GroupServiceImplTest {
 
     @Test
     void getUserJoinedGroups() {
-        List<GroupUser> groups = new ArrayList<>();
-        groups.add(groupUser2);
+        List<Group> groups = new ArrayList<>();
+        groups.add(group);
 
-        when(groupUserRepository.getUserGroups(any(UUID.class)))
+        when(groupRepository.getUserGroups(any(UUID.class)))
                 .thenReturn(groups);
 
         List<Group> response = groupService.getUserJoinedGroups(user2.getId());

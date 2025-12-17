@@ -22,8 +22,7 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class UserControllerTest {
     @InjectMocks
@@ -102,7 +101,7 @@ class UserControllerTest {
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter).convertToModel(any(Contact.class));
+        verify(contactToModelConverter, times(contacts.size())).convertToModel(any(Contact.class));
         verify(userService).getContacts(any(UUID.class));
     }
 
@@ -111,15 +110,15 @@ class UserControllerTest {
         List<User> users = new ArrayList<>();
         users.add(user);
 
-        when(userToModelConverter.convertToModel(any(User.class))).thenReturn(userDto);
         when(userService.searchUserByUsername(anyString())).thenReturn(users);
+        when(userToModelConverter.convertToModel(any(User.class))).thenReturn(userDto);
 
         var response = userController.searchUserByUsername(user.getUsername());
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(userToModelConverter).convertToModel(any(User.class));
+        verify(userToModelConverter, times(users.size())).convertToModel(any(User.class));
         verify(userService).searchUserByUsername(anyString());
     }
 }
