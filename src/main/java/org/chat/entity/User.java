@@ -35,9 +35,9 @@ public class User implements UserPrincipal {
     @JoinTable(
             name = "contacts",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "contact_id")
+            inverseJoinColumns = @JoinColumn(name = "target_user_id")
     )
-    private List<User> contacts;
+    private List<Contact> contacts;
 
     @OneToMany(mappedBy = "user")
     private List<GroupUser> groups;
