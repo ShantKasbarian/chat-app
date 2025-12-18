@@ -2,14 +2,12 @@ package org.chat.repository.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupUser;
 import org.chat.repository.GroupUserRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -25,8 +23,6 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
     private static final String EXISTS_BY_GROUP_ID_USER_ID = "SELECT COUNT(gu) > 0 FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.user.id = :" + USER_ID_PARAMETER;
 
     private static final String GET_USERS_WITH_SUBMITTED_REQUEST = "FROM GroupUser gu WHERE gu.group.id = :" + GROUP_ID_PARAMETER + " AND gu.isMember = false";
-
-    private static final String GET_USER_GROUPS = "FROM GroupUser gu WHERE gu.user.id = :" + USER_ID_PARAMETER + " AND gu.isMember = true";
 
     private final EntityManager entityManager;
 
@@ -67,19 +63,6 @@ public class GroupUserRepositoryImpl implements GroupUserRepository {
                 .getResultList();
 
         log.debug("fetched users who have submitted request to join group");
-
-        return groupUsers;
-    }
-
-    @Override
-    public List<GroupUser> getUserGroups(UUID userId) {
-        log.debug("fetching groupUsers with userId {}", userId);
-
-        var groupUsers = entityManager.createQuery(GET_USER_GROUPS, GroupUser.class)
-                .setParameter(USER_ID_PARAMETER, userId)
-                .getResultList();
-
-        log.debug("fetched groupUsers with userId {}", userId);
 
         return groupUsers;
     }

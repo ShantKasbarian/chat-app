@@ -19,38 +19,6 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-    private final ContactRepository contactRepository;
-
-    public List<Contact> getContacts(UUID userId) {
-        log.info("fetching contacts of user with id {}", userId);
-
-        var contacts = contactRepository.getContacts(userId);
-
-        log.info("fetched contacts of user with id {}", userId);
-
-        return contacts;
-    }
-
-    @Override
-    @Transactional
-    public Contact addContact(UUID userId, UUID targetUserId) {
-        log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
-
-        User current = userRepository.findById(userId);
-
-        User target = userRepository.findById(targetUserId);
-
-        Contact contact = new Contact();
-        contact.setUser(current);
-        contact.setContact(target);
-
-        contactRepository.persist(contact);
-
-        log.info("added user with id {} as contact to user with id {}", targetUserId, userId);
-
-        return contact;
-    }
-
     @Override
     public List<User> searchUserByUsername(String username) {
         log.info("fetching users with username {}", username);

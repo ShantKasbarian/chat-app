@@ -16,31 +16,31 @@ import java.util.UUID;
 public class MessageRepositoryImpl implements MessageRepository {
     private static final String SENDER_ID_PARAMETER = "senderId";
 
-    private static final String RECIPIENT_ID_PARAMETER = "recipientId";
+    private static final String TARGET_USER_ID_PARAMETER = "targetUserId";
 
     private static final String GROUP_ID_PARAMETER = "groupId";
 
-    private static final String GET_CURRENT_TARGET_USERS_MESSAGES = "FROM Message m WHERE m.sender.id =:" + SENDER_ID_PARAMETER +" AND m.recipient.id =:" + RECIPIENT_ID_PARAMETER +" or m.sender.id =:" + RECIPIENT_ID_PARAMETER + " AND m.recipient.id =:" + SENDER_ID_PARAMETER + " ORDER BY m.time DESC";
+    private static final String GET_CURRENT_TARGET_USERS_MESSAGES = "FROM Message m WHERE m.sender.id =:" + SENDER_ID_PARAMETER +" AND m.target.id =:" + TARGET_USER_ID_PARAMETER +" or m.sender.id =:" + TARGET_USER_ID_PARAMETER + " AND m.target.id =:" + SENDER_ID_PARAMETER + " ORDER BY m.time DESC";
 
     private static final String GET_GROUP_MESSAGES = "FROM Message m WHERE m.group.id = :" + GROUP_ID_PARAMETER + " ORDER BY m.time DESC";
 
     private final EntityManager entityManager;
 
     @Override
-    public List<Message> getMessages(UUID currentUserId, UUID recipientId, int page, int size) {
-        log.debug("fetching user with id {} target user with id {} messages", currentUserId, recipientId);
+    public List<Message> getMessages(UUID currentUserId, UUID targetUserId, int page, int size) {
+        log.debug("fetching user with id {} target user with id {} messages", currentUserId, targetUserId);
 
         int offset = (page - 1) * size;
 
         var messages = entityManager
                 .createQuery(GET_CURRENT_TARGET_USERS_MESSAGES, Message.class)
                 .setParameter(SENDER_ID_PARAMETER, currentUserId)
-                .setParameter(RECIPIENT_ID_PARAMETER, recipientId)
+                .setParameter(TARGET_USER_ID_PARAMETER, targetUserId)
                 .setFirstResult(offset)
                 .setMaxResults(size)
                 .getResultList();
 
-        log.debug("fetched user with id {} target user with id {} messages", currentUserId, recipientId);
+        log.debug("fetched user with id {} target user with id {} messages", currentUserId, targetUserId);
 
         return messages;
     }

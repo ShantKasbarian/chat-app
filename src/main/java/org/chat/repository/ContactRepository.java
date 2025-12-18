@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface ContactRepository extends PanacheRepositoryBase<Contact, UUID> {
     List<Contact> getContacts(UUID id);
+    boolean existsByUserIdTargetUserId(UUID userId, UUID targetUserId);
 }

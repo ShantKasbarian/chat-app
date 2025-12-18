@@ -1,11 +1,7 @@
-package org.chat.serviceTest;
+package org.chat.service.impl;
 
-import org.chat.entity.Contact;
 import org.chat.entity.User;
-import org.chat.exception.InvalidInfoException;
-import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,7 +10,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,9 +21,6 @@ class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private ContactRepository contactRepository;
 
     private User user1;
 
@@ -45,32 +37,6 @@ class UserServiceImplTest {
         user2 = new User();
         user2.setId(UUID.randomUUID());
         user2.setUsername("user2");
-    }
-
-    @Test
-    void getContacts() {
-        List<Contact> contacts = new ArrayList<>();
-        contacts.add(new Contact(UUID.randomUUID(), user2, user1));
-
-        when(contactRepository.getContacts(any(UUID.class))).thenReturn(contacts);
-        List<Contact> response = userService.getContacts(user2.getId());
-
-        assertEquals(contacts.size(), response.size());
-    }
-
-    @Test
-    void addContact() {
-        when(userRepository.findById(user1.getId())).thenReturn(user1);
-        when(userRepository.findById(user2.getId())).thenReturn(user2);
-
-        Contact contact = new Contact(UUID.randomUUID(), user1, user2);
-        doNothing().when(contactRepository).persist(contact);
-
-        Contact response = userService.addContact(user1.getId(), user2.getId());
-
-        assertEquals(user1.getId(), response.getUser().getId());
-        assertEquals(user2.getId(), response.getContact().getId());
-        verify(contactRepository, times(1)).persist(any(Contact.class));
     }
 
     @Test

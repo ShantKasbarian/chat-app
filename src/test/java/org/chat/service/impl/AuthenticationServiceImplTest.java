@@ -1,11 +1,10 @@
-package org.chat.serviceTest;
+package org.chat.service.impl;
 
 import org.chat.config.JwtService;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
 import org.chat.model.TokenDto;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.AuthenticationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;

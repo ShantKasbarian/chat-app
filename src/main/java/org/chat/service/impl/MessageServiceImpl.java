@@ -50,45 +50,45 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public Message sendMessage(String content, UUID recipientId, UUID currentUserId) {
-        log.info("sending message to user with id {}", recipientId);
+    public Message sendMessage(String content, UUID targetUserId, UUID currentUserId) {
+        log.info("sending message to user with id {}", targetUserId);
 
         if (content == null || content.isEmpty()) {
             throw new InvalidInfoException(EMPTY_MESSAGE);
         }
 
-        if (recipientId == null) {
+        if (targetUserId == null) {
             throw new InvalidInfoException(TARGET_USER_NOT_SPECIFIED_MESSAGE);
         }
 
-        User recipient = userRepository.findById(recipientId);
+        User target = userRepository.findById(targetUserId);
 
         User sender = userRepository.findById(currentUserId);
 
         Message message = new Message();
-        message.setRecipient(recipient);
+        message.setTarget(target);
         message.setSender(sender);
         message.setText(content);
         message.setTime(LocalDateTime.now());
 
         messageRepository.persist(message);
 
-        log.info("sent message to user with id {}", recipientId);
+        log.info("sent message to user with id {}", targetUserId);
 
         return message;
     }
 
     @Override
-    public List<Message> getMessages(UUID userId, UUID recipientId, int page, int size) {
-        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
+    public List<Message> getMessages(UUID userId, UUID targetUserId, int page, int size) {
+        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, targetUserId, page, size);
 
         if (page == 0) {
             page = 1;
         }
 
-        var messages = messageRepository.getMessages(userId, recipientId, page, size);
+        var messages = messageRepository.getMessages(userId, targetUserId, page, size);
 
-        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, recipientId, page, size);
+        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, targetUserId, page, size);
 
         return messages;
     }

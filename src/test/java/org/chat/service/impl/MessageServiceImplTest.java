@@ -1,4 +1,4 @@
-package org.chat.serviceTest;
+package org.chat.service.impl;
 
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
@@ -10,7 +10,6 @@ import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.MessageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -70,7 +69,7 @@ class MessageServiceImplTest {
 
         message = new Message();
         message.setId(UUID.randomUUID());
-        message.setRecipient(user1);
+        message.setTarget(user1);
         message.setSender(user2);
         message.setText("some message");
         message.setTime(LocalDateTime.now());
@@ -95,7 +94,7 @@ class MessageServiceImplTest {
 
         assertEquals(message.getText(), response.getText());
         assertEquals(message.getSender().getId(), response.getSender().getId());
-        assertEquals(message.getRecipient().getId(), response.getRecipient().getId());
+        assertEquals(message.getTarget().getId(), response.getTarget().getId());
         assertNull(response.getGroup());
         verify(messageRepository).persist(any(Message.class));
     }
@@ -141,7 +140,7 @@ class MessageServiceImplTest {
         assertEquals(groupMessage.getText(), response.getText());
         assertEquals(groupMessage.getSender().getId(), response.getSender().getId());
         assertEquals(groupMessage.getGroup().getId(), response.getGroup().getId());
-        assertNull(response.getRecipient());
+        assertNull(response.getTarget());
         verify(messageRepository).persist(any(Message.class));
     }
 

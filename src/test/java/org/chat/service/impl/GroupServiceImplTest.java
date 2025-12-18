@@ -1,4 +1,4 @@
-package org.chat.serviceTest;
+package org.chat.service.impl;
 
 import jakarta.persistence.EntityManager;
 import org.chat.entity.Group;
@@ -10,7 +10,6 @@ import org.chat.exception.UnableToJoinGroupException;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.GroupServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -19,7 +18,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,6 +53,7 @@ class GroupServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
         group = new Group();
         group.setId(UUID.randomUUID());
         group.setName("group");
@@ -72,8 +71,6 @@ class GroupServiceImplTest {
         groupUser1 = new GroupUser(UUID.randomUUID(), group, user1, false, false);
         groupUser2 = new GroupUser(UUID.randomUUID(), group, user2, true, true);
 
-        when(groupRepository.getEntityManager()).thenReturn(entityManager);
-        when(userRepository.getEntityManager()).thenReturn(entityManager);
         when(groupUserRepository.getEntityManager()).thenReturn(entityManager);
     }
 
@@ -249,10 +246,10 @@ class GroupServiceImplTest {
 
     @Test
     void getUserJoinedGroups() {
-        List<GroupUser> groups = new ArrayList<>();
-        groups.add(groupUser2);
+        List<Group> groups = new ArrayList<>();
+        groups.add(group);
 
-        when(groupUserRepository.getUserGroups(any(UUID.class)))
+        when(groupRepository.getUserGroups(any(UUID.class)))
                 .thenReturn(groups);
 
         List<Group> response = groupService.getUserJoinedGroups(user2.getId());

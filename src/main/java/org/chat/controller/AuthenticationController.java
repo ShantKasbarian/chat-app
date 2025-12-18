@@ -15,15 +15,15 @@ import org.chat.service.AuthenticationService;
 
 @Slf4j
 @Path("/auth")
+@PermitAll
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
-    @Path("/login")
-    @PermitAll
     @POST
+    @Path("/login")
     public Response login(UserDto userDto) {
         log.info("/auth/login with POST called");
 
@@ -34,9 +34,8 @@ public class AuthenticationController {
         return Response.ok(tokenDto).build();
     }
 
-    @Path("/signup")
-    @PermitAll
     @POST
+    @Path("/signup")
     public Response signup(UserDto userDto) {
         log.info("/auth/signup with POST called");
 

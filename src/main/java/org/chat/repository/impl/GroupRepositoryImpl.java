@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
+import org.chat.entity.GroupUser;
 import org.chat.repository.GroupRepository;
 
 import java.util.List;
@@ -19,9 +20,15 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     private static final String ID_COLUMN = "id";
 
+    private static final String USER_ID_PARAMETER = "userId";
+
     private static final String NAME_PARAMETER = "name";
 
     private static final String GET_GROUPS_BY_NAME = "FROM Group g WHERE UPPER(g.name) LIKE UPPER(:" + GROUP_NAME_PARAMETER + ")";
+
+    private static final String GET_USER_GROUPS = "FROM Group g " +
+            "INNER JOIN GroupUser gu ON gu.group.id = g.id " +
+            "WHERE gu.user.id = :" + USER_ID_PARAMETER + " AND gu.isMember = true";
 
     private final EntityManager entityManager;
 
@@ -57,6 +64,19 @@ public class GroupRepositoryImpl implements GroupRepository {
                 .getResultList();
 
         log.debug("fetched groups with name {}", groupName);
+
+        return groups;
+    }
+
+    @Override
+    public List<Group> getUserGroups(UUID userId) {
+        log.debug("fetching groupUsers with userId {}", userId);
+
+        var groups = entityManager.createQuery(GET_USER_GROUPS, Group.class)
+                .setParameter(USER_ID_PARAMETER, userId)
+                .getResultList();
+
+        log.debug("fetched groupUsers with userId {}", userId);
 
         return groups;
     }
