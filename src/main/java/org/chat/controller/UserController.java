@@ -31,46 +31,12 @@ import static org.chat.config.JwtService.USER_ID_CLAIM;
 public class UserController {
     private final UserService userService;
 
-    private final ToModelConverter<ContactDto, Contact> contactToModelConverter;
-
     private final ToModelConverter<UserDto, User> userToModelConverter;
 
     @Context
     private final SecurityContext securityContext;
 
     private final JsonWebToken token;
-
-    @POST
-    @Path("/{userId}/contact")
-    @Transactional
-    public Response addContact(@PathParam("userId") UUID userId) {
-        log.info("/users/{userId}/contact with POST called");
-
-        var contact = contactToModelConverter.convertToModel(
-                userService.addContact(UUID.fromString(token.getClaim(USER_ID_CLAIM)), userId)
-        );
-
-        log.info("/users/{userId}/contact with POST returning a {}", ContactDto.class.getName());
-
-        return Response.status(Response.Status.CREATED)
-                .entity(contact)
-                .build();
-    }
-
-    @GET
-    @Path("/contacts")
-    public Response getContacts() {
-        log.info("/users/contacts with GET called");
-
-        var contacts = userService.getContacts(UUID.fromString(token.getClaim(USER_ID_CLAIM)))
-                .stream()
-                .map(contactToModelConverter::convertToModel)
-                .toList();
-
-        log.info("/users/contacts returning a {} of {}", List.class.getName(), ContactDto.class.getName());
-
-        return Response.ok(contacts).build();
-    }
 
     @GET
     @Path("/{username}")

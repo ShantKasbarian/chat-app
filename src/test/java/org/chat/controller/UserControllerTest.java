@@ -2,9 +2,7 @@ package org.chat.controller;
 
 import jakarta.ws.rs.core.Response;
 import org.chat.converter.ToModelConverter;
-import org.chat.entity.Contact;
 import org.chat.entity.User;
-import org.chat.model.ContactDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -32,9 +30,6 @@ class UserControllerTest {
     private UserService userService;
 
     @Mock
-    private ToModelConverter<ContactDto, Contact> contactToModelConverter;
-
-    @Mock
     private ToModelConverter<UserDto, User> userToModelConverter;
 
     @Mock
@@ -45,10 +40,6 @@ class UserControllerTest {
     private User target;
 
     private UserDto userDto;
-
-    private Contact contact;
-
-    private ContactDto contactDto;
 
     @BeforeEach
     void setUp() {
@@ -66,43 +57,7 @@ class UserControllerTest {
 
         userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
 
-        contact = new Contact(UUID.randomUUID(), user, target);
-        contactDto = new ContactDto(contact.getId(), target.getId(), target.getUsername());
-
         when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
-    }
-
-    @Test
-    void addContact() {
-        when(contactToModelConverter.convertToModel(any(Contact.class)))
-                .thenReturn(contactDto);
-        when(userService.addContact(any(UUID.class), any(UUID.class))).thenReturn(contact);
-
-        var response = userController.addContact(target.getId());
-
-        assertNotNull(response);
-        assertEquals(contactDto, response.getEntity());
-        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter).convertToModel(any(Contact.class));
-        verify(userService).addContact(any(UUID.class), any(UUID.class));
-    }
-
-    @Test
-    void getContacts() {
-        List<Contact> contacts = new ArrayList<>();
-        contacts.add(contact);
-
-        when(contactToModelConverter.convertToModel(any(Contact.class)))
-                .thenReturn(contactDto);
-        when(userService.getContacts(any(UUID.class))).thenReturn(contacts);
-
-        var response = userController.getContacts();
-
-        assertNotNull(response);
-        assertNotNull(response.getEntity());
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter, times(contacts.size())).convertToModel(any(Contact.class));
-        verify(userService).getContacts(any(UUID.class));
     }
 
     @Test
