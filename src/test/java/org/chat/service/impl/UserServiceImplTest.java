@@ -1,8 +1,7 @@
-package org.chat.service;
+package org.chat.service.impl;
 
 import org.chat.entity.User;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

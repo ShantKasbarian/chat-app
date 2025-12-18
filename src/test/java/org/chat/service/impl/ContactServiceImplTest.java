@@ -1,10 +1,10 @@
-package org.chat.service;
+package org.chat.service.impl;
 
 import org.chat.entity.Contact;
 import org.chat.entity.User;
+import org.chat.exception.ResourceAlreadyExistsException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.ContactServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -65,6 +66,8 @@ public class ContactServiceImplTest {
     void addContact() {
         when(userRepository.findById(user1.getId())).thenReturn(user1);
         when(userRepository.findById(user2.getId())).thenReturn(user2);
+        when(contactRepository.existsByUserIdTargetUserId(user1.getId(), user2.getId()))
+                .thenReturn(false);
         doNothing().when(contactRepository).persist(contact);
 
         Contact response = contactService.addContact(user1.getId(), user2.getId());
@@ -72,5 +75,14 @@ public class ContactServiceImplTest {
         assertEquals(user1.getId(), response.getUser().getId());
         assertEquals(user2.getId(), response.getTarget().getId());
         verify(contactRepository).persist(any(Contact.class));
+    }
+
+    @Test
+    void addContactShouldThrowResourceAlreadyExistsExceptionWhenContactAlreadyExists() {
+        when(userRepository.findById(any(UUID.class))).thenReturn(user1);
+        when(contactRepository.existsByUserIdTargetUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(true);
+
+        assertThrows(ResourceAlreadyExistsException.class, () -> contactService.addContact(user1.getId(), user2.getId()));
     }
 }

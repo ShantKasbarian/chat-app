@@ -65,4 +65,9 @@ class ContactRepositoryImplTest {
         assertNotNull(contacts);
         assertFalse(contacts.isEmpty());
     }
+
+    @Test
+    void existsByUserIdTargetUserId() {
+        assertTrue(contactRepository.existsByUserIdTargetUserId(user.getId(), target.getId()));
+    }
 }

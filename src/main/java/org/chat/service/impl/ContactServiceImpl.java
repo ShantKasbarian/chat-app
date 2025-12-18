@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
+import org.chat.exception.ResourceAlreadyExistsException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
 import org.chat.service.ContactService;
@@ -17,6 +18,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ApplicationScoped
 public class ContactServiceImpl implements ContactService {
+    private static final String CONTACT_ALREADY_EXISTS_MESSAGE = "contact already exists";
+
     private final UserRepository userRepository;
 
     private final ContactRepository contactRepository;
@@ -38,8 +41,11 @@ public class ContactServiceImpl implements ContactService {
         log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
 
         User current = userRepository.findById(userId);
-
         User target = userRepository.findById(targetUserId);
+
+        if (contactRepository.existsByUserIdTargetUserId(userId, targetUserId)) {
+            throw new ResourceAlreadyExistsException(CONTACT_ALREADY_EXISTS_MESSAGE);
+        }
 
         Contact contact = new Contact();
         contact.setUser(current);

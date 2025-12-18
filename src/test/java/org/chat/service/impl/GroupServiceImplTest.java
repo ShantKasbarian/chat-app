@@ -1,4 +1,4 @@
-package org.chat.service;
+package org.chat.service.impl;
 
 import jakarta.persistence.EntityManager;
 import org.chat.entity.Group;
@@ -10,7 +10,6 @@ import org.chat.exception.UnableToJoinGroupException;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.UserRepository;
-import org.chat.service.impl.GroupServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
