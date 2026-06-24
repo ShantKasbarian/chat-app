@@ -25,6 +25,10 @@ class UserRepositoryImplTest {
 
     private User user;
 
+    static {
+        mongo.start();
+    }
+
     @BeforeEach
     @Transactional
     void setUp() {

@@ -1,5 +1,6 @@
 package org.chat.service.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -7,17 +8,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.exception.ResourceAlreadyExistsException;
+import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
 import org.chat.service.ContactService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
 @ApplicationScoped
 public class ContactServiceImpl implements ContactService {
+    private static final String USER_NOT_FOUND_MESSAGE = "user not found";
+
     private static final String CONTACT_ALREADY_EXISTS_MESSAGE = "contact already exists";
 
     private final UserRepository userRepository;
@@ -25,12 +28,12 @@ public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
 
     @Override
-    public List<Contact> getContacts(UUID userId) {
-        log.info("fetching contacts of user with id {}", userId);
+    public PanacheQuery<Contact> findByUserId(UUID userId, int page, int size) {
+        log.info("fetching contacts of user with id {}, page {}, size {}", userId, page, size);
 
-        var contacts = contactRepository.getContacts(userId);
+        var contacts = contactRepository.getContacts(userId, page, size);
 
-        log.info("fetched contacts of user with id {}", userId);
+        log.info("fetched contacts of user with id {}, page {}, size {}", userId, page, size);
 
         return contacts;
     }
@@ -40,16 +43,15 @@ public class ContactServiceImpl implements ContactService {
     public Contact addContact(UUID userId, UUID targetUserId) {
         log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
 
-        User current = userRepository.findById(userId);
-        User target = userRepository.findById(targetUserId);
+        if(!userRepository.existsById(targetUserId)) {
+            throw new ResourceNotFoundException(USER_NOT_FOUND_MESSAGE);
+        }
 
         if (contactRepository.existsByUserIdTargetUserId(userId, targetUserId)) {
             throw new ResourceAlreadyExistsException(CONTACT_ALREADY_EXISTS_MESSAGE);
         }
 
-        Contact contact = new Contact();
-        contact.setUser(current);
-        contact.setTarget(target);
+        Contact contact = new Contact(UUID.randomUUID(), userId, targetUserId);
 
         contactRepository.persist(contact);
 

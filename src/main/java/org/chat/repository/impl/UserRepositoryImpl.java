@@ -9,12 +9,15 @@ import org.chat.entity.User;
 import org.chat.repository.UserRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository {
+    private static final String ID_FIELD = "id";
+
     private static final String USERNAME_FIELD = "username";
 
     @Override
@@ -46,12 +49,23 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public boolean existsById(UUID id) {
+        log.debug("checking if user with id {} exists", id);
+
+        boolean exists = count(ID_FIELD, id) > 0;
+
+        log.debug("checked if user with id {} exists", id);
+
+        return exists;
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
-        log.debug("checking if user with id {} exists", username);
+        log.debug("checking if user with username {} exists", username);
 
         boolean exists = count(USERNAME_FIELD, username) > 0;
 
-        log.debug("checked if user with id {} exists", username);
+        log.debug("checked if user with username {} exists", username);
 
         return exists;
     }

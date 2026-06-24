@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.Contact;
 import org.chat.model.ContactDto;
+import org.chat.model.PageDto;
 import org.chat.service.ContactService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -37,30 +38,34 @@ public class ContactController {
     private final JsonWebToken token;
 
     @GET
-    public Response getContacts() {
+    public Response getContacts(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
+    ) {
         log.info("/users/contacts with GET called");
 
-        var contacts = contactService.getContacts(UUID.fromString(token.getClaim(USER_ID_CLAIM)))
-                .stream()
+        var query = contactService.findByUserId(UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
+        var contacts = query.list().stream()
                 .map(contactToModelConverter::convertToModel)
                 .toList();
+        PageDto<ContactDto> pageDto = new PageDto<>(contacts, page, size);
 
         log.info("/users/contacts returning a {} of {}", List.class.getName(), ContactDto.class.getName());
 
-        return Response.ok(contacts).build();
+        return Response.ok(pageDto).build();
     }
 
     @POST
     @Path("/users/{userId}")
     @Transactional
     public Response addContact(@PathParam("userId") UUID userId) {
-        log.info("/users/{userId}/contact with POST called");
+        log.info("POST /users/{userId}/contact called");
 
         var contact = contactToModelConverter.convertToModel(
                 contactService.addContact(UUID.fromString(token.getClaim(USER_ID_CLAIM)), userId)
         );
 
-        log.info("/users/{userId}/contact with POST returning a {}", ContactDto.class.getName());
+        log.info("POST /users/{userId}/contact is returning a {}", ContactDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(contact)

@@ -1,5 +1,6 @@
 package org.chat.controller;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.Contact;
@@ -13,8 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
@@ -37,7 +36,8 @@ public class ContactControllerTest {
     @Mock
     private JsonWebToken jsonWebToken;
 
-    private User user;
+    @Mock
+    private PanacheQuery<Contact> panacheQuery;
 
     private User target;
 
@@ -49,7 +49,7 @@ public class ContactControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        user = new User();
+        User user = new User();
         user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
@@ -59,7 +59,7 @@ public class ContactControllerTest {
         target.setUsername("target");
         target.setPassword("Password123+");
 
-        contact = new Contact(UUID.randomUUID(), user, target);
+        contact = new Contact(UUID.randomUUID(), user.getId(), target.getId());
         contactDto = new ContactDto(contact.getId(), target.getId(), target.getUsername());
 
         when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
@@ -67,20 +67,18 @@ public class ContactControllerTest {
 
     @Test
     void getContacts() {
-        List<Contact> contacts = new ArrayList<>();
-        contacts.add(contact);
-
         when(contactToModelConverter.convertToModel(any(Contact.class)))
                 .thenReturn(contactDto);
-        when(contactService.getContacts(any(UUID.class))).thenReturn(contacts);
+        when(contactService.findByUserId(any(UUID.class), anyInt(), anyInt()))
+                .thenReturn(panacheQuery);
 
-        var response = contactController.getContacts();
+        var response = contactController.getContacts(0, 10);
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter, times(contacts.size())).convertToModel(any(Contact.class));
-        verify(contactService).getContacts(any(UUID.class));
+        verify(contactToModelConverter, atLeast(1)).convertToModel(any(Contact.class));
+        verify(contactService).findByUserId(any(UUID.class), anyInt(), anyInt());
     }
 
     @Test

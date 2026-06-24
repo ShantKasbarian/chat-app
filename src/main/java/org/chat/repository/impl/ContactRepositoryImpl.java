@@ -1,35 +1,31 @@
 package org.chat.repository.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.repository.ContactRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
 public class ContactRepositoryImpl implements ContactRepository {
-    private final static String USER_ID_PARAMETER = "userId";
+    private final static String USER_ID_FIELD = "userId";
 
-    private final static String TARGET_USER_ID_PARAMETER = "targetUserId";
+    private final static String TARGET_USER_ID_FIELD = "targetUserId";
 
-    private final static String GET_USER_CONTACTS = "FROM Contact c WHERE c.user.id = :" + USER_ID_PARAMETER;
-
-    private final static String EXISTS_BY_USER_ID_TARGET_USER_ID = "SELECT COUNT(c) > 0 FROM Contact c WHERE c.user.id = :" + USER_ID_PARAMETER + " AND c.target.id = :" + TARGET_USER_ID_PARAMETER;
-
-    private final EntityManager entityManager;
+    private static final String FIND_BY_USER_ID_AND_TARGET_USER_ID = USER_ID_FIELD + " = ?1 and " + TARGET_USER_ID_FIELD + " = ?2";
 
     @Override
-    public List<Contact> getContacts(UUID id) {
+    public PanacheQuery<Contact> getContacts(UUID id, int page, int size) {
         log.debug("fetching contacts of user with id {}", id);
 
-        var contacts = entityManager.createQuery(GET_USER_CONTACTS, Contact.class)
-                .setParameter(USER_ID_PARAMETER, id)
-                .getResultList();
+        var contacts = find(USER_ID_FIELD, id)
+                .page(Page.of(page, size));
 
         log.debug("fetched contacts of user with id {}", id);
 
@@ -40,10 +36,7 @@ public class ContactRepositoryImpl implements ContactRepository {
     public boolean existsByUserIdTargetUserId(UUID userId, UUID targetUserId) {
         log.debug("checking if contacts of user with id {} and target id {} exist", userId, targetUserId);
 
-        boolean exists = entityManager.createQuery(EXISTS_BY_USER_ID_TARGET_USER_ID, Boolean.class)
-                .setParameter(USER_ID_PARAMETER, userId)
-                .setParameter(TARGET_USER_ID_PARAMETER, targetUserId)
-                .getSingleResult();
+        boolean exists = count(FIND_BY_USER_ID_AND_TARGET_USER_ID, userId, targetUserId) > 0;
 
         log.debug("checked if contacts of user with id {} and target id {} exist", userId, targetUserId);
 

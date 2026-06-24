@@ -1,23 +1,28 @@
 package org.chat.repository.impl;
 
-import io.quarkus.test.TestTransaction;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.chat.config.MongoConfig;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-@Transactional
+@Testcontainers
 class ContactRepositoryImplTest {
+    @Container
+    static MongoDBContainer mongo = MongoConfig.getContainer();
+
     @Inject
     private ContactRepositoryImpl contactRepository;
 
@@ -29,6 +34,10 @@ class ContactRepositoryImplTest {
     private User target;
 
     private Contact contact;
+
+    static {
+        mongo.start();
+    }
 
     @BeforeEach
     @Transactional
@@ -45,8 +54,8 @@ class ContactRepositoryImplTest {
         userRepository.persist(target);
 
         contact = new Contact();
-        contact.setUser(user);
-        contact.setTarget(target);
+        contact.setUserId(user.getId());
+        contact.setTargetUserId(target.getId());
         contactRepository.persist(contact);
     }
 
@@ -60,10 +69,10 @@ class ContactRepositoryImplTest {
 
     @Test
     void getContacts() {
-        List<Contact> contacts = contactRepository.getContacts(user.getId());
+        PanacheQuery<Contact> contacts = contactRepository.getContacts(user.getId(), 0, 10);
 
         assertNotNull(contacts);
-        assertFalse(contacts.isEmpty());
+        assertFalse(contacts.list().isEmpty());
     }
 
     @Test
