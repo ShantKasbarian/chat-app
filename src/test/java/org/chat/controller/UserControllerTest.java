@@ -1,5 +1,6 @@
 package org.chat.controller;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.User;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.config.JwtService.USER_ID_CLAIM;
+import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,9 +36,10 @@ class UserControllerTest {
     @Mock
     private JsonWebToken jsonWebToken;
 
-    private User user;
+    @Mock
+    private PanacheQuery<User> panacheQuery;
 
-    private User target;
+    private User user;
 
     private UserDto userDto;
 
@@ -50,7 +52,7 @@ class UserControllerTest {
         user.setUsername("user");
         user.setPassword("Password123+");
 
-        target = new User();
+        User target = new User();
         target.setId(UUID.randomUUID());
         target.setUsername("target");
         target.setPassword("Password123+");
@@ -61,19 +63,20 @@ class UserControllerTest {
     }
 
     @Test
-    void searchUserByUsername() {
+    void findByUsername() {
         List<User> users = new ArrayList<>();
         users.add(user);
 
-        when(userService.searchUserByUsername(anyString())).thenReturn(users);
+        when(userService.findByUsername(anyString(), anyInt(), anyInt()))
+                .thenReturn(panacheQuery);
         when(userToModelConverter.convertToModel(any(User.class))).thenReturn(userDto);
 
-        var response = userController.searchUserByUsername(user.getUsername());
+        var response = userController.findByUsername(user.getUsername(), 0, 10);
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(userToModelConverter, times(users.size())).convertToModel(any(User.class));
-        verify(userService).searchUserByUsername(anyString());
+        verify(userService).findByUsername(anyString(), anyInt(), anyInt());
     }
 }

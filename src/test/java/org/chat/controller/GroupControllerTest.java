@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.config.JwtService.USER_ID_CLAIM;
+import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

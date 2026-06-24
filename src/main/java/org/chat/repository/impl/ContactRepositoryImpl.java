@@ -1,7 +1,6 @@
 package org.chat.repository.impl;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;

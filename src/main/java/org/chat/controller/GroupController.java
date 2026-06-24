@@ -1,7 +1,6 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -14,7 +13,6 @@ import org.chat.converter.ToEntityConverter;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
-import org.chat.entity.User;
 import org.chat.model.GroupDto;
 import org.chat.model.GroupUserDto;
 import org.chat.service.GroupService;
@@ -24,7 +22,7 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.config.JwtService.USER_ID_CLAIM;
+import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 
 @Slf4j
 @RequiredArgsConstructor

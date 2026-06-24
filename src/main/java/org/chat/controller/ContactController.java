@@ -11,16 +11,14 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.ToModelConverter;
 import org.chat.entity.Contact;
-import org.chat.entity.User;
 import org.chat.model.ContactDto;
-import org.chat.model.UserDto;
 import org.chat.service.ContactService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.config.JwtService.USER_ID_CLAIM;
+import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 
 @Slf4j
 @AllArgsConstructor

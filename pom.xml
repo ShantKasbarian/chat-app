@@ -30,6 +30,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <!--quarkus web dependencies-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
@@ -98,7 +99,7 @@
             <artifactId>slf4j-jboss-logmanager</artifactId>
         </dependency>
 
-        <!--testing dependencies-->
+        <!--test dependencies-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
@@ -117,6 +118,11 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-test-mongodb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

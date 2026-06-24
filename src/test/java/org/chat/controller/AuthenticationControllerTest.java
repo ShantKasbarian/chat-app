@@ -4,7 +4,7 @@ import jakarta.ws.rs.core.Response;
 import org.chat.entity.User;
 import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
-import org.chat.service.AuthenticationService;
+import org.chat.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -24,9 +24,7 @@ class AuthenticationControllerTest {
     private AuthenticationController authenticationController;
 
     @Mock
-    private AuthenticationService authenticationService;
-
-    private User user;
+    private UserService userService;
 
     private UserDto userDto;
 
@@ -36,37 +34,36 @@ class AuthenticationControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        user = new User();
+        User user = new User();
         user.setId(UUID.randomUUID());
         user.setUsername("John.Doe");
         user.setPassword(BCrypt.hashpw("Password123+", BCrypt.gensalt()));
 
         userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
-
         tokenDto = new TokenDto("test token");
     }
 
     @Test
     void login() {
-        when(authenticationService.login(anyString(), anyString())).thenReturn(tokenDto);
+        when(userService.login(anyString(), anyString())).thenReturn(tokenDto);
 
         var response = authenticationController.login(userDto);
 
         assertNotNull(response);
         assertEquals(tokenDto, response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(authenticationService).login(anyString(), anyString());
+        verify(userService).login(anyString(), anyString());
     }
 
     @Test
     void signup() {
-        when(authenticationService.createUser(anyString(), anyString())).thenReturn(tokenDto);
+        when(userService.signUp(anyString(), anyString())).thenReturn(tokenDto);
 
         var response = authenticationController.signup(userDto);
 
         assertNotNull(response);
         assertEquals(tokenDto, response.getEntity());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(authenticationService).createUser(anyString(), anyString());
+        verify(userService).signUp(anyString(), anyString());
     }
 }

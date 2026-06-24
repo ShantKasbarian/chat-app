@@ -1,11 +1,11 @@
 package org.chat.entity;
 
-import jakarta.persistence.*;
+import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
+import org.bson.codecs.pojo.annotations.BsonId;
 
 import java.util.UUID;
 
@@ -13,33 +13,20 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "group_users")
+@MongoEntity(collection = "group_users")
 public class GroupUser {
-    @Id
-    @GeneratedValue
-    @UuidGenerator
-    @Column(name = "id", updatable = false, nullable = false)
+    @BsonId
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
+    private UUID groupId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private UUID userId;
 
-    @Column(name = "is_creator")
-    private Boolean isCreator;
+    private Role role;
 
-    @Column(name = "is_member")
-    private Boolean isMember;
-
-    public GroupUser(Group group, User user, Boolean isCreator, Boolean isMember) {
-        this.group = group;
-        this.user = user;
-        this.isCreator = isCreator;
-        this.isMember = isMember;
+    enum Role {
+        ADMIN,
+        MEMBER,
+        PENDING
     }
 }

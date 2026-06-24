@@ -1,9 +1,11 @@
 package org.chat.service;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.chat.entity.User;
-
-import java.util.List;
+import org.chat.model.TokenDto;
 
 public interface UserService {
-    List<User> searchUserByUsername(String username);
+    TokenDto login(String username, String password);
+    TokenDto signUp(String username, String password);
+    PanacheQuery<User> findByUsername(String username, int page, int size);
 }

@@ -1,52 +1,28 @@
 package org.chat.entity;
 
-import jakarta.persistence.*;
+import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
+import org.bson.codecs.pojo.annotations.BsonId;
 
 import javax.security.auth.Subject;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "users")
+@MongoEntity(collection = "users")
 public class User implements UserPrincipal {
-    @Id
-    @GeneratedValue
-    @UuidGenerator
-    @Column(name = "id", updatable = false, nullable = false)
+    @BsonId
     private UUID id;
 
-    @Column(name = "username", unique = true)
     private String username;
 
-    @Column(name = "password")
     private String password;
-
-    @ManyToMany
-    @JoinTable(
-            name = "contacts",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "target_user_id")
-    )
-    private List<Contact> contacts;
-
-    @OneToMany(mappedBy = "user")
-    private List<GroupUser> groups;
-
-    @OneToMany(mappedBy = "sender")
-    private List<Message> sentMessages;
-
-    @OneToMany(mappedBy = "target")
-    private List<Message> receivedMessages;
 
     @Override
     public String getName() {

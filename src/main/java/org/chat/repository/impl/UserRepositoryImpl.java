@@ -1,32 +1,27 @@
 package org.chat.repository.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.User;
 import org.chat.repository.UserRepository;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository {
-    private static final String USERNAME_COLUMN = "username";
-
-    private static final String PATTERN_PARAMETER = "pattern";
-
-    private static final String SEARCH_BY_USERNAME = "FROM User u WHERE UPPER(u.username) LIKE UPPER(:" + PATTERN_PARAMETER + ")";
-
-    private final EntityManager entityManager;
+    private static final String USERNAME_FIELD = "username";
 
     @Override
     public Optional<User> findByUsername(String username) {
         log.debug("fetching user with username {}", username);
 
-        Optional<User> user = find(USERNAME_COLUMN, username).firstResultOptional();
+        Optional<User> user = find(USERNAME_FIELD, username).firstResultOptional();
 
         log.debug("fetched user with username {}", username);
 
@@ -34,27 +29,30 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public PanacheQuery<User> findByUsername(String username, int page, int size) {
+        log.debug("fetching users with username {}, page {}, size {}", username, page, size);
+
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(username),
+                Pattern.CASE_INSENSITIVE
+        );
+
+        var query = find(USERNAME_FIELD, pattern)
+                .page(Page.of(page, size));
+
+        log.debug("fetched users with username {}, page {}, size {}", username, page, size);
+
+        return query;
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         log.debug("checking if user with id {} exists", username);
 
-        boolean exists = count(USERNAME_COLUMN, username) > 0;
+        boolean exists = count(USERNAME_FIELD, username) > 0;
 
         log.debug("checked if user with id {} exists", username);
 
         return exists;
-    }
-
-    @Override
-    public List<User> searchByUsername(String username) {
-        log.debug("fetching users with username {}", username);
-
-        var users = entityManager
-                .createQuery(SEARCH_BY_USERNAME, User.class)
-                .setParameter(PATTERN_PARAMETER, "%" + username + "%")
-                .getResultList();
-
-        log.debug("fetched users with username {}", username);
-
-        return users;
     }
 }

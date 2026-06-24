@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
-import org.chat.service.AuthenticationService;
+import org.chat.service.UserService;
 
 @Slf4j
 @Path("/auth")
@@ -20,16 +20,16 @@ import org.chat.service.AuthenticationService;
 @Consumes(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final AuthenticationService authenticationService;
+    private final UserService authenticationService;
 
     @POST
     @Path("/login")
     public Response login(UserDto userDto) {
-        log.info("/auth/login with POST called");
+        log.info("POST /auth/login called");
 
         var tokenDto = authenticationService.login(userDto.username(), userDto.password());
 
-        log.info("/auth/login with POST is returning a {}", TokenDto.class.getName());
+        log.info("POST /auth/login is returning a {}", TokenDto.class.getName());
 
         return Response.ok(tokenDto).build();
     }
@@ -37,11 +37,11 @@ public class AuthenticationController {
     @POST
     @Path("/signup")
     public Response signup(UserDto userDto) {
-        log.info("/auth/signup with POST called");
+        log.info("POST/auth/signup called");
 
-        var tokenDto = authenticationService.createUser(userDto.username(), userDto.password());
+        var tokenDto = authenticationService.signUp(userDto.username(), userDto.password());
 
-        log.info("/auth/signup with POST is returning a {}", TokenDto.class.getName());
+        log.info("POST /auth/signup is returning a {}", TokenDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(tokenDto)

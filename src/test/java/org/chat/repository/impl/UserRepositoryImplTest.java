@@ -3,18 +3,23 @@ package org.chat.repository.impl;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.chat.config.MongoConfig;
 import org.chat.entity.User;
-import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
+@Testcontainers
 class UserRepositoryImplTest {
+    @Container
+    static MongoDBContainer mongo = MongoConfig.getContainer();
+
     @Inject
     private UserRepositoryImpl userRepository;
 
@@ -48,9 +53,10 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    void searchByUsername() {
-        List<User> users = userRepository.searchByUsername(user.getUsername());
+    void findByUsernamePage() {
+        var users = userRepository.findByUsername(user.getUsername(), 0, 10);
+
         assertNotNull(users);
-        assertFalse(users.isEmpty());
+        assertFalse(users.list().isEmpty());
     }
 }
