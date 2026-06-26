@@ -10,7 +10,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
 
@@ -26,11 +25,13 @@ public class AuthenticationController {
     @POST
     @Path("/login")
     public Response login(@Valid UserDto userDto) {
-        log.info("POST /auth/login called");
+        String username = userDto.username();
+
+        log.info("POST /auth/login is authenticating user {}", username);
 
         var tokenDto = userService.login(userDto.username(), userDto.password());
 
-        log.info("POST /auth/login is returning a {}", TokenDto.class.getName());
+        log.info("POST /auth/login authenticated user {}", username);
 
         return Response.ok(tokenDto).build();
     }
@@ -38,11 +39,13 @@ public class AuthenticationController {
     @POST
     @Path("/signup")
     public Response signup(@Valid UserDto userDto) {
-        log.info("POST/auth/signup called");
+        String username = userDto.username();
 
-        var tokenDto = userService.signUp(userDto.username(), userDto.password());
+        log.info("POST/auth/signup is registering user {}", username);
 
-        log.info("POST /auth/signup is returning a {}", TokenDto.class.getName());
+        var tokenDto = userService.signUp(username, userDto.password());
+
+        log.info("POST/auth/signup is registered user {}", username);
 
         return Response.status(Response.Status.CREATED)
                 .entity(tokenDto)

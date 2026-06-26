@@ -34,10 +34,7 @@ class AuthenticationControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        User user = new User();
-        user.setId(UUID.randomUUID());
-        user.setUsername("John.Doe");
-        user.setPassword(BCrypt.hashpw("Password123+", BCrypt.gensalt()));
+        User user = new User(UUID.randomUUID(), "John.Doe", BCrypt.hashpw("Password123+", BCrypt.gensalt()));
 
         userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
         tokenDto = new TokenDto("test token");

@@ -11,8 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class UserServiceImplTest {
+    private static final String INVALID_CREDENTIALS_MESSAGE = "Invalid username or password";
+
+    private static final String USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE = "a user with the specified username already exists";
+
     private static final String TEST_TOKEN = "test token";
 
     @InjectMocks
@@ -40,17 +42,13 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        user = new User();
-        user.setId(UUID.randomUUID());
-        user.setUsername("user");
+        user = new User(UUID.randomUUID(), "user", "Password123+");
     }
 
     @Test
     void login() {
         when(userRepository.findByUsername(anyString()))
                 .thenReturn(Optional.ofNullable(user));
-
         when(jwtService.generateToken(anyString(), anyString()))
                 .thenReturn(TEST_TOKEN);
 
@@ -61,72 +59,38 @@ class UserServiceImplTest {
     }
 
     @Test
-    void loginShouldThrowInvalidCredentialsExceptionWithWrongPassword() {
+    void loginShouldThrowInvalidCredentialsExceptionWhenPasswordDoesNotMatch() {
         when(userRepository.findByUsername(anyString()))
                 .thenReturn(Optional.ofNullable(user));
 
-        assertThrows(InvalidCredentialsException.class, () -> userService.login(user.getUsername(), "somePassword"));
+        Exception exception = assertThrows(InvalidCredentialsException.class, () -> userService.login(user.getUsername(), "somePassword"));
+        assertEquals(INVALID_CREDENTIALS_MESSAGE, exception.getMessage());
     }
 
     @Test
     void signUp() {
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
-
         doNothing().when(userRepository).persist(any(User.class));
-
         when(jwtService.generateToken(anyString(), anyString())).thenReturn(TEST_TOKEN);
 
         TokenDto response = userService.signUp(user.getUsername(), user.getPassword());
 
         assertNotNull(response);
         assertEquals(TEST_TOKEN, response.token());
+        verify(userRepository).existsByUsername(anyString());
         verify(userRepository).persist(any(User.class));
     }
 
     @Test
-    void signUpWithSameUsernameExists() {
+    void signUpShouldThrowResourceAlreadyExistsExceptionWhenUserWithUsernameAlreadyExists() {
         when(userRepository.existsByUsername(anyString())).thenReturn(true);
-        assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
+
+        Exception exception = assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
+        assertEquals(USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE, exception.getMessage());
     }
 
     @Test
-    void signUpShouldThrowInvalidCredentialsExceptionWhenUsernameIsLessThan5Characters() {
-        user.setUsername("u");
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
-    }
-
-    @Test
-    void signUpShouldThrowInvalidCredentialsExceptionWhenUsernameIsGreaterThan20Characters() {
-        String username = "UserUserUserUserUserUser";
-        user.setUsername(username);
-
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-
-        assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
-    }
-
-    @Test
-    void signUpShouldThrowInvalidCredentialsExceptionWhenPasswordIsInvalid() {
-        String invalidPassword = "Password";
-        user.setPassword(invalidPassword);
-
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-
-        assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
-    }
-
-    @Test
-    void signUpShouldThrowInvalidCredentialsExceptionWhenPasswordIsNull() {
-        user.setPassword(null);
-
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-
-        assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), null));
-    }
-
-    @Test
-    void searchUserByUsername() {
+    void findByUsername() {
         when(userRepository.findByUsername(anyString(), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
 

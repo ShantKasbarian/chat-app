@@ -49,14 +49,11 @@ class UserRepositoryImplTest {
 
     @Test
     void findByUsername() {
-        User user = userRepository.findById(this.user.getId());
+        User user = userRepository.findByUsername(this.user.getUsername())
+                .orElse(fail());
+
         assertNotNull(user);
         assertEquals(this.user.getId(), user.getId());
-    }
-
-    @Test
-    void existsByUsername() {
-        assertTrue(userRepository.existsByUsername(user.getUsername()));
     }
 
     @Test
@@ -65,5 +62,10 @@ class UserRepositoryImplTest {
 
         assertNotNull(users);
         assertFalse(users.list().isEmpty());
+    }
+
+    @Test
+    void existsByUsername() {
+        assertTrue(userRepository.existsByUsername(user.getUsername()));
     }
 }

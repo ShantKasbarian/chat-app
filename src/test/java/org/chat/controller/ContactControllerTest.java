@@ -2,7 +2,7 @@ package org.chat.controller;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
-import org.chat.converter.ToModelConverter;
+import org.chat.converter.ContactConverter;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.model.ContactDto;
@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
@@ -31,7 +32,7 @@ public class ContactControllerTest {
     private ContactService contactService;
 
     @Mock
-    private ToModelConverter<ContactDto, Contact> contactToModelConverter;
+    private ContactConverter contactConverter;
 
     @Mock
     private JsonWebToken jsonWebToken;
@@ -59,7 +60,7 @@ public class ContactControllerTest {
         target.setUsername("target");
         target.setPassword("Password123+");
 
-        contact = new Contact(UUID.randomUUID(), user.getId(), target.getId());
+        contact = new Contact(UUID.randomUUID(), user.getId(), target.getId(), target.getUsername());
         contactDto = new ContactDto(contact.getId(), target.getId(), target.getUsername());
 
         when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
@@ -67,32 +68,36 @@ public class ContactControllerTest {
 
     @Test
     void getContacts() {
-        when(contactToModelConverter.convertToModel(any(Contact.class)))
-                .thenReturn(contactDto);
         when(contactService.findByUserId(any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
+        when(panacheQuery.list()).thenReturn(List.of(contact));
+        when(contactConverter.convertToModel(any(Contact.class)))
+                .thenReturn(contactDto);
+        when(panacheQuery.count()).thenReturn(10L);
+        when(panacheQuery.pageCount()).thenReturn(1);
 
         var response = contactController.getContacts(0, 10);
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter, atLeast(1)).convertToModel(any(Contact.class));
+        verify(contactConverter, atLeast(1)).convertToModel(any(Contact.class));
         verify(contactService).findByUserId(any(UUID.class), anyInt(), anyInt());
     }
 
     @Test
     void addContact() {
-        when(contactToModelConverter.convertToModel(any(Contact.class)))
+        when(contactService.addContact(any(UUID.class), any(UUID.class)))
+                .thenReturn(contact);
+        when(contactConverter.convertToModel(any(Contact.class)))
                 .thenReturn(contactDto);
-        when(contactService.addContact(any(UUID.class), any(UUID.class))).thenReturn(contact);
 
         var response = contactController.addContact(target.getId());
 
         assertNotNull(response);
         assertEquals(contactDto, response.getEntity());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter).convertToModel(any(Contact.class));
         verify(contactService).addContact(any(UUID.class), any(UUID.class));
+        verify(contactConverter).convertToModel(any(Contact.class));
     }
 }

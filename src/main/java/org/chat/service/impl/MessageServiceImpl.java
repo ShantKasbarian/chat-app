@@ -108,10 +108,6 @@ public class MessageServiceImpl implements MessageService {
     public PanacheQuery<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
-        if (!groupRepository.existsById(groupId)) {
-            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
-        }
-
         groupUserRepository.findByGroupIdUserId(groupId, userId)
                 .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
                 .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));

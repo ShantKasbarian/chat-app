@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @QuarkusTest
 @Testcontainers
 class GroupRepositoryImplTest {
+    @Container
     static MongoDBContainer mongo = MongoConfig.getContainer();
 
     @Inject
@@ -46,10 +48,12 @@ class GroupRepositoryImplTest {
     @Transactional
     void setUp() {
         group = new Group();
+        group.setId(UUID.randomUUID());
         group.setName("group");
         groupRepository.persist(group);
 
         user = new User();
+        user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
         userRepository.persist(user);
@@ -89,7 +93,7 @@ class GroupRepositoryImplTest {
     }
 
     @Test
-    void findByUserId() {
+    void findByIds() {
         var groups = groupRepository.findByIds(List.of(group.getId()));
         assertNotNull(groups);
         assertFalse(groups.isEmpty());

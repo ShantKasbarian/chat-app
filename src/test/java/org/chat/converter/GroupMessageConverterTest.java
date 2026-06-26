@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,10 +35,10 @@ class GroupMessageConverterTest {
 
         message = new Message();
         message.setId(UUID.randomUUID());
-        message.setSender(user);
-        message.setGroup(group);
+        message.setSenderId(user.getId());
+        message.setGroupId(group.getId());
         message.setText("some message");
-        message.setTime(LocalDateTime.now());
+        message.setTime(Instant.now());
     }
 
     @Test
@@ -47,10 +47,9 @@ class GroupMessageConverterTest {
 
         assertNotNull(groupMessageDto);
         assertEquals(message.getId(), groupMessageDto.id());
-        assertEquals(message.getSender().getId(), groupMessageDto.senderId());
-        assertEquals(message.getSender().getUsername(), groupMessageDto.senderUsername());
+        assertEquals(message.getSenderId(), groupMessageDto.senderId());
+        assertEquals(message.getSenderUsernameSnapshot(), groupMessageDto.senderUsername());
         assertEquals(message.getText(), groupMessageDto.text());
-        assertEquals(message.getGroup().getId(), groupMessageDto.groupId());
-        assertEquals(message.getGroup().getName(), groupMessageDto.groupName());
+        assertEquals(message.getGroupId(), groupMessageDto.groupId());
     }
 }

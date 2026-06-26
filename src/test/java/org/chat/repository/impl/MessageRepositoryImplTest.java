@@ -3,6 +3,7 @@ package org.chat.repository.impl;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.chat.config.MongoConfig;
 import org.chat.entity.Group;
 import org.chat.entity.Message;
 import org.chat.entity.User;
@@ -11,14 +12,21 @@ import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class MessageRepositoryImplTest {
+    @Container
+    static MongoDBContainer mongo = MongoConfig.getContainer();
+
     @Inject
     private MessageRepositoryImpl messageRepository;
 
@@ -42,20 +50,23 @@ class MessageRepositoryImplTest {
     @Transactional
     void setUp() {
         user = new User();
+        user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
         userRepository.persist(user);
 
         target = new User();
+        target.setId(UUID.randomUUID());
         target.setUsername("target");
         target.setPassword("Password123+");
         userRepository.persist(target);
 
         message = new Message();
-        message.setSender(user);
-        message.setTarget(target);
+        message.setId(UUID.randomUUID());
+        message.setSenderId(user.getId());
+        message.setTargetUserId(target.getId());
         message.setText("some message");
-        message.setTime(LocalDateTime.now());
+        message.setTime(Instant.now());
         messageRepository.persist(message);
 
         group = new Group();
@@ -63,10 +74,11 @@ class MessageRepositoryImplTest {
         groupRepository.persist(group);
 
         groupMessage = new Message();
-        groupMessage.setSender(user);
-        groupMessage.setGroup(group);
+        groupMessage.setId(UUID.randomUUID());
+        groupMessage.setSenderId(user.getId());
+        groupMessage.setGroupId(group.getId());
         groupMessage.setText("some message");
-        groupMessage.setTime(LocalDateTime.now());
+        groupMessage.setTime(Instant.now());
         messageRepository.persist(groupMessage);
     }
 
@@ -82,15 +94,15 @@ class MessageRepositoryImplTest {
 
     @Test
     void findByUserIdTargetUserId() {
-        List<Message> messages = messageRepository.findByUserIdTargetUserId(user.getId(), target.getId(), 1, 10);
+        var messages = messageRepository.findByUserIdTargetUserId(user.getId(), target.getId(), 1, 10);
         assertNotNull(messages);
-        assertFalse(messages.isEmpty());
+        assertFalse(messages.list().isEmpty());
     }
 
     @Test
     void findByGroupId() {
-        List<Message> messages = messageRepository.findByGroupId(group.getId(), 1, 10);
+        var messages = messageRepository.findByGroupId(group.getId(), 0, 10);
         assertNotNull(messages);
-        assertFalse(messages.isEmpty());
+        assertFalse(messages.list().isEmpty());
     }
 }

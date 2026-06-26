@@ -3,7 +3,6 @@ package org.chat.converter;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.model.ContactDto;
-import org.chat.model.UserDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -33,7 +32,7 @@ class ContactConverterTest {
         target.setUsername("target");
         target.setPassword("Password123+");
 
-        contact = new Contact(UUID.randomUUID(), user, target);
+        contact = new Contact(UUID.randomUUID(), user.getId(), target.getId(), target.getUsername());
     }
 
     @Test
@@ -42,7 +41,7 @@ class ContactConverterTest {
 
         assertNotNull(contactDto);
         assertEquals(contact.getId(), contactDto.id());
-        assertEquals(contact.getTarget().getId(), contactDto.userId());
-        assertEquals(contact.getTarget().getUsername(), contactDto.username());
+        assertEquals(contact.getTargetUserId(), contactDto.userId());
+        assertEquals(contact.getTargetUsernameSnapshot(), contactDto.username());
     }
 }

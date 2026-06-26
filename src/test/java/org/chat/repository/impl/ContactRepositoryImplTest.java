@@ -61,6 +61,7 @@ class ContactRepositoryImplTest {
         contact.setId(UUID.randomUUID());
         contact.setUserId(user.getId());
         contact.setTargetUserId(target.getId());
+        contact.setTargetUsernameSnapshot(target.getUsername());
 
         contactRepository.persist(contact);
     }

@@ -70,6 +70,8 @@ class UserControllerTest {
         when(userService.findByUsername(anyString(), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
         when(userToModelConverter.convertToModel(any(User.class))).thenReturn(userDto);
+        when(panacheQuery.count()).thenReturn(10L);
+        when(panacheQuery.pageCount()).thenReturn(1);
 
         var response = userController.findByUsername(user.getUsername(), 0, 10);
 

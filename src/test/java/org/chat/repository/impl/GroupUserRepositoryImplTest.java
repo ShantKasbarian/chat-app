@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class GroupUserRepositoryImplTest {
+    @Container
     static MongoDBContainer mongo = MongoConfig.getContainer();
 
     @Inject

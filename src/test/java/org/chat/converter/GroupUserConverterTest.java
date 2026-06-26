@@ -32,7 +32,7 @@ class GroupUserConverterTest {
         user.setUsername("user");
         user.setPassword("Password123+");
 
-        groupUser = new GroupUser(UUID.randomUUID(), group, user, false, false);
+        groupUser = new GroupUser(UUID.randomUUID(), group.getId(), user.getId(), user.getUsername(), GroupUser.Role.ADMIN);
 
     }
 
@@ -42,11 +42,9 @@ class GroupUserConverterTest {
 
         assertNotNull(groupUserDto);
         assertEquals(groupUser.getId(), groupUserDto.id());
-        assertEquals(groupUser.getGroup().getId(), groupUserDto.groupId());
-        assertEquals(groupUser.getGroup().getName(), groupUserDto.groupName());
-        assertEquals(groupUser.getUser().getId(), groupUserDto.userId());
-        assertEquals(groupUser.getUser().getUsername(), groupUserDto.username());
-        assertEquals(groupUser.getIsMember(), groupUserDto.isMember());
-        assertEquals(groupUser.getIsCreator(), groupUserDto.isCreator());
+        assertEquals(groupUser.getGroupId(), groupUserDto.groupId());
+        assertEquals(groupUser.getUserId(), groupUserDto.userId());
+        assertEquals(groupUser.getUsernameSnapshot(), groupUserDto.username());
+        assertEquals(groupUser.getRole(), groupUserDto.role());
     }
 }

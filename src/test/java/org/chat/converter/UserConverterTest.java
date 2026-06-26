@@ -23,11 +23,7 @@ class UserConverterTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        user = new User();
-        user.setId(UUID.randomUUID());
-        user.setUsername("user");
-        user.setPassword("Password123+");
-
+        user = new User(UUID.randomUUID(), "user", "Password123+");
         userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
     }
 

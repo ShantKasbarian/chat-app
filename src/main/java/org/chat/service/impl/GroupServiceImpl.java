@@ -30,6 +30,8 @@ public class GroupServiceImpl implements GroupService {
 
     private static final String GROUP_USER_NOT_FOUND_MESSAGE = "Group user not found";
 
+    private static final String GROUP_NOT_FOUND_MESSAGE = "Group not found";
+
     private final GroupRepository groupRepository;
 
     private final GroupUserRepository groupUserRepository;
@@ -62,7 +64,8 @@ public class GroupServiceImpl implements GroupService {
     public GroupUser joinGroup(UUID groupId, UserPrincipal userPrincipal) {
         log.info("joining group with id {}", groupId);
 
-        Group group = groupRepository.findById(groupId);
+        Group group = groupRepository.findByIdOptional(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
         UUID userId = userPrincipal.id();
 
         if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
@@ -119,7 +122,8 @@ public class GroupServiceImpl implements GroupService {
     public void rejectJoinGroup(UUID userId, UUID groupUserId) {
         log.info("rejecting groupUser with id {} join request", groupUserId);
 
-        GroupUser groupUser = groupUserRepository.findById(groupUserId);
+        GroupUser groupUser = groupUserRepository.findByIdOptional(groupUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));

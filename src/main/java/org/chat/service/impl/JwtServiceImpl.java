@@ -1,14 +1,14 @@
 package org.chat.service.impl;
 
 import io.smallrye.jwt.build.Jwt;
-import jakarta.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.service.JwtService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-@Singleton
+@ApplicationScoped
 public class JwtServiceImpl implements JwtService {
     public static final String USER_ID_CLAIM = "userId";
 

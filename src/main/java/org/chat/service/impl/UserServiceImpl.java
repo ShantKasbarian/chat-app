@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
+import org.chat.exception.ResourceAlreadyExistsException;
 import org.chat.model.TokenDto;
 import org.chat.repository.UserRepository;
 import org.chat.service.UserService;
@@ -20,6 +21,8 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private static final String INVALID_CREDENTIALS_MESSAGE = "Invalid username or password";
 
+    private static final String USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE = "a user with the specified username already exists";
+
     private final UserRepository userRepository;
 
     private final JwtServiceImpl jwtService;
@@ -29,7 +32,7 @@ public class UserServiceImpl implements UserService {
         log.info("authenticating user with username {}", username);
 
         User user = userRepository.findByUsername(username)
-                .filter(user1 -> BCrypt.checkpw(password, user1.getPassword()))
+                .filter(target -> BCrypt.checkpw(password, target.getPassword()))
                 .orElseThrow(() -> new InvalidCredentialsException(INVALID_CREDENTIALS_MESSAGE));
 
         String token = jwtService.generateToken(username, String.valueOf(user.getId()));
@@ -44,8 +47,11 @@ public class UserServiceImpl implements UserService {
     public TokenDto signUp(String username, String password) {
         log.info("registering user with username {}", username);
 
-        User user = new User(UUID.randomUUID(), username, BCrypt.hashpw(password, BCrypt.gensalt()));
+        if (userRepository.existsByUsername(username)) {
+            throw new ResourceAlreadyExistsException(USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE);
+        }
 
+        User user = new User(UUID.randomUUID(), username, BCrypt.hashpw(password, BCrypt.gensalt()));
         userRepository.persist(user);
 
         log.info("registered user with username {}", username);

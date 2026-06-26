@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,10 +33,10 @@ class MessageConverterTest {
 
         message = new Message();
         message.setId(UUID.randomUUID());
-        message.setTarget(user1);
-        message.setSender(user2);
+        message.setSenderId(user1.getId());
+        message.setTargetUserId(user2.getId());
         message.setText("some message");
-        message.setTime(LocalDateTime.now());
+        message.setTime(Instant.now());
     }
 
     @Test
@@ -45,10 +45,10 @@ class MessageConverterTest {
 
         assertNotNull(messageDto);
         assertEquals(message.getId(), messageDto.id());
-        assertEquals(message.getSender().getId(), messageDto.senderId());
-        assertEquals(message.getSender().getUsername(), messageDto.senderUsername());
-        assertEquals(message.getTarget().getId(), messageDto.targetUserId());
-        assertEquals(message.getTarget().getUsername(), messageDto.targetUsername());
+        assertEquals(message.getSenderId(), messageDto.senderId());
+        assertEquals(message.getSenderUsernameSnapshot(), messageDto.senderUsername());
+        assertEquals(message.getTargetUserId(), messageDto.targetUserId());
+        assertEquals(message.getTargetUsernameSnapshot(), messageDto.targetUsername());
         assertEquals(message.getText(), messageDto.text());
     }
 }
