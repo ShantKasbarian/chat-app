@@ -12,6 +12,8 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -33,6 +35,7 @@ class UserRepositoryImplTest {
     @Transactional
     void setUp() {
         user = new User();
+        user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
         userRepository.persist(user);

@@ -1,5 +1,6 @@
 package org.chat.service.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
 import org.chat.service.MessageService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -46,11 +48,9 @@ public class MessageServiceImpl implements MessageService {
 
     private final GroupUserRepository groupUserRepository;
 
-    private final GroupMessageConverter groupMessageConverter;
-
     @Override
     @Transactional
-    public Message sendMessage(String content, UUID targetUserId, UUID currentUserId) {
+    public Message sendMessage(String content, UUID targetUserId, UUID currentUserId, String currentUsername) {
         log.info("sending message to user with id {}", targetUserId);
 
         if (content == null || content.isEmpty()) {
@@ -61,15 +61,19 @@ public class MessageServiceImpl implements MessageService {
             throw new InvalidInfoException(TARGET_USER_NOT_SPECIFIED_MESSAGE);
         }
 
-        User target = userRepository.findById(targetUserId);
+        User target = userRepository.findByIdOptional(targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
 
-        User sender = userRepository.findById(currentUserId);
-
-        Message message = new Message();
-        message.setTarget(target);
-        message.setSender(sender);
-        message.setText(content);
-        message.setTime(LocalDateTime.now());
+        Message message = new Message(
+                UUID.randomUUID(),
+                currentUserId,
+                currentUsername,
+                targetUserId,
+                target.getUsername(),
+                null,
+                content,
+                Instant.now()
+        );
 
         messageRepository.persist(message);
 
@@ -79,23 +83,19 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getMessages(UUID userId, UUID targetUserId, int page, int size) {
-        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, targetUserId, page, size);
-
-        if (page == 0) {
-            page = 1;
-        }
+    public PanacheQuery<Message> getMessages(UUID userId, UUID targetUserId, int page, int size) {
+        log.info("fetching messages of user with id {} and target user with id {} with page {} and size {}", userId, targetUserId, page, size);
 
         var messages = messageRepository.getMessages(userId, targetUserId, page, size);
 
-        log.info("fetching messages of user with id {} and recipient with id {} with page {} and size {}", userId, targetUserId, page, size);
+        log.info("fetched messages of user with id {} and target user with id {} with page {} and size {}", userId, targetUserId, page, size);
 
         return messages;
     }
 
     @Override
     @Transactional
-    public Message messageGroup(String content, UUID groupId, UUID senderId) {
+    public Message messageGroup(String content, UUID groupId, UUID senderId, String senderUsername) {
         log.info("sending message to group with id {}", groupId);
 
         if (content == null || content.isEmpty()) {
@@ -106,21 +106,20 @@ public class MessageServiceImpl implements MessageService {
             throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
         }
 
-        Group group = groupRepository.findById(groupId);
+        groupUserRepository.findByGroupIdUserId(groupId, senderId)
+                .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
+                .orElseThrow(() -> new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, senderId);
-
-        if (groupUser == null || !groupUser.getIsMember()) {
-            throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
-        }
-
-        User currentUser = userRepository.findById(senderId);
-
-        Message message = new Message();
-        message.setSender(currentUser);
-        message.setText(content);
-        message.setGroup(group);
-        message.setTime(LocalDateTime.now());
+        Message message = new Message(
+                UUID.randomUUID(),
+                senderId,
+                senderUsername,
+                null,
+                null,
+                groupId,
+                content,
+                Instant.now()
+        );
 
         messageRepository.persist(message);
 
@@ -130,26 +129,20 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
+    public PanacheQuery<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
         if (groupId == null) {
             throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
         }
 
-        if (page == 0) {
-            page = 1;
-        }
-
         if (!groupRepository.existsById(groupId)) {
             throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
         }
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId);
-
-        if (!groupUser.getIsMember()) {
-            throw new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE);
-        }
+        groupUserRepository.findByGroupIdUserId(groupId, userId)
+                .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
+                .orElseThrow(() -> new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         var messages = messageRepository.getGroupMessages(groupId, page, size);
 

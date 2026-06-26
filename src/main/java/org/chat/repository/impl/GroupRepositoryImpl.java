@@ -1,42 +1,29 @@
 package org.chat.repository.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
 import org.chat.repository.GroupRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
 public class GroupRepositoryImpl implements GroupRepository {
-    private static final String GROUP_NAME_PARAMETER = "groupName";
+    private static final String ID = "id";
 
-    private static final String ID_COLUMN = "id";
-
-    private static final String USER_ID_PARAMETER = "userId";
-
-    private static final String NAME_PARAMETER = "name";
-
-    private static final String GET_GROUPS_BY_NAME = "FROM Group g WHERE UPPER(g.name) LIKE UPPER(:" + GROUP_NAME_PARAMETER + ")";
-
-    private static final String GET_USER_GROUPS = "FROM Group g " +
-            "INNER JOIN GroupUser gu ON gu.group.id = g.id " +
-            "WHERE gu.user.id = :" + USER_ID_PARAMETER + " AND gu.isMember = true";
-
-    private final EntityManager entityManager;
+    private static final String NAME = "name";
 
     @Override
     public boolean existsById(UUID id) {
         log.debug("checking if group with id {} exists", id);
 
-        boolean exists = count(ID_COLUMN, id) > 0;
+        boolean exists = count(ID, id) > 0;
 
         log.debug("checked if group with id {} exists", id);
 
@@ -47,7 +34,7 @@ public class GroupRepositoryImpl implements GroupRepository {
     public boolean existsByName(String name) {
         log.debug("checking if group with name {} exists", name);
 
-        boolean exists = count(NAME_PARAMETER, name) > 0;
+        boolean exists = count(NAME, name) > 0;
 
         log.debug("checked if group with name {} exists", name);
 
@@ -55,13 +42,16 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public List<Group> getGroups(String groupName) {
+    public PanacheQuery<Group> findByName(String groupName, int page, int size) {
         log.debug("fetching groups with name {}", groupName);
 
-        var groups = entityManager
-                .createQuery(GET_GROUPS_BY_NAME, Group.class)
-                .setParameter(GROUP_NAME_PARAMETER, "%" + groupName + "%")
-                .getResultList();
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(groupName),
+                Pattern.CASE_INSENSITIVE
+        );
+
+        var groups = find(NAME, pattern)
+                .page(page, size);
 
         log.debug("fetched groups with name {}", groupName);
 
@@ -69,14 +59,13 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public List<Group> getUserGroups(UUID userId) {
-        log.debug("fetching groupUsers with userId {}", userId);
+    public List<Group> findByIds(List<UUID> ids) {
+        log.debug("fetching groups with ids {}", ids);
 
-        var groups = entityManager.createQuery(GET_USER_GROUPS, Group.class)
-                .setParameter(USER_ID_PARAMETER, userId)
-                .getResultList();
+        var groups = find(ID, ids)
+                .list();
 
-        log.debug("fetched groupUsers with userId {}", userId);
+        log.debug("fetched groups with ids {}", ids);
 
         return groups;
     }

@@ -15,11 +15,11 @@ import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.model.GroupDto;
 import org.chat.model.GroupUserDto;
+import org.chat.model.PageDto;
 import org.chat.service.GroupService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
@@ -47,17 +47,16 @@ public class GroupController {
     @POST
     @Transactional
     public Response create(@Context JsonWebToken jsonWebToken, GroupDto groupDto) {
-        log.info("/groups with POST called");
+        log.info("POST /groups called");
 
         var group = groupToModelConverter.convertToModel(
                 groupService.createGroup(
                         groupDtoToEntityConverter.convertToEntity(groupDto),
-                        groupDto.getCreators(),
                         UUID.fromString(jsonWebToken.getClaim(USER_ID_CLAIM))
                 )
         );
 
-        log.info("/groups with POST returning a {}", GroupDto.class.getName());
+        log.info("POST /groups returning a {}", GroupDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(group)
@@ -69,13 +68,13 @@ public class GroupController {
     @ResponseStatus(201)
     @Transactional
     public Response joinGroup(@PathParam("groupId") UUID groupId) {
-        log.info("/groups/{groupId}/join with POST called");
+        log.info("POST /groups/{groupId}/join called");
 
         var groupUserDto = groupUserToModelConverter.convertToModel(
                 groupService.joinGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)))
         );
 
-        log.info("/groups/{groupId}/join with POST returning a {}", GroupUserDto.class.getName());
+        log.info("POST /groups/{groupId}/join returning a {}", GroupUserDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(groupUserDto)
@@ -87,18 +86,18 @@ public class GroupController {
     @ResponseStatus(204)
     @Transactional
     public void leaveGroup(@PathParam("groupId") UUID groupId) {
-        log.info("/groups/{groupId}/leave with DELETE called");
+        log.info("DELETE /groups/{groupId}/leave called");
 
         groupService.leaveGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)));
 
-        log.info("/groups/{groupId}/leave with DELETE user left group");
+        log.info("DELETE /groups/{groupId}/leave user left group");
     }
 
     @PATCH
     @Path("/accept/{groupUserId}")
     @Transactional
     public Response acceptUserToGroup(@PathParam("groupUserId") UUID groupUserId) {
-        log.info("/groups/accept/{groupUserId} with PUT called");
+        log.info("PUT /groups/accept/{groupUserId} called");
 
         var groupUserDto = groupUserToModelConverter.convertToModel(
                 groupService.acceptJoinGroup(
@@ -116,55 +115,71 @@ public class GroupController {
     @ResponseStatus(204)
     @Transactional
     public void rejectUserFromGroup(@PathParam("groupUserId") UUID groupUserId) {
-        log.info("/groups/reject/{groupUserId} with DELETE called");
+        log.info("DELETE /groups/reject/{groupUserId} called");
 
         groupService.rejectJoinGroup(UUID.fromString(token.getClaim(USER_ID_CLAIM)), groupUserId);
 
-        log.info("/groups/reject/{groupUserId} with DELETE returning a response");
+        log.info("DELETE /groups/reject/{groupUserId} returning a response");
     }
 
     @GET
     @Path("/{groupId}/waiting/users")
-    public Response getWaitingUsers(@PathParam("groupId") UUID groupId) {
-        log.info("/groups/{groupId}/waiting/users with GET called");
+    public Response getWaitingUsers(
+            @PathParam("groupId") UUID groupId,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
+    ) {
+        log.info("GET /groups/{groupId}/waiting/users called");
 
-        var users = groupService.getWaitingUsers(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)))
+        var query = groupService.getWaitingUsers(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
+        var users = query.list()
                 .stream()
                 .map(groupUserToModelConverter::convertToModel)
                 .toList();
+        var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
-        log.info("/groups/{groupId}/waiting/users with GET returning a {} of {}", List.class.getName(), GroupUserDto.class);
+        log.info("GET /groups/{groupId}/waiting/users returning a {} of {}", PageDto.class.getName(), GroupUserDto.class);
 
-        return Response.ok(users).build();
+        return Response.ok(pageDto).build();
     }
 
     @GET
     @Path("/joined")
-    public Response getJoinedGroups() {
-        log.info("/groups/joined with GET called");
+    public Response getJoinedGroups(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
+    ) {
+        log.info("GET /groups/joined called");
 
-        var groups = groupService.getUserJoinedGroups(UUID.fromString(token.getClaim(USER_ID_CLAIM)))
+        var pageDto = groupService.getUserJoinedGroups(UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
+        var groups = pageDto.content()
                 .stream()
                 .map(groupToModelConverter::convertToModel)
                 .toList();
 
-        log.info("/groups/joined with GET returning a {} of {}", List.class.getName(), GroupDto.class.getName());
+        log.info("GET /groups/joined returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
 
-        return Response.ok(groups).build();
+        return Response.ok(new PageDto<>(groups, page, size)).build();
     }
 
     @GET
     @Path("/{groupName}")
-    public Response getGroups(@PathParam("groupName") String groupName) {
-        log.info("/groups/{groupName}/search with GET called");
+    public Response getGroups(
+            @PathParam("groupName") String groupName,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
+    ) {
+        log.info("GET /groups/{groupName} called");
 
-        var groups = groupService.getGroups(groupName)
+        var query = groupService.getGroups(groupName, page, size);
+        var groups = query.list()
                 .stream()
                 .map(groupToModelConverter::convertToModel)
                 .toList();
+        var pageDto = new PageDto<>(groups, page, size);
 
-        log.info("/groups/{groupName}/search with GET returning a {} of {}", List.class.getName(), GroupDto.class.getName());
+        log.info("GET /groups/{groupName} returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
 
-        return Response.ok(groups).build();
+        return Response.ok(pageDto).build();
     }
 }

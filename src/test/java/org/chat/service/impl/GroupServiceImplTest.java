@@ -1,6 +1,5 @@
 package org.chat.service.impl;
 
-import jakarta.persistence.EntityManager;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.User;
@@ -36,9 +35,6 @@ class GroupServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private EntityManager entityManager;
 
     private Group group;
 
@@ -236,7 +232,7 @@ class GroupServiceImplTest {
         when(groupRepository.existsById(any(UUID.class))).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
-        when(groupUserRepository.getWaitingUsers(any(UUID.class))).thenReturn(users);
+        when(groupUserRepository.findByRole(any(UUID.class))).thenReturn(users);
 
         List<GroupUser> response = groupService.getWaitingUsers(group.getId(), user2.getId());
 
@@ -249,7 +245,7 @@ class GroupServiceImplTest {
         List<Group> groups = new ArrayList<>();
         groups.add(group);
 
-        when(groupRepository.getUserGroups(any(UUID.class)))
+        when(groupRepository.findByUserId(any(UUID.class), , ))
                 .thenReturn(groups);
 
         List<Group> response = groupService.getUserJoinedGroups(user2.getId());
@@ -265,7 +261,7 @@ class GroupServiceImplTest {
         group2.setName("group2");
         groups.add(group2);
 
-        when(groupRepository.getGroups(anyString())).thenReturn(groups);
+        when(groupRepository.findByName(anyString())).thenReturn(groups);
 
         List<Group> response = groupService.getGroups("gr");
 

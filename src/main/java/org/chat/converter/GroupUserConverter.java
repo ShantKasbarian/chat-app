@@ -10,17 +10,12 @@ import org.chat.model.GroupUserDto;
 public class GroupUserConverter implements ToModelConverter<GroupUserDto, GroupUser> {
     @Override
     public GroupUserDto convertToModel(GroupUser entity) {
-        Group group = entity.getGroup();
-        User user = entity.getUser();
-
         return new GroupUserDto(
                 entity.getId(),
-                group.getId(),
-                group.getName(),
-                user.getId(),
-                user.getUsername(),
-                entity.getIsMember(),
-                entity.getIsCreator()
+                entity.getGroupId(),
+                entity.getUserId(),
+                entity.getUsernameSnapshot(),
+                entity.getRole()
         );
     }
 }

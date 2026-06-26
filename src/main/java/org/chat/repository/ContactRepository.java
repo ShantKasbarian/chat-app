@@ -7,6 +7,6 @@ import org.chat.entity.Contact;
 import java.util.UUID;
 
 public interface ContactRepository extends PanacheMongoRepositoryBase<Contact, UUID> {
-    PanacheQuery<Contact> getContacts(UUID id, int page, int size);
+    PanacheQuery<Contact> findByUserId(UUID id, int page, int size);
     boolean existsByUserIdTargetUserId(UUID userId, UUID targetUserId);
 }

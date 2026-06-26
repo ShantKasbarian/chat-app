@@ -31,7 +31,7 @@ public class ContactServiceImpl implements ContactService {
     public PanacheQuery<Contact> findByUserId(UUID userId, int page, int size) {
         log.info("fetching contacts of user with id {}, page {}, size {}", userId, page, size);
 
-        var contacts = contactRepository.getContacts(userId, page, size);
+        var contacts = contactRepository.findByUserId(userId, page, size);
 
         log.info("fetched contacts of user with id {}, page {}, size {}", userId, page, size);
 
@@ -43,15 +43,14 @@ public class ContactServiceImpl implements ContactService {
     public Contact addContact(UUID userId, UUID targetUserId) {
         log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
 
-        if(!userRepository.existsById(targetUserId)) {
-            throw new ResourceNotFoundException(USER_NOT_FOUND_MESSAGE);
-        }
-
         if (contactRepository.existsByUserIdTargetUserId(userId, targetUserId)) {
             throw new ResourceAlreadyExistsException(CONTACT_ALREADY_EXISTS_MESSAGE);
         }
 
-        Contact contact = new Contact(UUID.randomUUID(), userId, targetUserId);
+        User user = userRepository.findByIdOptional(targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_MESSAGE));
+
+        Contact contact = new Contact(UUID.randomUUID(), userId, targetUserId, user.getUsername());
 
         contactRepository.persist(contact);
 

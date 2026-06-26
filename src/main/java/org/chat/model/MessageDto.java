@@ -1,5 +1,6 @@
 package org.chat.model;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record MessageDto(
@@ -9,7 +10,7 @@ public record MessageDto(
         UUID targetUserId,
         String targetUsername,
         String text,
-        String time
+        Instant time
 ) {
 
 }

@@ -22,9 +22,11 @@ public class GroupUser {
 
     private UUID userId;
 
+    private String usernameSnapshot;
+
     private Role role;
 
-    enum Role {
+    public enum Role {
         ADMIN,
         MEMBER,
         PENDING

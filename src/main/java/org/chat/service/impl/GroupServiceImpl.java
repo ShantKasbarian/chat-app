@@ -1,16 +1,16 @@
 package org.chat.service.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
-import org.chat.entity.User;
 import org.chat.exception.*;
+import org.chat.model.PageDto;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
-import org.chat.repository.UserRepository;
 import org.chat.service.GroupService;
 
 import java.util.*;
@@ -23,8 +23,6 @@ public class GroupServiceImpl implements GroupService {
 
     private static final String GROUP_ALREADY_EXISTS_MESSAGE = "Group already exists";
 
-    private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
-
     private static final String ALREADY_MEMBER_OF_GROUP_MESSAGE = "you're already a member of this group or have submitted a request to join group";
 
     private static final String SUCCESSFUL_LEAVE_GROUP_MESSAGE = "you left the group";
@@ -33,17 +31,17 @@ public class GroupServiceImpl implements GroupService {
 
     private static final String USER_REJECTION_MESSAGE = "user has been rejected";
 
-    private static final String TARGET_USER_ALREADY_MEMBER_OF_GROUP = "this user is already a member";
+    private static final String NOT_MEMBER_OF_GROUP_MESSAGE = "you're not a member of this group";
+
+    private static final String GROUP_NOT_FOUND_MESSAGE = "Group not found";
 
     private final GroupRepository groupRepository;
 
     private final GroupUserRepository groupUserRepository;
 
-    private final UserRepository userRepository;
-
     @Override
     @Transactional
-    public Group createGroup(Group group, UUID[] creators, UUID userId) {
+    public Group createGroup(Group group, UUID userId, String username) {
         String groupName = group.getName();
 
         if (group.getName() == null || groupName.isEmpty()) {
@@ -52,29 +50,16 @@ public class GroupServiceImpl implements GroupService {
 
         log.info("creating group with name {}", groupName);
 
-        if (creators == null) {
-            creators = new UUID[]{};
-        }
-
         if (groupRepository.existsByName(group.getName())) {
             throw new InvalidGroupException(GROUP_ALREADY_EXISTS_MESSAGE);
         }
 
+        UUID groupId = UUID.randomUUID();
+        group.setId(groupId);
         groupRepository.persist(group);
 
-        User currentUser = userRepository.findById(userId);
-
-        List<GroupUser> creatorsList = new ArrayList<>(
-            Arrays.stream(creators)
-                .map(userRepository::findById)
-                .filter(creator -> !creator.getId().equals(userId))
-                .map(creator -> new GroupUser(group, creator, true, true))
-                .toList()
-        );
-
-        creatorsList.add(new GroupUser(group, currentUser, true, true));
-
-        groupUserRepository.persist(creatorsList);
+        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userId, username, GroupUser.Role.ADMIN);
+        groupUserRepository.persist(groupUser);
 
         log.info("created group with name {}", groupName);
 
@@ -92,13 +77,11 @@ public class GroupServiceImpl implements GroupService {
             throw new UnableToJoinGroupException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        User user = userRepository.findById(userId);
-
         GroupUser groupUser = new GroupUser();
-        groupUser.setGroup(group);
-        groupUser.setUser(user);
-        groupUser.setIsCreator(false);
-        groupUser.setIsMember(false);
+        groupUser.setId(UUID.randomUUID());
+        groupUser.setGroupId(groupId);
+        groupUser.setUserId(userId);
+        groupUser.setRole(GroupUser.Role.PENDING);
 
         groupUserRepository.persist(groupUser);
 
@@ -112,11 +95,10 @@ public class GroupServiceImpl implements GroupService {
     public String leaveGroup(UUID groupId, UUID userId) {
         log.info("leaving group with id {}", groupId);
 
-        if (!groupRepository.existsById(groupId)) {
-            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
-        }
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
+            .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(groupId, userId));
+        groupUserRepository.delete(groupUser);
 
         log.info("left group with id {}", groupId);
 
@@ -130,22 +112,15 @@ public class GroupServiceImpl implements GroupService {
 
         GroupUser groupUser = groupUserRepository.findById(groupUserId);
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(
-                groupUser.getGroup().getId(), userId
-        );
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!creator.getIsCreator()) {
+        if (!creator.getRole().equals(GroupUser.Role.ADMIN)) {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        if (groupUser.getIsMember()) {
-            throw new UnableToJoinGroupException(TARGET_USER_ALREADY_MEMBER_OF_GROUP);
-        }
-
-        groupUser.setIsCreator(false);
-        groupUser.setIsMember(true);
-
-        groupUserRepository.getEntityManager().merge(groupUser);
+        groupUser.setRole(GroupUser.Role.MEMBER);
+        groupUserRepository.persist(groupUser);
 
         log.info("accepted groupUser with id {} join request", groupUserId);
 
@@ -159,11 +134,10 @@ public class GroupServiceImpl implements GroupService {
 
         GroupUser groupUser = groupUserRepository.findById(groupUserId);
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(
-                groupUser.getGroup().getId(), userId
-        );
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!creator.getIsCreator()) {
+        if (!creator.getRole().equals(GroupUser.Role.ADMIN)) {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
@@ -175,20 +149,17 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<GroupUser> getWaitingUsers(UUID groupId, UUID creatorId) {
+    public PanacheQuery<GroupUser> getWaitingUsers(UUID groupId, UUID creatorId, int page, int size) {
         log.info("fetching join requests of group with id {}", groupId);
 
-        if (!groupRepository.existsById(groupId)) {
-            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
-        }
+        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupId, creatorId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupId, creatorId);
-
-        if (!creator.getIsCreator()) {
+        if (creator.getRole().equals(GroupUser.Role.ADMIN)) {
             throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
         }
 
-        var users = groupUserRepository.getWaitingUsers(groupId);
+        var users = groupUserRepository.findByRole(groupId, GroupUser.Role.PENDING, page, size);
 
         log.info("fetched join requests of group with id {}", groupId);
 
@@ -196,10 +167,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<Group> getUserJoinedGroups(UUID userId) {
+    public PageDto<Group> getUserJoinedGroups(UUID userId, int page, int size) {
         log.info("fetching joined groups of user with id {}", userId);
 
-        var groups = groupRepository.getUserGroups(userId);
+        var query = groupUserRepository.findByUserId(userId, page, size);
+        var ids = query.list()
+                .stream()
+                .map(GroupUser::getId)
+                .toList();
+        var groups = new PageDto<>(groupRepository.findByIds(ids), query.count(), query.pageCount());
 
         log.info("fetched joined groups of user with id {}", userId);
 
@@ -207,10 +183,10 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<Group> getGroups(String groupName) {
+    public PanacheQuery<Group> getGroups(String groupName, int page, int size) {
         log.info("fetching groups with name {}", groupName);
 
-        var groups = groupRepository.getGroups(groupName);
+        var groups = groupRepository.findByName(groupName, page, size);
 
         log.info("fetched groups with name {}", groupName);
 

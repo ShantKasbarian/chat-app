@@ -54,7 +54,7 @@ public class ContactServiceImplTest {
 
     @Test
     void findByUserId() {
-        when(contactRepository.getContacts(any(UUID.class), anyInt(), anyInt()))
+        when(contactRepository.findByUserId(any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
         var response = contactService.findByUserId(user1.getId(), 0, 10);
 

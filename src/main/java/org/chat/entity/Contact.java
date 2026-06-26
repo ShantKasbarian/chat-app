@@ -21,4 +21,6 @@ public class Contact {
     private UUID userId;
 
     private UUID targetUserId;
+
+    private String targetUsernameSnapshot;
 }

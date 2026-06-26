@@ -15,6 +15,8 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -43,10 +45,12 @@ class ContactRepositoryImplTest {
     @Transactional
     void setUp() {
         user = new User();
+        user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
 
         target = new User();
+        target.setId(UUID.randomUUID());
         target.setUsername("target");
         target.setPassword("Password123+");
 
@@ -54,8 +58,10 @@ class ContactRepositoryImplTest {
         userRepository.persist(target);
 
         contact = new Contact();
+        contact.setId(UUID.randomUUID());
         contact.setUserId(user.getId());
         contact.setTargetUserId(target.getId());
+
         contactRepository.persist(contact);
     }
 
@@ -68,8 +74,8 @@ class ContactRepositoryImplTest {
     }
 
     @Test
-    void getContacts() {
-        PanacheQuery<Contact> contacts = contactRepository.getContacts(user.getId(), 0, 10);
+    void findByUserId() {
+        PanacheQuery<Contact> contacts = contactRepository.findByUserId(user.getId(), 0, 10);
 
         assertNotNull(contacts);
         assertFalse(contacts.list().isEmpty());

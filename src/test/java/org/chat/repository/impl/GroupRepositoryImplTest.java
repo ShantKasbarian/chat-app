@@ -3,19 +3,26 @@ package org.chat.repository.impl;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.chat.config.MongoConfig;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
+@Testcontainers
 class GroupRepositoryImplTest {
+    static MongoDBContainer mongo = MongoConfig.getContainer();
+
     @Inject
     private GroupRepositoryImpl groupRepository;
 
@@ -31,6 +38,10 @@ class GroupRepositoryImplTest {
 
     private Group group;
 
+    static {
+        mongo.start();
+    }
+
     @BeforeEach
     @Transactional
     void setUp() {
@@ -44,10 +55,10 @@ class GroupRepositoryImplTest {
         userRepository.persist(user);
 
         groupUser = new GroupUser();
-        groupUser.setGroup(group);
-        groupUser.setUser(user);
-        groupUser.setIsMember(true);
-        groupUser.setIsCreator(false);
+        groupUser.setId(UUID.randomUUID());
+        groupUser.setGroupId(group.getId());
+        groupUser.setUserId(user.getId());
+        groupUser.setRole(GroupUser.Role.ADMIN);
 
         groupUserRepository.persist(groupUser);
     }
@@ -71,15 +82,15 @@ class GroupRepositoryImplTest {
     }
 
     @Test
-    void getGroups() {
-        List<Group> groups = groupRepository.getGroups(group.getName());
+    void findByName() {
+        var groups = groupRepository.findByName(group.getName(), 0, 10);
         assertNotNull(groups);
-        assertFalse(groups.isEmpty());
+        assertFalse(groups.list().isEmpty());
     }
 
     @Test
-    void getUserGroups() {
-        List<Group> groups = groupRepository.getUserGroups(user.getId());
+    void findByUserId() {
+        var groups = groupRepository.findByIds(List.of(group.getId()));
         assertNotNull(groups);
         assertFalse(groups.isEmpty());
     }

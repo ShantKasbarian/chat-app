@@ -43,7 +43,7 @@ public class MessageController {
     @POST
     @Transactional
     public Response sendMessage(MessageDto messageDto) {
-        log.info("/messages with POST called");
+        log.info("POST /messages called");
 
         var message = messageToModelConverter.convertToModel(
                 messageService.sendMessage(
@@ -53,7 +53,7 @@ public class MessageController {
                 )
         );
 
-        log.info("/messages with POST returning a {}", MessageDto.class.getName());
+        log.info("POST /messages returning a {}", MessageDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(message)
@@ -68,7 +68,7 @@ public class MessageController {
             @QueryParam("size") @DefaultValue("10") int size
 
     ) {
-        log.info("/messages/{userId} with GET called");
+        log.info("GET /messages/{userId} called");
 
         var messages = messageService.getMessages(
                 UUID.fromString(token.getClaim(USER_ID_CLAIM)), userId, page, size
@@ -77,7 +77,7 @@ public class MessageController {
             .map(messageToModelConverter::convertToModel)
             .toList();
 
-        log.info("/messages/{userId} returning a {} of {}", List.class.getName(), MessageDto.class.getName());
+        log.info("GET /messages/{userId} returning a {} of {}", List.class.getName(), MessageDto.class.getName());
 
         return Response.ok(messages).build();
     }
@@ -86,7 +86,7 @@ public class MessageController {
     @Path("/group")
     @Transactional
     public Response messageGroup(GroupMessageDto messageDto) {
-        log.info("/messages/group with POST called");
+        log.info("POST /messages/group called");
 
         var message = groupMessageConverter.convertToModel(
                 messageService.messageGroup(
@@ -96,7 +96,7 @@ public class MessageController {
                 )
         );
 
-        log.info("/messages/group returning a {}", MessageDto.class.getName());
+        log.info("POST /messages/group returning a {}", MessageDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(message)
@@ -110,7 +110,7 @@ public class MessageController {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        log.info("/messages/group/{groupId} with GET called");
+        log.info("GET /messages/group/{groupId} called");
 
         var messages = messageService.getGroupMessages(
                 groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size
@@ -119,7 +119,7 @@ public class MessageController {
             .map(groupMessageConverter::convertToModel)
             .toList();
 
-        log.info("/messages/group/{groupId} with GET returning a {} of {}", List.class.getName(), GroupMessageDto.class.getName());
+        log.info("GET /messages/group/{groupId} returning a {} of {}", List.class.getName(), GroupMessageDto.class.getName());
 
         return Response.ok(messages).build();
     }

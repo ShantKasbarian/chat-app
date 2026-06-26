@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
+import org.chat.exception.ResourceNotFoundException;
 import org.chat.model.TokenDto;
 import org.chat.repository.UserRepository;
 import org.chat.service.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private static final String INVALID_USERNAME_MESSAGE = "Invalid username";
 
     private static final String INVALID_PASSWORD_MESSAGE = "Invalid password";
+
+    private static final String USER_NOT_FOUND_MESSAGE = "user not found";
 
     private static final String UPPERCASE_REGEX = "[A-Z]";
 
@@ -81,6 +85,18 @@ public class UserServiceImpl implements UserService {
         String token = jwtService.generateToken(username, String.valueOf(user.getId()));
 
         return new TokenDto(token);
+    }
+
+    @Override
+    public User findById(UUID id) {
+        log.info("fetching user with id {}", id);
+
+        User user = userRepository.findByIdOptional(id)
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_MESSAGE));
+
+        log.info("fetched user with id {}", id);
+
+        return user;
     }
 
     @Override

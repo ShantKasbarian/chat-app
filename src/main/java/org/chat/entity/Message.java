@@ -4,7 +4,7 @@ import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.*;
 import org.bson.codecs.pojo.annotations.BsonId;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -19,11 +19,15 @@ public class Message {
 
     private UUID senderId;
 
+    private String senderUsernameSnapshot;
+
     private UUID targetUserId;
+
+    private String targetUsernameSnapshot;
 
     private UUID groupId;
 
     private String text;
 
-    private LocalDateTime time;
+    private Instant time;
 }
