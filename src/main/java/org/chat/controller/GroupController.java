@@ -8,23 +8,19 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chat.converter.ToEntityConverter;
-import org.chat.converter.ToModelConverter;
-import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
+import org.chat.converter.GroupConverter;
+import org.chat.converter.GroupUserConverter;
 import org.chat.model.GroupDto;
 import org.chat.model.GroupUserDto;
 import org.chat.model.PageDto;
+import org.chat.security.UserContext;
 import org.chat.service.GroupService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.UUID;
-
-import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,32 +29,24 @@ import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class GroupController {
-    static final String UPN_CLAIM = "upn";
-
     private final GroupService groupService;
 
-    private final ToModelConverter<GroupDto, Group> groupToModelConverter;
+    private final GroupConverter groupConverter;
 
-    private final ToEntityConverter<Group, GroupDto> groupDtoToEntityConverter;
+    private final GroupUserConverter groupUserConverter;
 
-    private final ToModelConverter<GroupUserDto, GroupUser> groupUserToModelConverter;
-
-    @Context
-    private final SecurityContext securityContext;
-
-    private final JsonWebToken token;
+    private final UserContext userContext;
 
     @POST
     @Transactional
     public Response create(@Context JsonWebToken jsonWebToken, @Valid GroupDto groupDto) {
         log.info("POST /groups called");
 
-        var group = groupToModelConverter.convertToModel(
-                groupService.createGroup(
-                        groupDtoToEntityConverter.convertToEntity(groupDto),
-                        UUID.fromString(jsonWebToken.getClaim(USER_ID_CLAIM)),
-                        jsonWebToken.getClaim(UPN_CLAIM)
-                )
+        var group = groupConverter.convertToModel(
+            groupService.createGroup(
+                groupConverter.convertToEntity(groupDto),
+                userContext.get()
+            )
         );
 
         log.info("POST /groups returning a {}", GroupDto.class.getName());
@@ -75,8 +63,8 @@ public class GroupController {
     public Response joinGroup(@PathParam("groupId") UUID groupId) {
         log.info("POST /groups/{groupId}/join called");
 
-        var groupUserDto = groupUserToModelConverter.convertToModel(
-                groupService.joinGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), token.getClaim(UPN_CLAIM))
+        var groupUserDto = groupUserConverter.convertToModel(
+                groupService.joinGroup(groupId, userContext.get())
         );
 
         log.info("POST /groups/{groupId}/join returning a {}", GroupUserDto.class.getName());
@@ -93,7 +81,7 @@ public class GroupController {
     public void leaveGroup(@PathParam("groupId") UUID groupId) {
         log.info("DELETE /groups/{groupId}/leave called");
 
-        groupService.leaveGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)));
+        groupService.leaveGroup(groupId, userContext.get().id());
 
         log.info("DELETE /groups/{groupId}/leave user left group");
     }
@@ -104,10 +92,8 @@ public class GroupController {
     public Response acceptUserToGroup(@PathParam("groupUserId") UUID groupUserId) {
         log.info("PUT /groups/accept/{groupUserId} called");
 
-        var groupUserDto = groupUserToModelConverter.convertToModel(
-                groupService.acceptJoinGroup(
-                    UUID.fromString(token.getClaim(USER_ID_CLAIM)), groupUserId
-                )
+        var groupUserDto = groupUserConverter.convertToModel(
+                groupService.acceptJoinGroup(userContext.get().id(), groupUserId)
         );
 
         log.info("/groups/accept/{groupUserId} with PUT returning a {}", GroupUserDto.class.getName());
@@ -122,7 +108,7 @@ public class GroupController {
     public void rejectUserFromGroup(@PathParam("groupUserId") UUID groupUserId) {
         log.info("DELETE /groups/reject/{groupUserId} called");
 
-        groupService.rejectJoinGroup(UUID.fromString(token.getClaim(USER_ID_CLAIM)), groupUserId);
+        groupService.rejectJoinGroup(userContext.get().id(), groupUserId);
 
         log.info("DELETE /groups/reject/{groupUserId} returning a response");
     }
@@ -142,10 +128,10 @@ public class GroupController {
     ) {
         log.info("GET /groups/{groupId}/waiting/users called");
 
-        var query = groupService.findUsersWithPendingRole(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
+        var query = groupService.findUsersWithPendingRole(groupId, userContext.get().id(), page, size);
         var users = query.list()
                 .stream()
-                .map(groupUserToModelConverter::convertToModel)
+                .map(groupUserConverter::convertToModel)
                 .toList();
         var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
@@ -168,10 +154,10 @@ public class GroupController {
     ) {
         log.info("GET /groups/joined called");
 
-        var pageDto = groupService.getUserJoinedGroups(UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
+        var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
         var groups = pageDto.content()
                 .stream()
-                .map(groupToModelConverter::convertToModel)
+                .map(groupConverter::convertToModel)
                 .toList();
 
         log.info("GET /groups/joined returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
@@ -197,7 +183,7 @@ public class GroupController {
         var query = groupService.getGroups(groupName, page, size);
         var groups = query.list()
                 .stream()
-                .map(groupToModelConverter::convertToModel)
+                .map(groupConverter::convertToModel)
                 .toList();
         var pageDto = new PageDto<>(groups, page, size);
 

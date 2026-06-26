@@ -14,6 +14,7 @@ import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
+import org.chat.security.UserPrincipal;
 import org.chat.service.MessageService;
 
 import java.time.Instant;
@@ -39,7 +40,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public Message sendMessage(String content, UUID targetUserId, UUID currentUserId, String currentUsername) {
+    public Message sendMessage(UserPrincipal userPrincipal, String content, UUID targetUserId) {
         log.info("sending message to user with id {}", targetUserId);
 
         User target = userRepository.findByIdOptional(targetUserId)
@@ -47,8 +48,8 @@ public class MessageServiceImpl implements MessageService {
 
         Message message = new Message(
                 UUID.randomUUID(),
-                currentUserId,
-                currentUsername,
+                userPrincipal.id(),
+                userPrincipal.username(),
                 targetUserId,
                 target.getUsername(),
                 null,
@@ -76,17 +77,19 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public Message messageGroup(String content, UUID groupId, UUID senderId, String senderUsername) {
+    public Message messageGroup(UserPrincipal userPrincipal, String content, UUID groupId) {
         log.info("sending message to group with id {}", groupId);
 
-        groupUserRepository.findByGroupIdUserId(groupId, senderId)
+        UUID userId = userPrincipal.id();
+
+        groupUserRepository.findByGroupIdUserId(groupId, userId)
                 .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
                 .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         Message message = new Message(
                 UUID.randomUUID(),
-                senderId,
-                senderUsername,
+                userId,
+                userPrincipal.username(),
                 null,
                 null,
                 groupId,

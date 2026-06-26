@@ -2,14 +2,8 @@ package org.chat.converter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.AllArgsConstructor;
-import org.chat.entity.Group;
 import org.chat.entity.Message;
-import org.chat.entity.User;
 import org.chat.model.GroupMessageDto;
-import org.chat.service.GroupService;
-import org.chat.service.UserService;
-
-import java.time.format.DateTimeFormatter;
 
 @AllArgsConstructor
 @ApplicationScoped

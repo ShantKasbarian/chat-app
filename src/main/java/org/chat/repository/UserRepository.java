@@ -10,6 +10,5 @@ import java.util.UUID;
 public interface UserRepository extends PanacheMongoRepositoryBase<User, UUID> {
     Optional<User> findByUsername(String username);
     PanacheQuery<User> findByUsername(String username, int page, int size);
-    boolean existsById(UUID id);
     boolean existsByUsername(String username);
 }

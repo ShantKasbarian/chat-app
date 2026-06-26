@@ -4,12 +4,13 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.model.PageDto;
+import org.chat.security.UserPrincipal;
 
 import java.util.UUID;
 
 public interface GroupService {
-    Group createGroup(Group group, UUID userId, String username);
-    GroupUser joinGroup(UUID groupId, UUID userId, String username);
+    Group createGroup(Group group, UserPrincipal userPrincipal);
+    GroupUser joinGroup(UUID groupId, UserPrincipal userPrincipal);
     void leaveGroup(UUID groupId, UUID userId);
     GroupUser acceptJoinGroup(UUID userId, UUID groupUserId);
     void rejectJoinGroup(UUID userId, UUID groupUserId);

@@ -49,17 +49,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        log.debug("checking if user with id {} exists", id);
-
-        boolean exists = count(ID_FIELD, id) > 0;
-
-        log.debug("checked if user with id {} exists", id);
-
-        return exists;
-    }
-
-    @Override
     public boolean existsByUsername(String username) {
         log.debug("checking if user with username {} exists", username);
 

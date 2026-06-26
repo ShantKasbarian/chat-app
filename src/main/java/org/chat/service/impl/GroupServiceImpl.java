@@ -11,6 +11,7 @@ import org.chat.exception.*;
 import org.chat.model.PageDto;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
+import org.chat.security.UserPrincipal;
 import org.chat.service.GroupService;
 
 import java.util.*;
@@ -35,7 +36,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group createGroup(Group group, UUID userId, String username) {
+    public Group createGroup(Group group, UserPrincipal userPrincipal) {
         String groupName = group.getName();
 
         log.info("creating group with name {}", groupName);
@@ -48,7 +49,7 @@ public class GroupServiceImpl implements GroupService {
         group.setId(groupId);
         groupRepository.persist(group);
 
-        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userId, username, GroupUser.Role.ADMIN);
+        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userPrincipal.id(), userPrincipal.username(), GroupUser.Role.ADMIN);
         groupUserRepository.persist(groupUser);
 
         log.info("created group with name {}", groupName);
@@ -58,16 +59,17 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupUser joinGroup(UUID groupId, UUID userId, String username) {
+    public GroupUser joinGroup(UUID groupId, UserPrincipal userPrincipal) {
         log.info("joining group with id {}", groupId);
 
         Group group = groupRepository.findById(groupId);
+        UUID userId = userPrincipal.id();
 
         if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
             throw new ResourceAlreadyExistsException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userId, username, GroupUser.Role.PENDING);
+        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userId, userPrincipal.username(), GroupUser.Role.PENDING);
 
         groupUserRepository.persist(groupUser);
 

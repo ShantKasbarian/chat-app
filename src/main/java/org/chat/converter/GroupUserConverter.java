@@ -1,9 +1,7 @@
 package org.chat.converter;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
-import org.chat.entity.User;
 import org.chat.model.GroupUserDto;
 
 @ApplicationScoped

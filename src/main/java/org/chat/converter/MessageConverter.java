@@ -2,10 +2,7 @@ package org.chat.converter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.chat.entity.Message;
-import org.chat.entity.User;
 import org.chat.model.MessageDto;
-
-import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
 public class MessageConverter implements ToModelConverter<MessageDto, Message> {
