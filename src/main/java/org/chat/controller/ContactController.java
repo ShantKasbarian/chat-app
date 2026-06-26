@@ -2,6 +2,7 @@ package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -39,10 +40,16 @@ public class ContactController {
 
     @GET
     public Response getContacts(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("10") int size
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
     ) {
-        log.info("/users/contacts with GET called");
+        log.info("GET /users/contacts called");
 
         var query = contactService.findByUserId(UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
         var contacts = query.list().stream()
@@ -50,7 +57,7 @@ public class ContactController {
                 .toList();
         PageDto<ContactDto> pageDto = new PageDto<>(contacts, page, size);
 
-        log.info("/users/contacts returning a {} of {}", List.class.getName(), ContactDto.class.getName());
+        log.info("GET /users/contacts returning a {} of {}", PageDto.class.getName(), ContactDto.class.getName());
 
         return Response.ok(pageDto).build();
     }

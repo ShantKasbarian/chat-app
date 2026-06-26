@@ -2,6 +2,8 @@ package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -31,6 +33,8 @@ import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class GroupController {
+    static final String UPN_CLAIM = "upn";
+
     private final GroupService groupService;
 
     private final ToModelConverter<GroupDto, Group> groupToModelConverter;
@@ -46,13 +50,14 @@ public class GroupController {
 
     @POST
     @Transactional
-    public Response create(@Context JsonWebToken jsonWebToken, GroupDto groupDto) {
+    public Response create(@Context JsonWebToken jsonWebToken, @Valid GroupDto groupDto) {
         log.info("POST /groups called");
 
         var group = groupToModelConverter.convertToModel(
                 groupService.createGroup(
                         groupDtoToEntityConverter.convertToEntity(groupDto),
-                        UUID.fromString(jsonWebToken.getClaim(USER_ID_CLAIM))
+                        UUID.fromString(jsonWebToken.getClaim(USER_ID_CLAIM)),
+                        jsonWebToken.getClaim(UPN_CLAIM)
                 )
         );
 
@@ -71,7 +76,7 @@ public class GroupController {
         log.info("POST /groups/{groupId}/join called");
 
         var groupUserDto = groupUserToModelConverter.convertToModel(
-                groupService.joinGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)))
+                groupService.joinGroup(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), token.getClaim(UPN_CLAIM))
         );
 
         log.info("POST /groups/{groupId}/join returning a {}", GroupUserDto.class.getName());
@@ -126,12 +131,18 @@ public class GroupController {
     @Path("/{groupId}/waiting/users")
     public Response getWaitingUsers(
             @PathParam("groupId") UUID groupId,
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("10") int size
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
     ) {
         log.info("GET /groups/{groupId}/waiting/users called");
 
-        var query = groupService.getWaitingUsers(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
+        var query = groupService.findUsersWithPendingRole(groupId, UUID.fromString(token.getClaim(USER_ID_CLAIM)), page, size);
         var users = query.list()
                 .stream()
                 .map(groupUserToModelConverter::convertToModel)
@@ -146,8 +157,14 @@ public class GroupController {
     @GET
     @Path("/joined")
     public Response getJoinedGroups(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("10") int size
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
     ) {
         log.info("GET /groups/joined called");
 
@@ -166,8 +183,14 @@ public class GroupController {
     @Path("/{groupName}")
     public Response getGroups(
             @PathParam("groupName") String groupName,
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("10") int size
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
     ) {
         log.info("GET /groups/{groupName} called");
 

@@ -4,7 +4,7 @@ import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.User;
 import org.chat.exception.InvalidGroupException;
-import org.chat.exception.InvalidRoleException;
+import org.chat.exception.UnauthorizedException;
 import org.chat.exception.UnableToJoinGroupException;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
@@ -180,7 +180,7 @@ class GroupServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser1);
 
-        assertThrows(InvalidRoleException.class, () -> groupService.acceptJoinGroup(user1.getId(), groupUser2.getId()));
+        assertThrows(UnauthorizedException.class, () -> groupService.acceptJoinGroup(user1.getId(), groupUser2.getId()));
     }
 
     @Test
@@ -221,7 +221,7 @@ class GroupServiceImplTest {
     }
 
     @Test
-    void getWaitingUsers() {
+    void findUsersWithPendingRole() {
         groupUser1.setIsMember(true);
         groupUser1.setIsCreator(true);
         groupUser2.setIsMember(false);
@@ -234,7 +234,7 @@ class GroupServiceImplTest {
                 .thenReturn(groupUser1);
         when(groupUserRepository.findByRole(any(UUID.class))).thenReturn(users);
 
-        List<GroupUser> response = groupService.getWaitingUsers(group.getId(), user2.getId());
+        List<GroupUser> response = groupService.findUsersWithPendingRole(group.getId(), user2.getId());
 
         assertNotNull(response);
         assertEquals(users.size(), response.size());

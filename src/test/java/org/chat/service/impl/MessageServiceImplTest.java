@@ -4,8 +4,8 @@ import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.Message;
 import org.chat.entity.User;
-import org.chat.exception.InvalidInfoException;
-import org.chat.exception.InvalidRoleException;
+import org.chat.exception.InvalidInputException;
+import org.chat.exception.UnauthorizedException;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.MessageRepository;
@@ -101,17 +101,17 @@ class MessageServiceImplTest {
 
     @Test
     void sendMessageShouldThrowInvalidInfoExceptionWhenMessageIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage(null, user2.getId(),user1.getId()));
+        assertThrows(InvalidInputException.class, () -> messageService.sendMessage(null, user2.getId(),user1.getId()));
     }
 
     @Test
     void sendMessageShouldThrowInvalidInfoExceptionWhenMessageIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage("", user2.getId(),user1.getId()));
+        assertThrows(InvalidInputException.class, () -> messageService.sendMessage("", user2.getId(),user1.getId()));
     }
 
     @Test
     void sendMessageShouldThrowInvalidInfoExceptionWhenRecipientIdIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.sendMessage(message.getText(), null, user1.getId()));
+        assertThrows(InvalidInputException.class, () -> messageService.sendMessage(message.getText(), null, user1.getId()));
     }
 
     @Test
@@ -146,17 +146,17 @@ class MessageServiceImplTest {
 
     @Test
     void messageGroupShouldThrowInvalidInfoExceptionWhenMessageIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.messageGroup(null, groupMessage.getGroup().getId(), user1.getId()));
+        assertThrows(InvalidInputException.class, () -> messageService.messageGroup(null, groupMessage.getGroup().getId(), user1.getId()));
     }
 
     @Test
     void messageGroupShouldThrowInvalidInfoExceptionWhenMessageIsEmpty() {
-        assertThrows(InvalidInfoException.class, () -> messageService.messageGroup("", groupMessage.getGroup().getId(), user1.getId()));
+        assertThrows(InvalidInputException.class, () -> messageService.messageGroup("", groupMessage.getGroup().getId(), user1.getId()));
     }
 
     @Test
     void messageGroupShouldThrowInvalidInfoExceptionWhenGroupIdIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.messageGroup(groupMessage.getText(), null, user1.getId()));
+        assertThrows(InvalidInputException.class, () -> messageService.messageGroup(groupMessage.getText(), null, user1.getId()));
     }
 
     @Test
@@ -165,7 +165,7 @@ class MessageServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(null);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.messageGroup("some message", group.getId(), user1.getId()));
+        assertThrows(UnauthorizedException.class, () -> messageService.messageGroup("some message", group.getId(), user1.getId()));
     }
 
     @Test
@@ -176,7 +176,7 @@ class MessageServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(group.getId(), user1.getId()))
                 .thenReturn(groupUser);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.messageGroup("some message", group.getId(), user1.getId()));
+        assertThrows(UnauthorizedException.class, () -> messageService.messageGroup("some message", group.getId(), user1.getId()));
     }
 
     @Test
@@ -206,11 +206,11 @@ class MessageServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser);
 
-        assertThrows(InvalidRoleException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
+        assertThrows(UnauthorizedException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
     }
 
     @Test
     void getGroupMessagesShouldThrowInvalidInfoExceptionWhenGroupIdIsNull() {
-        assertThrows(InvalidInfoException.class, () -> messageService.getGroupMessages(null, user1.getId(), 0, 10));
+        assertThrows(InvalidInputException.class, () -> messageService.getGroupMessages(null, user1.getId(), 0, 10));
     }
 }

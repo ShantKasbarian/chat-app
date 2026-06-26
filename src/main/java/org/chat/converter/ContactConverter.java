@@ -15,7 +15,7 @@ public class ContactConverter implements ToModelConverter<ContactDto, Contact> {
         return new ContactDto(
                 entity.getId(),
                 entity.getTargetUserId(),
-                entity.getUsernameSnapshot()
+                entity.getTargetUsernameSnapshot()
         );
     }
 }

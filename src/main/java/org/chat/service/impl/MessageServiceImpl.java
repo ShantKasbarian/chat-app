@@ -5,13 +5,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chat.converter.GroupMessageConverter;
-import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.Message;
 import org.chat.entity.User;
-import org.chat.exception.InvalidInfoException;
-import org.chat.exception.InvalidRoleException;
+import org.chat.exception.UnauthorizedException;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
@@ -20,8 +17,6 @@ import org.chat.repository.UserRepository;
 import org.chat.service.MessageService;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -29,12 +24,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
     private static final String USER_NOT_FOUND = "user not found";
-
-    private static final String EMPTY_MESSAGE = "Message is empty";
-
-    private static final String TARGET_USER_NOT_SPECIFIED_MESSAGE = "target user not specified";
-
-    private static final String TARGET_GROUP_NOT_SPECIFIED_MESSAGE = "target group not specified";
 
     private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
 
@@ -52,14 +41,6 @@ public class MessageServiceImpl implements MessageService {
     @Transactional
     public Message sendMessage(String content, UUID targetUserId, UUID currentUserId, String currentUsername) {
         log.info("sending message to user with id {}", targetUserId);
-
-        if (content == null || content.isEmpty()) {
-            throw new InvalidInfoException(EMPTY_MESSAGE);
-        }
-
-        if (targetUserId == null) {
-            throw new InvalidInfoException(TARGET_USER_NOT_SPECIFIED_MESSAGE);
-        }
 
         User target = userRepository.findByIdOptional(targetUserId)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
@@ -98,17 +79,9 @@ public class MessageServiceImpl implements MessageService {
     public Message messageGroup(String content, UUID groupId, UUID senderId, String senderUsername) {
         log.info("sending message to group with id {}", groupId);
 
-        if (content == null || content.isEmpty()) {
-            throw new InvalidInfoException(EMPTY_MESSAGE);
-        }
-
-        if (groupId == null) {
-            throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
-        }
-
         groupUserRepository.findByGroupIdUserId(groupId, senderId)
                 .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
-                .orElseThrow(() -> new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE));
+                .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         Message message = new Message(
                 UUID.randomUUID(),
@@ -132,17 +105,13 @@ public class MessageServiceImpl implements MessageService {
     public PanacheQuery<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
-        if (groupId == null) {
-            throw new InvalidInfoException(TARGET_GROUP_NOT_SPECIFIED_MESSAGE);
-        }
-
         if (!groupRepository.existsById(groupId)) {
             throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
         }
 
         groupUserRepository.findByGroupIdUserId(groupId, userId)
                 .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
-                .orElseThrow(() -> new InvalidRoleException(NOT_MEMBER_OF_GROUP_MESSAGE));
+                .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         var messages = messageRepository.getGroupMessages(groupId, page, size);
 

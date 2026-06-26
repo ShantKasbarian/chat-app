@@ -19,21 +19,15 @@ import java.util.*;
 @ApplicationScoped
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
-    private static final String INVALID_GROUP_NAME_MESSAGE = "Invalid group name";
-
     private static final String GROUP_ALREADY_EXISTS_MESSAGE = "Group already exists";
 
     private static final String ALREADY_MEMBER_OF_GROUP_MESSAGE = "you're already a member of this group or have submitted a request to join group";
 
-    private static final String SUCCESSFUL_LEAVE_GROUP_MESSAGE = "you left the group";
-
     private static final String REQUEST_NOT_AUTHORIZED = "You do not have the necessary permissions to perform this request";
-
-    private static final String USER_REJECTION_MESSAGE = "user has been rejected";
 
     private static final String NOT_MEMBER_OF_GROUP_MESSAGE = "you're not a member of this group";
 
-    private static final String GROUP_NOT_FOUND_MESSAGE = "Group not found";
+    private static final String GROUP_USER_NOT_FOUND_MESSAGE = "Group user not found";
 
     private final GroupRepository groupRepository;
 
@@ -44,14 +38,10 @@ public class GroupServiceImpl implements GroupService {
     public Group createGroup(Group group, UUID userId, String username) {
         String groupName = group.getName();
 
-        if (group.getName() == null || groupName.isEmpty()) {
-            throw new InvalidGroupException(INVALID_GROUP_NAME_MESSAGE);
-        }
-
         log.info("creating group with name {}", groupName);
 
         if (groupRepository.existsByName(group.getName())) {
-            throw new InvalidGroupException(GROUP_ALREADY_EXISTS_MESSAGE);
+            throw new ResourceAlreadyExistsException(GROUP_ALREADY_EXISTS_MESSAGE);
         }
 
         UUID groupId = UUID.randomUUID();
@@ -68,20 +58,16 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupUser joinGroup(UUID groupId, UUID userId) {
+    public GroupUser joinGroup(UUID groupId, UUID userId, String username) {
         log.info("joining group with id {}", groupId);
 
         Group group = groupRepository.findById(groupId);
 
         if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
-            throw new UnableToJoinGroupException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
+            throw new ResourceAlreadyExistsException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        GroupUser groupUser = new GroupUser();
-        groupUser.setId(UUID.randomUUID());
-        groupUser.setGroupId(groupId);
-        groupUser.setUserId(userId);
-        groupUser.setRole(GroupUser.Role.PENDING);
+        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userId, username, GroupUser.Role.PENDING);
 
         groupUserRepository.persist(groupUser);
 
@@ -92,7 +78,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String leaveGroup(UUID groupId, UUID userId) {
+    public void leaveGroup(UUID groupId, UUID userId) {
         log.info("leaving group with id {}", groupId);
 
         GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
@@ -101,8 +87,6 @@ public class GroupServiceImpl implements GroupService {
         groupUserRepository.delete(groupUser);
 
         log.info("left group with id {}", groupId);
-
-        return SUCCESSFUL_LEAVE_GROUP_MESSAGE;
     }
 
     @Override
@@ -110,13 +94,14 @@ public class GroupServiceImpl implements GroupService {
     public GroupUser acceptJoinGroup(UUID userId, UUID groupUserId) {
         log.info("accepting groupUser with id {} join request", groupUserId);
 
-        GroupUser groupUser = groupUserRepository.findById(groupUserId);
+        GroupUser groupUser = groupUserRepository.findByIdOptional(groupUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
+        GroupUser admin = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!creator.getRole().equals(GroupUser.Role.ADMIN)) {
-            throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
+        if (!admin.getRole().equals(GroupUser.Role.ADMIN)) {
+            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
         groupUser.setRole(GroupUser.Role.MEMBER);
@@ -129,7 +114,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String rejectJoinGroup(UUID userId, UUID groupUserId) {
+    public void rejectJoinGroup(UUID userId, UUID groupUserId) {
         log.info("rejecting groupUser with id {} join request", groupUserId);
 
         GroupUser groupUser = groupUserRepository.findById(groupUserId);
@@ -138,25 +123,23 @@ public class GroupServiceImpl implements GroupService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         if (!creator.getRole().equals(GroupUser.Role.ADMIN)) {
-            throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
+            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
         groupUserRepository.delete(groupUser);
 
         log.info("rejected member with id {} to join group", groupUserId);
-
-        return USER_REJECTION_MESSAGE;
     }
 
     @Override
-    public PanacheQuery<GroupUser> getWaitingUsers(UUID groupId, UUID creatorId, int page, int size) {
+    public PanacheQuery<GroupUser> findUsersWithPendingRole(UUID groupId, UUID creatorId, int page, int size) {
         log.info("fetching join requests of group with id {}", groupId);
 
         GroupUser creator = groupUserRepository.findByGroupIdUserId(groupId, creatorId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         if (creator.getRole().equals(GroupUser.Role.ADMIN)) {
-            throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
+            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
         var users = groupUserRepository.findByRole(groupId, GroupUser.Role.PENDING, page, size);

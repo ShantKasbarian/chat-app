@@ -145,7 +145,7 @@ class GroupControllerTest {
         List<GroupUser> groupUsers = new ArrayList<>();
         groupUsers.add(groupUser);
 
-        when(groupService.getWaitingUsers(any(UUID.class), any(UUID.class)))
+        when(groupService.findUsersWithPendingRole(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUsers);
         when(groupUserToModelConverter.convertToModel(any(GroupUser.class)))
                 .thenReturn(groupUserDto);
@@ -155,7 +155,7 @@ class GroupControllerTest {
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(groupService).getWaitingUsers(any(UUID.class), any(UUID.class));
+        verify(groupService).findUsersWithPendingRole(any(UUID.class), any(UUID.class));
     }
 
     @Test

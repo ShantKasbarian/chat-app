@@ -1,6 +1,7 @@
 package org.chat.controller;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,14 +21,14 @@ import org.chat.service.UserService;
 @Consumes(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final UserService authenticationService;
+    private final UserService userService;
 
     @POST
     @Path("/login")
-    public Response login(UserDto userDto) {
+    public Response login(@Valid UserDto userDto) {
         log.info("POST /auth/login called");
 
-        var tokenDto = authenticationService.login(userDto.username(), userDto.password());
+        var tokenDto = userService.login(userDto.username(), userDto.password());
 
         log.info("POST /auth/login is returning a {}", TokenDto.class.getName());
 
@@ -36,10 +37,10 @@ public class AuthenticationController {
 
     @POST
     @Path("/signup")
-    public Response signup(UserDto userDto) {
+    public Response signup(@Valid UserDto userDto) {
         log.info("POST/auth/signup called");
 
-        var tokenDto = authenticationService.signUp(userDto.username(), userDto.password());
+        var tokenDto = userService.signUp(userDto.username(), userDto.password());
 
         log.info("POST /auth/signup is returning a {}", TokenDto.class.getName());
 

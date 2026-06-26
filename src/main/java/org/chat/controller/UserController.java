@@ -1,6 +1,7 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -28,8 +29,14 @@ public class UserController {
     @Path("/{username}")
     public Response findByUsername(
             @PathParam("username") String username,
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("10") int size
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
     ) {
         log.info("GET /users/{username} is fetching users with size {} and page {}", size, page);
 

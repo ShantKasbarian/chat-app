@@ -2,6 +2,8 @@ package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -20,6 +22,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import java.util.List;
 import java.util.UUID;
 
+import static org.chat.controller.GroupController.UPN_CLAIM;
 import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 
 @Slf4j
@@ -42,14 +45,15 @@ public class MessageController {
 
     @POST
     @Transactional
-    public Response sendMessage(MessageDto messageDto) {
+    public Response sendMessage(@Valid MessageDto messageDto) {
         log.info("POST /messages called");
 
         var message = messageToModelConverter.convertToModel(
                 messageService.sendMessage(
                     messageDto.text(),
                     messageDto.targetUserId(),
-                    UUID.fromString(token.getClaim(USER_ID_CLAIM))
+                    UUID.fromString(token.getClaim(USER_ID_CLAIM)),
+                    token.getClaim(UPN_CLAIM)
                 )
         );
 
@@ -64,8 +68,14 @@ public class MessageController {
     @Path("/{userId}")
     public Response getMessages(
             @PathParam("userId") UUID userId,
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("10") int size
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
 
     ) {
         log.info("GET /messages/{userId} called");
@@ -85,14 +95,15 @@ public class MessageController {
     @POST
     @Path("/group")
     @Transactional
-    public Response messageGroup(GroupMessageDto messageDto) {
+    public Response messageGroup(@Valid GroupMessageDto messageDto) {
         log.info("POST /messages/group called");
 
         var message = groupMessageConverter.convertToModel(
                 messageService.messageGroup(
                     messageDto.text(),
                     messageDto.groupId(),
-                    UUID.fromString(token.getClaim(USER_ID_CLAIM))
+                    UUID.fromString(token.getClaim(USER_ID_CLAIM)),
+                    token.getClaim(UPN_CLAIM)
                 )
         );
 
