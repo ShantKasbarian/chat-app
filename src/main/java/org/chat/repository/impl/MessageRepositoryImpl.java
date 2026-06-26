@@ -23,7 +23,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     private static final String USERS_MESSAGE_QUERY = "(" + SENDER_ID + " = ?1 AND " + TARGET_USER_ID + " = ?2) OR (" + SENDER_ID + " = ?2 AND " + TARGET_USER_ID + " = ?1)";
 
     @Override
-    public PanacheQuery<Message> getMessages(UUID currentUserId, UUID targetUserId, int page, int size) {
+    public PanacheQuery<Message> findByUserIdTargetUserId(UUID currentUserId, UUID targetUserId, int page, int size) {
         log.debug("fetching user with id {} target user with id {} messages", currentUserId, targetUserId);
 
         var messages = find(USERS_MESSAGE_QUERY, currentUserId)
@@ -35,7 +35,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public PanacheQuery<Message> getGroupMessages(UUID groupId, int page, int size) {
+    public PanacheQuery<Message> findByGroupId(UUID groupId, int page, int size) {
         log.debug("fetching messages of group with id {}", groupId);
 
         var messages = find(GROUP_ID, groupId)

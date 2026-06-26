@@ -119,7 +119,7 @@ class MessageServiceImplTest {
         List<Message> messages = new ArrayList<>();
         messages.add(message);
 
-        when(messageRepository.getMessages(any(UUID.class), any(UUID.class), anyInt(), anyInt()))
+        when(messageRepository.findByUserIdTargetUserId(any(UUID.class), any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(messages);
 
         var response = messageService.getMessages(user2.getId(), user1.getId(), 0, 10);
@@ -189,7 +189,7 @@ class MessageServiceImplTest {
         when(groupRepository.existsById(group.getId())).thenReturn(true);
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupUser);
-        when(messageRepository.getGroupMessages(any(UUID.class), anyInt(), anyInt()))
+        when(messageRepository.findByGroupId(any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(messages);
 
         var response = messageService.getGroupMessages(group.getId(), user2.getId(), 0, 10);

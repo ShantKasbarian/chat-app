@@ -68,7 +68,7 @@ public class MessageServiceImpl implements MessageService {
     public PanacheQuery<Message> getMessages(UUID userId, UUID targetUserId, int page, int size) {
         log.info("fetching messages of user with id {} and target user with id {} with page {} and size {}", userId, targetUserId, page, size);
 
-        var messages = messageRepository.getMessages(userId, targetUserId, page, size);
+        var messages = messageRepository.findByUserIdTargetUserId(userId, targetUserId, page, size);
 
         log.info("fetched messages of user with id {} and target user with id {} with page {} and size {}", userId, targetUserId, page, size);
 
@@ -116,7 +116,7 @@ public class MessageServiceImpl implements MessageService {
                 .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
                 .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        var messages = messageRepository.getGroupMessages(groupId, page, size);
+        var messages = messageRepository.findByGroupId(groupId, page, size);
 
         log.info("fetched messages of group with id {}, page {} and size {}", groupId, page, size);
 
