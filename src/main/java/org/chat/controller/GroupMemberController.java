@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMemberConverter;
 import org.chat.entity.GroupMember;
-import org.chat.model.GroupUserDto;
+import org.chat.model.GroupMemberDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.service.GroupMemberService;
@@ -42,7 +42,7 @@ public class GroupMemberController {
                 groupMemberService.joinGroup(groupId, userContext.get())
         );
 
-        log.info("POST /groups/{groupId}/members returning a {}", GroupUserDto.class.getName());
+        log.info("POST /groups/{groupId}/members returning a {}", GroupMemberDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(groupUserDto)
@@ -71,7 +71,7 @@ public class GroupMemberController {
                 groupMemberService.acceptJoinGroup(userContext.get().id(), id)
         );
 
-        log.info("PUT /groups/members/{id} is returning a {}", GroupUserDto.class.getName());
+        log.info("PUT /groups/members/{id} is returning a {}", GroupMemberDto.class.getName());
 
         return Response.ok(groupUserDto).build();
     }
@@ -113,7 +113,7 @@ public class GroupMemberController {
                 .toList();
         var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
-        log.info("GET /groups/{groupId}/members returning a {} of {}", PageDto.class.getName(), GroupUserDto.class);
+        log.info("GET /groups/{groupId}/members returning a {} of {}", PageDto.class.getName(), GroupMemberDto.class);
 
         return Response.ok(pageDto).build();
     }

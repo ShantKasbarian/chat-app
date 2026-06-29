@@ -6,7 +6,7 @@ import org.chat.converter.GroupMemberConverter;
 import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.entity.User;
-import org.chat.model.GroupUserDto;
+import org.chat.model.GroupMemberDto;
 import org.chat.security.UserContext;
 import org.chat.security.UserPrincipal;
 import org.chat.service.GroupMemberService;
@@ -43,7 +43,7 @@ class GroupMemberControllerTest {
 
     private GroupMember groupMember;
 
-    private GroupUserDto groupUserDto;
+    private GroupMemberDto groupMemberDto;
 
     private Group group;
 
@@ -61,7 +61,7 @@ class GroupMemberControllerTest {
         user.setPassword("Password123+");
 
         groupMember = new GroupMember(UUID.randomUUID(), group.getId(), user.getId(), user.getUsername(), GroupMember.Role.ADMIN);
-        groupUserDto = new GroupUserDto(groupMember.getId(), group.getId(), user.getId(), user.getUsername(), groupMember.getRole());
+        groupMemberDto = new GroupMemberDto(groupMember.getId(), group.getId(), user.getId(), user.getUsername(), groupMember.getRole());
 
         when(userContext.get()).thenReturn(new UserPrincipal(user.getId(), user.getUsername()));
     }
@@ -69,14 +69,14 @@ class GroupMemberControllerTest {
     @Test
     void joinGroup() {
         when(groupMemberConverter.convertToModel(any(GroupMember.class)))
-                .thenReturn(groupUserDto);
+                .thenReturn(groupMemberDto);
         when(groupMemberService.joinGroup(any(UUID.class), any(UserPrincipal.class)))
                 .thenReturn(groupMember);
 
         var response = groupMemberController.joinGroup(group.getId());
 
         assertNotNull(response);
-        assertEquals(groupUserDto, response.getEntity());
+        assertEquals(groupMemberDto, response.getEntity());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         verify(groupMemberConverter).convertToModel(any(GroupMember.class));
         verify(groupMemberService).joinGroup(any(UUID.class), any(UserPrincipal.class));
@@ -96,14 +96,14 @@ class GroupMemberControllerTest {
     @Test
     void acceptUserToGroup() {
         when(groupMemberConverter.convertToModel(any(GroupMember.class)))
-                .thenReturn(groupUserDto);
+                .thenReturn(groupMemberDto);
         when(groupMemberService.acceptJoinGroup(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupMember);
 
         var response = groupMemberController.acceptUserToGroup(groupMember.getId());
 
         assertNotNull(response);
-        assertEquals(groupUserDto, response.getEntity());
+        assertEquals(groupMemberDto, response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(groupMemberConverter).convertToModel(any(GroupMember.class));
         verify(groupMemberService).acceptJoinGroup(any(UUID.class), any(UUID.class));
@@ -129,7 +129,7 @@ class GroupMemberControllerTest {
                 .thenReturn(panacheQuery);
         when(panacheQuery.list()).thenReturn(groupMembers);
         when(groupMemberConverter.convertToModel(any(GroupMember.class)))
-                .thenReturn(groupUserDto);
+                .thenReturn(groupMemberDto);
         when(panacheQuery.count()).thenReturn(10L);
         when(panacheQuery.pageCount()).thenReturn(1);
 

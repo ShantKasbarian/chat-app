@@ -3,7 +3,7 @@ package org.chat.converter;
 import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.entity.User;
-import org.chat.model.GroupUserDto;
+import org.chat.model.GroupMemberDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -38,13 +38,13 @@ class GroupMemberConverterTest {
 
     @Test
     void convertToModel() {
-        GroupUserDto groupUserDto = groupMemberConverter.convertToModel(groupMember);
+        GroupMemberDto groupMemberDto = groupMemberConverter.convertToModel(groupMember);
 
-        assertNotNull(groupUserDto);
-        assertEquals(groupMember.getId(), groupUserDto.id());
-        assertEquals(groupMember.getGroupId(), groupUserDto.groupId());
-        assertEquals(groupMember.getUserId(), groupUserDto.userId());
-        assertEquals(groupMember.getUsernameSnapshot(), groupUserDto.username());
-        assertEquals(groupMember.getRole(), groupUserDto.role());
+        assertNotNull(groupMemberDto);
+        assertEquals(groupMember.getId(), groupMemberDto.id());
+        assertEquals(groupMember.getGroupId(), groupMemberDto.groupId());
+        assertEquals(groupMember.getUserId(), groupMemberDto.userId());
+        assertEquals(groupMember.getUsernameSnapshot(), groupMemberDto.username());
+        assertEquals(groupMember.getRole(), groupMemberDto.role());
     }
 }

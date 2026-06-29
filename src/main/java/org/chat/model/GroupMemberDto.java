@@ -4,7 +4,7 @@ import org.chat.entity.GroupMember;
 
 import java.util.UUID;
 
-public record GroupUserDto(
+public record GroupMemberDto(
         UUID id,
         UUID groupId,
         UUID userId,
