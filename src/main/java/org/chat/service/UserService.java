@@ -6,6 +6,6 @@ import org.chat.model.TokenDto;
 
 public interface UserService {
     TokenDto login(String username, String password);
-    TokenDto signUp(String username, String password);
+    TokenDto signup(String username, String password);
     PanacheQuery<User> findByUsername(String username, int page, int size);
 }

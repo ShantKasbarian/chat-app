@@ -72,12 +72,12 @@ class UserServiceImplTest {
     }
 
     @Test
-    void signUp() {
+    void signup() {
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         doNothing().when(userRepository).persist(any(User.class));
         when(jwtService.generateToken(anyString(), anyString())).thenReturn(TEST_TOKEN);
 
-        TokenDto response = userService.signUp(user.getUsername(), user.getPassword());
+        TokenDto response = userService.signup(user.getUsername(), user.getPassword());
 
         assertNotNull(response);
         assertEquals(TEST_TOKEN, response.token());
@@ -86,10 +86,10 @@ class UserServiceImplTest {
     }
 
     @Test
-    void signUpShouldThrowResourceAlreadyExistsExceptionWhenUserWithUsernameAlreadyExists() {
+    void signupShouldThrowResourceAlreadyExistsExceptionWhenUserWithUsernameAlreadyExists() {
         when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
-        Exception exception = assertThrows(ResourceAlreadyExistsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
+        Exception exception = assertThrows(ResourceAlreadyExistsException.class, () -> userService.signup(user.getUsername(), user.getPassword()));
         assertEquals(USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE, exception.getMessage());
     }
 

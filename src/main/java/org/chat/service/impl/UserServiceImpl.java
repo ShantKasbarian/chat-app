@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public TokenDto signUp(String username, String password) {
+    public TokenDto signup(String username, String password) {
         log.info("registering user with username {}", username);
 
         if (userRepository.existsByUsername(username)) {

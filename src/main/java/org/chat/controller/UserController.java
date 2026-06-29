@@ -1,6 +1,7 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -24,6 +25,36 @@ public class UserController {
     private final UserService userService;
 
     private final UserConverter userConverter;
+
+    @POST
+    @Path("/login")
+    public Response login(@Valid UserDto userDto) {
+        String username = userDto.username();
+
+        log.info("POST /auth/login is authenticating user {}", username);
+
+        var tokenDto = userService.login(userDto.username(), userDto.password());
+
+        log.info("POST /auth/login authenticated user {}", username);
+
+        return Response.ok(tokenDto).build();
+    }
+
+    @POST
+    @Path("/signup")
+    public Response signup(@Valid UserDto userDto) {
+        String username = userDto.username();
+
+        log.info("POST/auth/signup is registering user {}", username);
+
+        var tokenDto = userService.signup(username, userDto.password());
+
+        log.info("POST/auth/signup is registered user {}", username);
+
+        return Response.status(Response.Status.CREATED)
+                .entity(tokenDto)
+                .build();
+    }
 
     @GET
     @Path("/{username}")

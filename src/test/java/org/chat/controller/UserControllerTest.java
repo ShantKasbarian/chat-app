@@ -2,14 +2,14 @@ package org.chat.controller;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
-import org.chat.converter.ToModelConverter;
 import org.chat.converter.UserConverter;
 import org.chat.entity.User;
+import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,23 +34,19 @@ class UserControllerTest {
     private UserConverter userConverter;
 
     @Mock
-    private JsonWebToken jsonWebToken;
-
-    @Mock
     private PanacheQuery<User> panacheQuery;
 
     private User user;
 
     private UserDto userDto;
 
+    private TokenDto tokenDto;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        user = new User();
-        user.setId(UUID.randomUUID());
-        user.setUsername("user");
-        user.setPassword("Password123+");
+        user = new User(UUID.randomUUID(), "John.Doe", BCrypt.hashpw("Password123+", BCrypt.gensalt()));
 
         User target = new User();
         target.setId(UUID.randomUUID());
@@ -59,8 +54,31 @@ class UserControllerTest {
         target.setPassword("Password123+");
 
         userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
+        tokenDto = new TokenDto("test token");
+    }
 
-        when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
+    @Test
+    void login() {
+        when(userService.login(anyString(), anyString())).thenReturn(tokenDto);
+
+        var response = userController.login(userDto);
+
+        assertNotNull(response);
+        assertEquals(tokenDto, response.getEntity());
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        verify(userService).login(anyString(), anyString());
+    }
+
+    @Test
+    void signup() {
+        when(userService.signup(anyString(), anyString())).thenReturn(tokenDto);
+
+        var response = userController.signup(userDto);
+
+        assertNotNull(response);
+        assertEquals(tokenDto, response.getEntity());
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        verify(userService).signup(anyString(), anyString());
     }
 
     @Test
