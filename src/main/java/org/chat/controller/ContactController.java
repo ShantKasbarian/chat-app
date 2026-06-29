@@ -40,7 +40,7 @@ public class ContactController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /users/contacts called");
+        log.info("GET /contacts called");
 
         var query = contactService.findByUserId(userContext.get().id(), page, size);
         var contacts = query.list().stream()
@@ -48,7 +48,7 @@ public class ContactController {
                 .toList();
         PageDto<ContactDto> pageDto = new PageDto<>(contacts, page, size);
 
-        log.info("GET /users/contacts returning a {} of {}", PageDto.class.getName(), ContactDto.class.getName());
+        log.info("GET /contacts returning a {} of {}", PageDto.class.getName(), ContactDto.class.getName());
 
         return Response.ok(pageDto).build();
     }
@@ -57,13 +57,13 @@ public class ContactController {
     @Path("/users/{userId}")
     @Transactional
     public Response addContact(@PathParam("userId") UUID userId) {
-        log.info("POST /users/{userId}/contact called");
+        log.info("POST /users/{userId} called");
 
         var contact = contactConverter.convertToModel(
                 contactService.addContact(userContext.get().id(), userId)
         );
 
-        log.info("POST /users/{userId}/contact is returning a {}", ContactDto.class.getName());
+        log.info("POST /users/{userId} is returning a {}", ContactDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(contact)
