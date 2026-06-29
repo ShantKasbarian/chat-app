@@ -15,20 +15,11 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 @ApplicationScoped
 public class GroupRepositoryImpl implements GroupRepository {
-    private static final String ID = "id";
+    private static final String FIND_BY_NAME_QUERY = "{ 'name' : { $regex: ?1, $options: 'i' } }";
+
+    private static final String FIND_BY_IDS_QUERY = "_id in ?1";
 
     private static final String NAME = "name";
-
-    @Override
-    public boolean existsById(UUID id) {
-        log.debug("checking if group with id {} exists", id);
-
-        boolean exists = count(ID, id) > 0;
-
-        log.debug("checked if group with id {} exists", id);
-
-        return exists;
-    }
 
     @Override
     public boolean existsByName(String name) {
@@ -42,18 +33,13 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public PanacheQuery<Group> findByName(String groupName, int page, int size) {
-        log.debug("fetching groups with name {}", groupName);
+    public PanacheQuery<Group> findByName(String name, int page, int size) {
+        log.debug("fetching groups with name {}", name);
 
-        Pattern pattern = Pattern.compile(
-                Pattern.quote(groupName),
-                Pattern.CASE_INSENSITIVE
-        );
-
-        var groups = find(NAME, pattern)
+        var groups = find(FIND_BY_NAME_QUERY, Pattern.quote(name))
                 .page(page, size);
 
-        log.debug("fetched groups with name {}", groupName);
+        log.debug("fetched groups with name {}", name);
 
         return groups;
     }
@@ -62,8 +48,7 @@ public class GroupRepositoryImpl implements GroupRepository {
     public List<Group> findByIds(List<UUID> ids) {
         log.debug("fetching groups with ids {}", ids);
 
-        var groups = find(ID, ids)
-                .list();
+        var groups = find(FIND_BY_IDS_QUERY, ids).list();
 
         log.debug("fetched groups with ids {}", ids);
 

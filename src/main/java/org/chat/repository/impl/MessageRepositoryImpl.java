@@ -26,7 +26,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public PanacheQuery<Message> findByUserIdTargetUserId(UUID currentUserId, UUID targetUserId, int page, int size) {
         log.debug("fetching user with id {} target user with id {} messages", currentUserId, targetUserId);
 
-        var messages = find(USERS_MESSAGE_QUERY, currentUserId)
+        var messages = find(USERS_MESSAGE_QUERY, currentUserId, targetUserId)
                 .page(Page.of(page, size));
 
         log.debug("fetched user with id {} target user with id {} messages", currentUserId, targetUserId);

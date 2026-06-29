@@ -2,8 +2,6 @@ package org.chat.repository.impl;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.chat.config.MongoConfig;
 import org.chat.entity.Group;
 import org.chat.entity.Message;
 import org.chat.entity.User;
@@ -12,21 +10,14 @@ import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class MessageRepositoryImplTest {
-    @Container
-    static MongoDBContainer mongo = MongoConfig.getContainer();
-
     @Inject
     private MessageRepositoryImpl messageRepository;
 
@@ -47,7 +38,6 @@ class MessageRepositoryImplTest {
     private Group group;
 
     @BeforeEach
-    @Transactional
     void setUp() {
         user = new User();
         user.setId(UUID.randomUUID());
@@ -70,12 +60,14 @@ class MessageRepositoryImplTest {
         messageRepository.persist(message);
 
         group = new Group();
+        group.setId(UUID.randomUUID());
         group.setName("group");
         groupRepository.persist(group);
 
         groupMessage = new Message();
         groupMessage.setId(UUID.randomUUID());
         groupMessage.setSenderId(user.getId());
+        groupMessage.setSenderUsernameSnapshot(user.getUsername());
         groupMessage.setGroupId(group.getId());
         groupMessage.setText("some message");
         groupMessage.setTime(Instant.now());
@@ -83,7 +75,6 @@ class MessageRepositoryImplTest {
     }
 
     @AfterEach
-    @Transactional
     void tearDown() {
         messageRepository.delete(message);
         messageRepository.delete(groupMessage);
@@ -94,7 +85,8 @@ class MessageRepositoryImplTest {
 
     @Test
     void findByUserIdTargetUserId() {
-        var messages = messageRepository.findByUserIdTargetUserId(user.getId(), target.getId(), 1, 10);
+        var messages = messageRepository.findByUserIdTargetUserId(user.getId(), target.getId(), 0, 10);
+
         assertNotNull(messages);
         assertFalse(messages.list().isEmpty());
     }
@@ -102,6 +94,7 @@ class MessageRepositoryImplTest {
     @Test
     void findByGroupId() {
         var messages = messageRepository.findByGroupId(group.getId(), 0, 10);
+
         assertNotNull(messages);
         assertFalse(messages.list().isEmpty());
     }

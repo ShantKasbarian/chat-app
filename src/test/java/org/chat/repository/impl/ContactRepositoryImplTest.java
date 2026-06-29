@@ -3,28 +3,19 @@ package org.chat.repository.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.chat.config.MongoConfig;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-@Testcontainers
 class ContactRepositoryImplTest {
-    @Container
-    static MongoDBContainer mongo = MongoConfig.getContainer();
-
     @Inject
     private ContactRepositoryImpl contactRepository;
 
@@ -37,12 +28,7 @@ class ContactRepositoryImplTest {
 
     private Contact contact;
 
-    static {
-        mongo.start();
-    }
-
     @BeforeEach
-    @Transactional
     void setUp() {
         user = new User();
         user.setId(UUID.randomUUID());
@@ -67,7 +53,6 @@ class ContactRepositoryImplTest {
     }
 
     @AfterEach
-    @Transactional
     void tearDown() {
         userRepository.delete(user);
         userRepository.delete(target);

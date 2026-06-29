@@ -2,16 +2,12 @@ package org.chat.repository.impl;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.chat.config.MongoConfig;
 import org.chat.entity.Group;
 import org.chat.entity.GroupUser;
 import org.chat.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -20,9 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 class GroupUserRepositoryImplTest {
-    @Container
-    static MongoDBContainer mongo = MongoConfig.getContainer();
-
     @Inject
     private GroupUserRepositoryImpl groupUserRepository;
 
@@ -38,12 +31,7 @@ class GroupUserRepositoryImplTest {
 
     private Group group;
 
-    static {
-        mongo.start();
-    }
-
     @BeforeEach
-    @Transactional
     void setUp() {
         group = new Group();
         group.setId(UUID.randomUUID());
@@ -66,7 +54,6 @@ class GroupUserRepositoryImplTest {
     }
 
     @AfterEach
-    @Transactional
     void tearDown() {
         groupRepository.delete(group);
         userRepository.delete(user);

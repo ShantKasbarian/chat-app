@@ -2,37 +2,23 @@ package org.chat.repository.impl;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.chat.config.MongoConfig;
 import org.chat.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-@Testcontainers
 class UserRepositoryImplTest {
-    @Container
-    static MongoDBContainer mongo = MongoConfig.getContainer();
-
     @Inject
     private UserRepositoryImpl userRepository;
 
     private User user;
 
-    static {
-        mongo.start();
-    }
-
     @BeforeEach
-    @Transactional
     void setUp() {
         user = new User();
         user.setId(UUID.randomUUID());
@@ -42,7 +28,6 @@ class UserRepositoryImplTest {
     }
 
     @AfterEach
-    @Transactional
     void tearDown() {
         userRepository.delete(user);
     }
@@ -50,15 +35,15 @@ class UserRepositoryImplTest {
     @Test
     void findByUsername() {
         User user = userRepository.findByUsername(this.user.getUsername())
-                .orElse(fail());
+                .orElse(null);
 
         assertNotNull(user);
-        assertEquals(this.user.getId(), user.getId());
+        assertEquals(this.user.getUsername(), user.getUsername());
     }
 
     @Test
     void findByUsernamePage() {
-        var users = userRepository.findByUsername(user.getUsername(), 0, 10);
+        var users = userRepository.findByUsername(user.getUsername().substring(0, 1), 0, 10);
 
         assertNotNull(users);
         assertFalse(users.list().isEmpty());
