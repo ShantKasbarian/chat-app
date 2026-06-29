@@ -6,6 +6,8 @@ import org.chat.converter.ContactConverter;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.model.ContactDto;
+import org.chat.security.UserContext;
+import org.chat.security.UserPrincipal;
 import org.chat.service.ContactService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +37,7 @@ public class ContactControllerTest {
     private ContactConverter contactConverter;
 
     @Mock
-    private JsonWebToken jsonWebToken;
+    private UserContext userContext;
 
     @Mock
     private PanacheQuery<Contact> panacheQuery;
@@ -63,7 +65,8 @@ public class ContactControllerTest {
         contact = new Contact(UUID.randomUUID(), user.getId(), target.getId(), target.getUsername());
         contactDto = new ContactDto(contact.getId(), target.getId(), target.getUsername());
 
-        when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
+        UserPrincipal userPrincipal = new UserPrincipal(user.getId(), user.getUsername());
+        when(userContext.get()).thenReturn(userPrincipal);
     }
 
     @Test

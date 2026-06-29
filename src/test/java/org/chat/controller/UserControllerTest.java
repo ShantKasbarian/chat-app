@@ -3,6 +3,7 @@ package org.chat.controller;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
 import org.chat.converter.ToModelConverter;
+import org.chat.converter.UserConverter;
 import org.chat.entity.User;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
@@ -31,7 +32,7 @@ class UserControllerTest {
     private UserService userService;
 
     @Mock
-    private ToModelConverter<UserDto, User> userToModelConverter;
+    private UserConverter userConverter;
 
     @Mock
     private JsonWebToken jsonWebToken;
@@ -69,7 +70,8 @@ class UserControllerTest {
 
         when(userService.findByUsername(anyString(), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
-        when(userToModelConverter.convertToModel(any(User.class))).thenReturn(userDto);
+        when(userConverter.convertToModel(any(User.class))).thenReturn(userDto);
+        when(panacheQuery.list()).thenReturn(users);
         when(panacheQuery.count()).thenReturn(10L);
         when(panacheQuery.pageCount()).thenReturn(1);
 
@@ -78,7 +80,7 @@ class UserControllerTest {
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(userToModelConverter, times(users.size())).convertToModel(any(User.class));
+        verify(userConverter, times(users.size())).convertToModel(any(User.class));
         verify(userService).findByUsername(anyString(), anyInt(), anyInt());
     }
 }
