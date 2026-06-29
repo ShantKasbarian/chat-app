@@ -2,13 +2,11 @@ package org.chat.service.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 import org.chat.entity.User;
 import org.chat.exception.ResourceAlreadyExistsException;
-import org.chat.exception.ResourceNotFoundException;
-import org.chat.exception.UnauthorizedException;
 import org.chat.repository.GroupRepository;
-import org.chat.repository.GroupUserRepository;
+import org.chat.repository.GroupMemberRepository;
 import org.chat.security.UserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,13 +32,13 @@ class GroupServiceImplTest {
     private GroupRepository groupRepository;
 
     @Mock
-    private GroupUserRepository groupUserRepository;
+    private GroupMemberRepository groupMemberRepository;
 
     @Mock
     private PanacheQuery<Group> groupQuery;
 
     @Mock
-    private PanacheQuery<GroupUser> groupUserQuery;
+    private PanacheQuery<GroupMember> groupUserQuery;
 
     private Group group;
 
@@ -49,9 +46,9 @@ class GroupServiceImplTest {
 
     private UserPrincipal userPrincipal;
 
-    private GroupUser groupUser1;
+    private GroupMember groupMember1;
 
-    private GroupUser groupUser2;
+    private GroupMember groupMember2;
 
     @BeforeEach
     void setUp() {
@@ -71,8 +68,8 @@ class GroupServiceImplTest {
         user2.setUsername("user2");
         user2.setPassword("Password123+");
 
-        groupUser1 = new GroupUser(UUID.randomUUID(), group.getId(), user1.getId(), user1.getUsername(), GroupUser.Role.ADMIN);
-        groupUser2 = new GroupUser(UUID.randomUUID(), group.getId(), user2.getId(), user2.getUsername(), GroupUser.Role.PENDING);
+        groupMember1 = new GroupMember(UUID.randomUUID(), group.getId(), user1.getId(), user1.getUsername(), GroupMember.Role.ADMIN);
+        groupMember2 = new GroupMember(UUID.randomUUID(), group.getId(), user2.getId(), user2.getUsername(), GroupMember.Role.PENDING);
 
         userPrincipal = new UserPrincipal(user1.getId(), user1.getUsername());
     }
@@ -81,7 +78,7 @@ class GroupServiceImplTest {
     void createGroup() {
         when(groupRepository.existsByName(anyString())).thenReturn(false);
         doNothing().when(groupRepository).persist(any(Group.class));
-        doNothing().when(groupUserRepository).persist(any(GroupUser.class));
+        doNothing().when(groupMemberRepository).persist(any(GroupMember.class));
 
         Group response = groupService.createGroup(group, userPrincipal);
 
@@ -89,7 +86,7 @@ class GroupServiceImplTest {
         assertEquals(group.getName(), response.getName());
         verify(groupRepository).existsByName(anyString());
         verify(groupRepository).persist(any(Group.class));
-        verify(groupUserRepository).persist(any(GroupUser.class));
+        verify(groupMemberRepository).persist(any(GroupMember.class));
     }
 
     @Test
@@ -105,9 +102,9 @@ class GroupServiceImplTest {
         List<Group> groups = new ArrayList<>();
         groups.add(group);
 
-        when(groupUserRepository.findByUserId(any(UUID.class), anyInt(), anyInt()))
+        when(groupMemberRepository.findByUserId(any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(groupUserQuery);
-        when(groupUserQuery.list()).thenReturn(List.of(groupUser1, groupUser2));
+        when(groupUserQuery.list()).thenReturn(List.of(groupMember1, groupMember2));
         when(groupRepository.findByIds(anyList())).thenReturn(groups);
         when(groupUserQuery.count()).thenReturn(10L);
         when(groupUserQuery.pageCount()).thenReturn(1);

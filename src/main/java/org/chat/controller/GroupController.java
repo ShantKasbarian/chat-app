@@ -5,22 +5,15 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupConverter;
-import org.chat.converter.GroupUserConverter;
 import org.chat.model.GroupDto;
-import org.chat.model.GroupUserDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.service.GroupService;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.resteasy.reactive.ResponseStatus;
-
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,7 +30,7 @@ public class GroupController {
 
     @POST
     @Transactional
-    public Response create(@Context JsonWebToken jsonWebToken, @Valid GroupDto groupDto) {
+    public Response create(@Valid GroupDto groupDto) {
         log.info("POST /groups called");
 
         var group = groupConverter.convertToModel(
@@ -80,9 +73,9 @@ public class GroupController {
     }
 
     @GET
-    @Path("/{groupName}")
+    @Path("/{name}")
     public Response getGroups(
-            @PathParam("groupName") String groupName,
+            @PathParam("name") String name,
             @QueryParam("page")
             @DefaultValue("0")
             @Min(value = 0, message = "page must be at least 0")
@@ -92,16 +85,16 @@ public class GroupController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /groups/{groupName} called");
+        log.info("GET /groups/{name} called");
 
-        var query = groupService.getGroups(groupName, page, size);
+        var query = groupService.getGroups(name, page, size);
         var groups = query.list()
                 .stream()
                 .map(groupConverter::convertToModel)
                 .toList();
         var pageDto = new PageDto<>(groups, page, size);
 
-        log.info("GET /groups/{groupName} returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
+        log.info("GET /groups/{name} returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
 
         return Response.ok(pageDto).build();
     }

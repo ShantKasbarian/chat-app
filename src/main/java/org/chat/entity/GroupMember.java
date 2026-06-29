@@ -13,8 +13,8 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@MongoEntity(collection = "group_users")
-public class GroupUser {
+@MongoEntity(collection = "group_members")
+public class GroupMember {
     @BsonId
     private UUID id;
 

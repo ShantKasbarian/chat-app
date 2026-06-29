@@ -1,7 +1,7 @@
 package org.chat.converter;
 
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 import org.chat.entity.User;
 import org.chat.model.GroupUserDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,11 +13,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GroupUserConverterTest {
+class GroupMemberConverterTest {
     @InjectMocks
-    private GroupUserConverter groupUserConverter;
+    private GroupMemberConverter groupMemberConverter;
 
-    private GroupUser groupUser;
+    private GroupMember groupMember;
 
     @BeforeEach
     void setUp() {
@@ -32,19 +32,19 @@ class GroupUserConverterTest {
         user.setUsername("user");
         user.setPassword("Password123+");
 
-        groupUser = new GroupUser(UUID.randomUUID(), group.getId(), user.getId(), user.getUsername(), GroupUser.Role.ADMIN);
+        groupMember = new GroupMember(UUID.randomUUID(), group.getId(), user.getId(), user.getUsername(), GroupMember.Role.ADMIN);
 
     }
 
     @Test
     void convertToModel() {
-        GroupUserDto groupUserDto = groupUserConverter.convertToModel(groupUser);
+        GroupUserDto groupUserDto = groupMemberConverter.convertToModel(groupMember);
 
         assertNotNull(groupUserDto);
-        assertEquals(groupUser.getId(), groupUserDto.id());
-        assertEquals(groupUser.getGroupId(), groupUserDto.groupId());
-        assertEquals(groupUser.getUserId(), groupUserDto.userId());
-        assertEquals(groupUser.getUsernameSnapshot(), groupUserDto.username());
-        assertEquals(groupUser.getRole(), groupUserDto.role());
+        assertEquals(groupMember.getId(), groupUserDto.id());
+        assertEquals(groupMember.getGroupId(), groupUserDto.groupId());
+        assertEquals(groupMember.getUserId(), groupUserDto.userId());
+        assertEquals(groupMember.getUsernameSnapshot(), groupUserDto.username());
+        assertEquals(groupMember.getRole(), groupUserDto.role());
     }
 }

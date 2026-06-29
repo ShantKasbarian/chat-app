@@ -3,7 +3,7 @@ package org.chat.repository.impl;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 import org.chat.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,9 +15,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-class GroupUserRepositoryImplTest {
+class GroupMemberRepositoryImplTest {
     @Inject
-    private GroupUserRepositoryImpl groupUserRepository;
+    private GroupMemberRepositoryImpl groupUserRepository;
 
     @Inject
     private UserRepositoryImpl userRepository;
@@ -25,7 +25,7 @@ class GroupUserRepositoryImplTest {
     @Inject
     private GroupRepositoryImpl groupRepository;
 
-    private GroupUser groupUser;
+    private GroupMember groupMember;
 
     private User user;
 
@@ -44,30 +44,30 @@ class GroupUserRepositoryImplTest {
         user.setPassword("Password123+");
         userRepository.persist(user);
 
-        groupUser = new GroupUser();
-        groupUser.setId(UUID.randomUUID());
-        groupUser.setGroupId(group.getId());
-        groupUser.setUserId(user.getId());
-        groupUser.setRole(GroupUser.Role.ADMIN);
+        groupMember = new GroupMember();
+        groupMember.setId(UUID.randomUUID());
+        groupMember.setGroupId(group.getId());
+        groupMember.setUserId(user.getId());
+        groupMember.setRole(GroupMember.Role.ADMIN);
 
-        groupUserRepository.persist(groupUser);
+        groupUserRepository.persist(groupMember);
     }
 
     @AfterEach
     void tearDown() {
         groupRepository.delete(group);
         userRepository.delete(user);
-        groupUserRepository.delete(groupUser);
+        groupUserRepository.delete(groupMember);
     }
 
     @Test
     void findByGroupIdUserId() {
-        Optional<GroupUser> groupUser = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
+        Optional<GroupMember> groupMember = groupUserRepository.findByGroupIdUserId(group.getId(), user.getId());
 
-        assertNotNull(groupUser);
-        assertTrue(groupUser.isPresent());
-        assertEquals(group.getId(), groupUser.get().getGroupId());
-        assertEquals(user.getId(), groupUser.get().getUserId());
+        assertNotNull(groupMember);
+        assertTrue(groupMember.isPresent());
+        assertEquals(group.getId(), groupMember.get().getGroupId());
+        assertEquals(user.getId(), groupMember.get().getUserId());
     }
 
     @Test
@@ -77,7 +77,7 @@ class GroupUserRepositoryImplTest {
 
     @Test
     void findByRole() {
-        var groupUsers = groupUserRepository.findByRole(group.getId(), GroupUser.Role.ADMIN, 0, 10);
+        var groupUsers = groupUserRepository.findByRole(group.getId(), GroupMember.Role.ADMIN, 0, 10);
 
         assertNotNull(groupUsers);
         assertFalse(groupUsers.list().isEmpty());

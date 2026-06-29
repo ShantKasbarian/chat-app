@@ -3,8 +3,6 @@ package org.chat.repository.impl;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
-import org.chat.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,16 +17,6 @@ class GroupRepositoryImplTest {
     @Inject
     private GroupRepositoryImpl groupRepository;
 
-    @Inject
-    private UserRepositoryImpl userRepository;
-
-    @Inject
-    private GroupUserRepositoryImpl groupUserRepository;
-
-    private GroupUser groupUser;
-
-    private User user;
-
     private Group group;
 
     @BeforeEach
@@ -37,26 +25,10 @@ class GroupRepositoryImplTest {
         group.setId(UUID.randomUUID());
         group.setName("company-chat");
         groupRepository.persist(group);
-
-        user = new User();
-        user.setId(UUID.randomUUID());
-        user.setUsername("user");
-        user.setPassword("Password123+");
-        userRepository.persist(user);
-
-        groupUser = new GroupUser();
-        groupUser.setId(UUID.randomUUID());
-        groupUser.setGroupId(group.getId());
-        groupUser.setUserId(user.getId());
-        groupUser.setRole(GroupUser.Role.ADMIN);
-
-        groupUserRepository.persist(groupUser);
     }
 
     @AfterEach
     void tearDown() {
-        groupUserRepository.delete(groupUser);
-        userRepository.delete(user);
         groupRepository.delete(group);
     }
 

@@ -6,14 +6,14 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 import org.chat.exception.ResourceAlreadyExistsException;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.exception.UnauthorizedException;
 import org.chat.repository.GroupRepository;
-import org.chat.repository.GroupUserRepository;
+import org.chat.repository.GroupMemberRepository;
 import org.chat.security.UserPrincipal;
-import org.chat.service.GroupUserService;
+import org.chat.service.GroupMemberService;
 
 import java.util.UUID;
 
@@ -22,39 +22,39 @@ import static org.chat.service.impl.GroupServiceImpl.REQUEST_NOT_AUTHORIZED;
 @Slf4j
 @AllArgsConstructor
 @ApplicationScoped
-public class GroupUserServiceImpl implements GroupUserService {
+public class GroupMemberServiceImpl implements GroupMemberService {
     private static final String ALREADY_MEMBER_OF_GROUP_MESSAGE = "you're already a member of this group or have submitted a request to join group";
 
     private static final String NOT_MEMBER_OF_GROUP_MESSAGE = "you're not a member of this group";
 
-    private static final String GROUP_USER_NOT_FOUND_MESSAGE = "Group user not found";
+    private static final String GROUP_USER_NOT_FOUND_MESSAGE = "Group member not found";
 
     private static final String GROUP_NOT_FOUND_MESSAGE = "Group not found";
 
     private final GroupRepository groupRepository;
 
-    private final GroupUserRepository groupUserRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     @Override
     @Transactional
-    public GroupUser joinGroup(UUID groupId, UserPrincipal userPrincipal) {
+    public GroupMember joinGroup(UUID groupId, UserPrincipal userPrincipal) {
         log.info("joining group with id {}", groupId);
 
         Group group = groupRepository.findByIdOptional(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE));
         UUID userId = userPrincipal.id();
 
-        if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
+        if (groupMemberRepository.existsByGroupIdUserId(group.getId(), userId)) {
             throw new ResourceAlreadyExistsException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
         }
 
-        GroupUser groupUser = new GroupUser(UUID.randomUUID(), groupId, userId, userPrincipal.username(), GroupUser.Role.PENDING);
+        GroupMember groupMember = new GroupMember(UUID.randomUUID(), groupId, userId, userPrincipal.username(), GroupMember.Role.PENDING);
 
-        groupUserRepository.persist(groupUser);
+        groupMemberRepository.persist(groupMember);
 
         log.info("joined group with id {}", groupId);
 
-        return groupUser;
+        return groupMember;
     }
 
     @Override
@@ -62,69 +62,62 @@ public class GroupUserServiceImpl implements GroupUserService {
     public void leaveGroup(UUID groupId, UUID userId) {
         log.info("leaving group with id {}", groupId);
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
+        GroupMember groupMember = groupMemberRepository.findByGroupIdUserId(groupId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        groupUserRepository.delete(groupUser);
+        groupMemberRepository.delete(groupMember);
 
         log.info("left group with id {}", groupId);
     }
 
     @Override
     @Transactional
-    public GroupUser acceptJoinGroup(UUID userId, UUID groupUserId) {
-        log.info("accepting groupUser with id {} join request", groupUserId);
+    public GroupMember acceptJoinGroup(UUID userId, UUID groupMemberId) {
+        log.info("accepting groupMember with id {} join request", groupMemberId);
 
-        GroupUser groupUser = groupUserRepository.findByIdOptional(groupUserId)
+        GroupMember groupMember = groupMemberRepository.findByIdOptional(groupMemberId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
 
-        GroupUser admin = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
+        GroupMember admin = groupMemberRepository.findByGroupIdUserId(groupMember.getGroupId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!admin.getRole().equals(GroupUser.Role.ADMIN)) {
+        if (!admin.getRole().equals(GroupMember.Role.ADMIN)) {
             throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
-        groupUser.setRole(GroupUser.Role.MEMBER);
-        groupUserRepository.persist(groupUser);
+        groupMember.setRole(GroupMember.Role.MEMBER);
+        groupMemberRepository.persist(groupMember);
 
-        log.info("accepted groupUser with id {} join request", groupUserId);
+        log.info("accepted groupMember with id {} join request", groupMemberId);
 
-        return groupUser;
+        return groupMember;
     }
 
     @Override
     @Transactional
-    public void rejectJoinGroup(UUID userId, UUID groupUserId) {
-        log.info("rejecting groupUser with id {} join request", groupUserId);
+    public void rejectJoinGroup(UUID userId, UUID groupMemberId) {
+        log.info("rejecting groupMember with id {} join request", groupMemberId);
 
-        GroupUser groupUser = groupUserRepository.findByIdOptional(groupUserId)
+        GroupMember groupMember = groupMemberRepository.findByIdOptional(groupMemberId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
 
-        GroupUser admin = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
+        GroupMember admin = groupMemberRepository.findByGroupIdUserId(groupMember.getGroupId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!admin.getRole().equals(GroupUser.Role.ADMIN)) {
+        if (!admin.getRole().equals(GroupMember.Role.ADMIN)) {
             throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
-        groupUserRepository.delete(groupUser);
+        groupMemberRepository.delete(groupMember);
 
-        log.info("rejected member with id {} to join group", groupUserId);
+        log.info("rejected groupMember with id {} to join group", groupMemberId);
     }
 
     @Override
-    public PanacheQuery<GroupUser> findUsersByRole(UUID groupId, UUID userId, GroupUser.Role role, int page, int size) {
+    public PanacheQuery<GroupMember> findUsersByRole(UUID groupId, UUID userId, GroupMember.Role role, int page, int size) {
         log.info("fetching join requests of group with id {}", groupId);
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
-
-        if (!groupUser.getRole().equals(GroupUser.Role.ADMIN)) {
-            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
-        }
-
-        var users = groupUserRepository.findByRole(groupId, role, page, size);
+        var users = groupMemberRepository.findByRole(groupId, role, page, size);
 
         log.info("fetched join requests of group with id {}", groupId);
 

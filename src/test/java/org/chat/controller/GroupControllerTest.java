@@ -4,7 +4,6 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
 import org.chat.converter.GroupConverter;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
 import org.chat.entity.User;
 import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
@@ -35,9 +34,6 @@ class GroupControllerTest {
 
     @Mock
     private GroupConverter groupConverter;
-
-    @Mock
-    private JsonWebToken jsonWebToken;
 
     @Mock
     private UserContext userContext;
@@ -74,7 +70,7 @@ class GroupControllerTest {
                 .thenReturn(group);
         when(groupConverter.convertToEntity(any(GroupDto.class))).thenReturn(group);
 
-        var response = groupController.create(jsonWebToken, groupDto);
+        var response = groupController.create(groupDto);
 
         assertNotNull(response);
         assertEquals(groupDto, response.getEntity());

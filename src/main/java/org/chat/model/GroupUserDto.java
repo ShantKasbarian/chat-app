@@ -1,6 +1,6 @@
 package org.chat.model;
 
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 
 import java.util.UUID;
 
@@ -9,6 +9,6 @@ public record GroupUserDto(
         UUID groupId,
         UUID userId,
         String username,
-        GroupUser.Role role
+        GroupMember.Role role
 ) {
 }

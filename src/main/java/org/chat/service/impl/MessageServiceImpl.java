@@ -5,12 +5,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.UnauthorizedException;
 import org.chat.exception.ResourceNotFoundException;
-import org.chat.repository.GroupUserRepository;
+import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
 import org.chat.security.UserPrincipal;
@@ -33,7 +33,7 @@ public class MessageServiceImpl implements MessageService {
 
     private final UserRepository userRepository;
 
-    private final GroupUserRepository groupUserRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     @Override
     @Transactional
@@ -79,10 +79,10 @@ public class MessageServiceImpl implements MessageService {
 
         UUID userId = userPrincipal.id();
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
+        GroupMember groupMember = groupMemberRepository.findByGroupIdUserId(groupId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (groupUser.getRole().equals(GroupUser.Role.PENDING)) {
+        if (groupMember.getRole().equals(GroupMember.Role.PENDING)) {
             throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
@@ -108,10 +108,10 @@ public class MessageServiceImpl implements MessageService {
     public PanacheQuery<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
-        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
+        GroupMember groupMember = groupMemberRepository.findByGroupIdUserId(groupId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (groupUser.getRole().equals(GroupUser.Role.PENDING)) {
+        if (groupMember.getRole().equals(GroupMember.Role.PENDING)) {
             throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 

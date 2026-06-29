@@ -2,13 +2,13 @@ package org.chat.service.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
+import org.chat.entity.GroupMember;
 import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.exception.UnauthorizedException;
 import org.chat.repository.GroupRepository;
-import org.chat.repository.GroupUserRepository;
+import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
 import org.chat.security.UserPrincipal;
@@ -19,8 +19,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,8 +28,6 @@ import static org.mockito.Mockito.*;
 
 class MessageServiceImplTest {
     private static final String USER_NOT_FOUND = "user not found";
-
-    private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
 
     private static final String NOT_MEMBER_OF_GROUP_MESSAGE = "you are not a member of this group";
 
@@ -45,10 +41,7 @@ class MessageServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private GroupRepository groupRepository;
-
-    @Mock
-    private GroupUserRepository groupUserRepository;
+    private GroupMemberRepository groupMemberRepository;
 
     @Mock
     private PanacheQuery<Message> panacheQuery;
@@ -61,7 +54,7 @@ class MessageServiceImplTest {
 
     private Group group;
 
-    private GroupUser groupUser;
+    private GroupMember groupMember;
 
     private Message groupMessage;
 
@@ -96,7 +89,7 @@ class MessageServiceImplTest {
         groupMessage.setTime(Instant.now());
         groupMessage.setGroupId(group.getId());
 
-        groupUser = new GroupUser(UUID.randomUUID(), group.getId(), user1.getId(), user1.getUsername(), GroupUser.Role.MEMBER);
+        groupMember = new GroupMember(UUID.randomUUID(), group.getId(), user1.getId(), user1.getUsername(), GroupMember.Role.MEMBER);
         userPrincipal = new UserPrincipal(UUID.randomUUID(), user1.getUsername());
     }
 
@@ -136,20 +129,20 @@ class MessageServiceImplTest {
 
     @Test
     void messageGroup() {
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
-                .thenReturn(Optional.ofNullable(groupUser));
+        when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(Optional.ofNullable(groupMember));
         doNothing().when(messageRepository).persist(any(Message.class));
 
         Message response = messageService.messageGroup(userPrincipal, groupMessage.getText(), group.getId());
 
         assertNotNull(response);
-        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+        verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
         verify(messageRepository).persist(any(Message.class));
     }
 
     @Test
-    void messageGroupShouldThrowResourceNotFoundExceptionWhenGroupUserNotFound() {
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+    void messageGroupShouldThrowResourceNotFoundExceptionWhenGroupMemberNotFound() {
+        when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.empty());
 
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> messageService.messageGroup(userPrincipal, groupMessage.getText(), groupMessage.getGroupId()));
@@ -158,10 +151,10 @@ class MessageServiceImplTest {
 
     @Test
     void messageGroupShouldThrowUnauthorizedExceptionWhenRoleIsPending() {
-        groupUser.setRole(GroupUser.Role.PENDING);
+        groupMember.setRole(GroupMember.Role.PENDING);
 
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
-                .thenReturn(Optional.of(groupUser));
+        when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(Optional.of(groupMember));
 
         Exception exception = assertThrows(UnauthorizedException.class, () -> messageService.messageGroup(userPrincipal, groupMessage.getText(), groupMessage.getGroupId()));
         assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
@@ -169,37 +162,37 @@ class MessageServiceImplTest {
 
     @Test
     void getGroupMessages() {
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
-                .thenReturn(Optional.of(groupUser));
+        when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(Optional.of(groupMember));
         when(messageRepository.findByGroupId(any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
 
         var response = messageService.getGroupMessages(group.getId(), user2.getId(), 0, 10);
 
         assertNotNull(response);
-        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+        verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
         verify(messageRepository).findByGroupId(any(UUID.class), anyInt(), anyInt());
     }
 
     @Test
-    void getGroupMessagesShouldThrowResourceNotFoundExceptionWhenGroupUserNotFound() {
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+    void getGroupMessagesShouldThrowResourceNotFoundExceptionWhenGroupMemberNotFound() {
+        when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.empty());
 
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
         assertEquals(NOT_MEMBER_OF_GROUP_MESSAGE, exception.getMessage());
-        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+        verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
     }
 
     @Test
     void getGroupMessagesShouldThrowUnauthorizedExceptionWhenGroupUserRoleIsPending() {
-        groupUser.setRole(GroupUser.Role.PENDING);
+        groupMember.setRole(GroupMember.Role.PENDING);
 
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
-                .thenReturn(Optional.of(groupUser));
+        when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(Optional.of(groupMember));
 
         Exception exception = assertThrows(UnauthorizedException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
         assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
-        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+        verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
     }
 }

@@ -8,12 +8,12 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chat.converter.GroupUserConverter;
-import org.chat.entity.GroupUser;
+import org.chat.converter.GroupMemberConverter;
+import org.chat.entity.GroupMember;
 import org.chat.model.GroupUserDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
-import org.chat.service.GroupUserService;
+import org.chat.service.GroupMemberService;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import java.util.UUID;
@@ -24,10 +24,10 @@ import java.util.UUID;
 @Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class GroupUserController {
-    private final GroupUserService groupUserService;
+public class GroupMemberController {
+    private final GroupMemberService groupMemberService;
 
-    private final GroupUserConverter groupUserConverter;
+    private final GroupMemberConverter groupMemberConverter;
 
     private final UserContext userContext;
 
@@ -38,8 +38,8 @@ public class GroupUserController {
     public Response joinGroup(@PathParam("groupId") UUID groupId) {
         log.info("POST /groups/{groupId}/members called");
 
-        var groupUserDto = groupUserConverter.convertToModel(
-                groupUserService.joinGroup(groupId, userContext.get())
+        var groupUserDto = groupMemberConverter.convertToModel(
+                groupMemberService.joinGroup(groupId, userContext.get())
         );
 
         log.info("POST /groups/{groupId}/members returning a {}", GroupUserDto.class.getName());
@@ -56,7 +56,7 @@ public class GroupUserController {
     public void leaveGroup(@PathParam("groupId") UUID groupId) {
         log.info("DELETE /groups/{groupId}/members called");
 
-        groupUserService.leaveGroup(groupId, userContext.get().id());
+        groupMemberService.leaveGroup(groupId, userContext.get().id());
 
         log.info("DELETE /groups/{groupId}/members user left group");
     }
@@ -67,8 +67,8 @@ public class GroupUserController {
     public Response acceptUserToGroup(@PathParam("id") UUID id) {
         log.info("PUT /groups/members/{id} called");
 
-        var groupUserDto = groupUserConverter.convertToModel(
-                groupUserService.acceptJoinGroup(userContext.get().id(), id)
+        var groupUserDto = groupMemberConverter.convertToModel(
+                groupMemberService.acceptJoinGroup(userContext.get().id(), id)
         );
 
         log.info("PUT /groups/members/{id} is returning a {}", GroupUserDto.class.getName());
@@ -83,7 +83,7 @@ public class GroupUserController {
     public void rejectUserFromGroup(@PathParam("id") UUID id) {
         log.info("DELETE /groups/members/{id} called");
 
-        groupUserService.rejectJoinGroup(userContext.get().id(), id);
+        groupMemberService.rejectJoinGroup(userContext.get().id(), id);
 
         log.info("DELETE /groups/members/{id} returning a response");
     }
@@ -94,7 +94,7 @@ public class GroupUserController {
             @PathParam("groupId") UUID groupId,
             @QueryParam("role")
             @DefaultValue("MEMBER")
-            GroupUser.Role role,
+            GroupMember.Role role,
             @QueryParam("page")
             @DefaultValue("0")
             @Min(value = 0, message = "page must be at least 0")
@@ -106,10 +106,10 @@ public class GroupUserController {
     ) {
         log.info("GET /groups/{groupId}/members called");
 
-        var query = groupUserService.findUsersByRole(groupId, userContext.get().id(), role, page, size);
+        var query = groupMemberService.findUsersByRole(groupId, userContext.get().id(), role, page, size);
         var users = query.list()
                 .stream()
-                .map(groupUserConverter::convertToModel)
+                .map(groupMemberConverter::convertToModel)
                 .toList();
         var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
