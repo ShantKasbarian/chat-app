@@ -253,15 +253,12 @@ class GroupMemberServiceImplTest {
 
     @Test
     void findUsersByRole() {
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
-                .thenReturn(Optional.of(groupMember1));
         when(groupUserRepository.findByRole(any(UUID.class), any(GroupMember.Role.class), anyInt(), anyInt()))
                 .thenReturn(panacheQuery);
 
         var response = groupUserService.findUsersByRole(group.getId(), user1.getId(), GroupMember.Role.MEMBER,0, 10);
 
         assertNotNull(response);
-        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
         verify(groupUserRepository).findByRole(any(UUID.class), any(GroupMember.Role.class), anyInt(), anyInt());
     }
 }
