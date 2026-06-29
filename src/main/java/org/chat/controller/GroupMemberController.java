@@ -1,6 +1,5 @@
 package org.chat.controller;
 
-import io.quarkus.security.Authenticated;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -20,7 +19,6 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/groups")
-@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class GroupMemberController {

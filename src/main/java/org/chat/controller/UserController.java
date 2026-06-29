@@ -1,6 +1,5 @@
 package org.chat.controller;
 
-import io.quarkus.security.Authenticated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
@@ -9,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.UserConverter;
+import org.chat.model.LoginDto;
 import org.chat.model.PageDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
@@ -25,12 +25,12 @@ public class UserController {
 
     @POST
     @Path("/auth/login")
-    public Response login(@Valid UserDto userDto) {
-        String username = userDto.username();
+    public Response login(@Valid LoginDto loginDto) {
+        String username = loginDto.username();
 
         log.info("POST /users/auth/login is authenticating user {}", username);
 
-        var tokenDto = userService.login(userDto.username(), userDto.password());
+        var tokenDto = userService.login(loginDto.username(), loginDto.password());
 
         log.info("POST /users/auth/login authenticated user {}", username);
 
@@ -55,7 +55,6 @@ public class UserController {
 
     @GET
     @Path("/{username}")
-    @Authenticated
     public Response findByUsername(
             @PathParam("username") String username,
             @QueryParam("page")

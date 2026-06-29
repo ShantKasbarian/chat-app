@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupMember;
 import org.chat.entity.Message;
 import org.chat.entity.User;
-import org.chat.exception.UnauthorizedException;
+import org.chat.exception.ForbiddenException;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.MessageRepository;
@@ -83,7 +83,7 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         if (groupMember.getRole().equals(GroupMember.Role.PENDING)) {
-            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
+            throw new ForbiddenException(REQUEST_NOT_AUTHORIZED);
         }
 
         Message message = new Message(
@@ -112,7 +112,7 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         if (groupMember.getRole().equals(GroupMember.Role.PENDING)) {
-            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
+            throw new ForbiddenException(REQUEST_NOT_AUTHORIZED);
         }
 
         var messages = messageRepository.findByGroupId(groupId, page, size);

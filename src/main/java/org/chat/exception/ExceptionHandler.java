@@ -1,6 +1,5 @@
 package org.chat.exception;
 
-import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -14,43 +13,23 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable throwable) {
+        Response.Status status;
+        String message = throwable.getMessage();
+
         switch (throwable) {
-            case ConstraintViolationException e -> {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case InvalidCredentialsException e -> {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case ResourceAlreadyExistsException e -> {
-                return Response.status(Response.Status.CONFLICT)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case ResourceNotFoundException e -> {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case UnauthorizedException e -> {
-                return Response.status(Response.Status.FORBIDDEN)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
+            case InvalidCredentialsException e -> status = Response.Status.UNAUTHORIZED;
+            case ResourceAlreadyExistsException e -> status = Response.Status.CONFLICT;
+            case ResourceNotFoundException e -> status = Response.Status.NOT_FOUND;
+            case ForbiddenException e -> status = Response.Status.FORBIDDEN;
             default -> {
                 log.error(throwable.getMessage(), throwable);
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity(new ErrorMessageDto(INTERNAL_SERVER_ERROR_MESSAGE))
-                        .build();
+                status = Response.Status.INTERNAL_SERVER_ERROR;
+                message = INTERNAL_SERVER_ERROR_MESSAGE;
             }
         }
+
+        return Response.status(status)
+                .entity(new ErrorMessageDto(message))
+                .build();
     }
 }

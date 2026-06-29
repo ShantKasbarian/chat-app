@@ -4,6 +4,7 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
 import org.chat.converter.UserConverter;
 import org.chat.entity.User;
+import org.chat.model.LoginDto;
 import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
@@ -38,6 +39,8 @@ class UserControllerTest {
 
     private User user;
 
+    private LoginDto loginDto;
+
     private UserDto userDto;
 
     private TokenDto tokenDto;
@@ -53,6 +56,7 @@ class UserControllerTest {
         target.setUsername("target");
         target.setPassword("Password123+");
 
+        loginDto = new LoginDto(user.getUsername(), user.getPassword());
         userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
         tokenDto = new TokenDto("test token");
     }
@@ -61,7 +65,7 @@ class UserControllerTest {
     void login() {
         when(userService.login(anyString(), anyString())).thenReturn(tokenDto);
 
-        var response = userController.login(userDto);
+        var response = userController.login(loginDto);
 
         assertNotNull(response);
         assertEquals(tokenDto, response.getEntity());

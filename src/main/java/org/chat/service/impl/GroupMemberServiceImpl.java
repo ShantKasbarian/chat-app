@@ -8,7 +8,7 @@ import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.exception.ResourceAlreadyExistsException;
 import org.chat.exception.ResourceNotFoundException;
-import org.chat.exception.UnauthorizedException;
+import org.chat.exception.ForbiddenException;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.security.UserPrincipal;
@@ -78,7 +78,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         if (!admin.getRole().equals(GroupMember.Role.ADMIN)) {
-            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
+            throw new ForbiddenException(REQUEST_NOT_AUTHORIZED);
         }
 
         groupMember.setRole(GroupMember.Role.MEMBER);
@@ -100,7 +100,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
         if (!admin.getRole().equals(GroupMember.Role.ADMIN)) {
-            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
+            throw new ForbiddenException(REQUEST_NOT_AUTHORIZED);
         }
 
         groupMemberRepository.delete(groupMember);

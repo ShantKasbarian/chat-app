@@ -1,6 +1,5 @@
 package org.chat.controller;
 
-import io.quarkus.security.Authenticated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
@@ -21,7 +20,6 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/messages")
-@Authenticated
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class MessageController {

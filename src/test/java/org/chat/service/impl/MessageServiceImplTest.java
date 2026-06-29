@@ -6,8 +6,7 @@ import org.chat.entity.GroupMember;
 import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.ResourceNotFoundException;
-import org.chat.exception.UnauthorizedException;
-import org.chat.repository.GroupRepository;
+import org.chat.exception.ForbiddenException;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
@@ -150,13 +149,13 @@ class MessageServiceImplTest {
     }
 
     @Test
-    void messageGroupShouldThrowUnauthorizedExceptionWhenRoleIsPending() {
+    void messageGroupShouldThrowForbiddenExceptionWhenRoleIsPending() {
         groupMember.setRole(GroupMember.Role.PENDING);
 
         when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.of(groupMember));
 
-        Exception exception = assertThrows(UnauthorizedException.class, () -> messageService.messageGroup(userPrincipal, groupMessage.getText(), groupMessage.getGroupId()));
+        Exception exception = assertThrows(ForbiddenException.class, () -> messageService.messageGroup(userPrincipal, groupMessage.getText(), groupMessage.getGroupId()));
         assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
     }
 
@@ -185,13 +184,13 @@ class MessageServiceImplTest {
     }
 
     @Test
-    void getGroupMessagesShouldThrowUnauthorizedExceptionWhenGroupUserRoleIsPending() {
+    void getGroupMessagesShouldThrowForbiddenExceptionWhenGroupMemberRoleIsPending() {
         groupMember.setRole(GroupMember.Role.PENDING);
 
         when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.of(groupMember));
 
-        Exception exception = assertThrows(UnauthorizedException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
+        Exception exception = assertThrows(ForbiddenException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
         assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
         verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
     }
