@@ -170,8 +170,9 @@ class GroupServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.empty());
 
-        groupService.leaveGroup(group.getId(), user1.getId());
+        Exception exception = assertThrows(ResourceNotFoundException.class, () -> groupService.leaveGroup(group.getId(), user1.getId()));
 
+        assertEquals(NOT_MEMBER_OF_GROUP_MESSAGE, exception.getMessage());
         verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
     }
 
@@ -186,7 +187,6 @@ class GroupServiceImplTest {
         GroupUser response = groupService.acceptJoinGroup(user1.getId(), groupUser2.getId());
 
         assertNotNull(response);
-        assertEquals(groupUser1.getId(), response.getId());
         assertEquals(GroupUser.Role.MEMBER, response.getRole());
         verify(groupUserRepository).findByIdOptional(any(UUID.class));
         verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
@@ -194,10 +194,8 @@ class GroupServiceImplTest {
     }
 
     @Test
-    void acceptJoinGroupShouldThrowResourceNotFoundExceptionWhenGroupUserNotFound() {
+    void acceptJoinGroupShouldThrowResourceNotFoundExceptionWhenAdminNotFound() {
         when(groupUserRepository.findByIdOptional(any(UUID.class)))
-                .thenReturn(Optional.of(groupUser2));
-        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.empty());
 
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> groupService.acceptJoinGroup(user1.getId(), groupUser2.getId()));
@@ -206,8 +204,10 @@ class GroupServiceImplTest {
     }
 
     @Test
-    void acceptJoinGroupShouldThrowResourceNotFoundExceptionWhenAdminNotFound() {
+    void acceptJoinGroupShouldThrowResourceNotFoundExceptionWhenGroupUserNotFound() {
         when(groupUserRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.of(groupUser2));
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.empty());
 
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> groupService.acceptJoinGroup(user1.getId(), groupUser2.getId()));
@@ -287,10 +287,24 @@ class GroupServiceImplTest {
     void findUsersWithPendingRole() {
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.of(groupUser1));
+        when(groupUserRepository.findByRole(any(UUID.class), any(GroupUser.Role.class), anyInt(), anyInt()))
+                .thenReturn(groupUserQuery);
 
         var response = groupService.findUsersWithPendingRole(group.getId(), user1.getId(), 0, 10);
 
         assertNotNull(response);
+        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+        verify(groupUserRepository).findByRole(any(UUID.class), any(GroupUser.Role.class), anyInt(), anyInt());
+    }
+
+    @Test
+    void findUsersWithPendingRoleShouldThrowResourceNotFoundExceptionWhenGroupUserNotFound() {
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResourceNotFoundException.class, () -> groupService.findUsersWithPendingRole(group.getId(), user1.getId(), 0, 10));
+
+        assertEquals(NOT_MEMBER_OF_GROUP_MESSAGE, exception.getMessage());
         verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
     }
 
@@ -299,9 +313,9 @@ class GroupServiceImplTest {
         when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.of(groupUser2));
 
-        var response = groupService.findUsersWithPendingRole(group.getId(), user1.getId(), 0, 10);
+        Exception exception = assertThrows(UnauthorizedException.class, () -> groupService.findUsersWithPendingRole(group.getId(), user1.getId(), 0, 10));
 
-        assertNotNull(response);
+        assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
         verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
     }
 

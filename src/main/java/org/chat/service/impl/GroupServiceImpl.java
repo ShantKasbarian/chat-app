@@ -20,11 +20,11 @@ import java.util.*;
 @ApplicationScoped
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
+    static final String REQUEST_NOT_AUTHORIZED = "You do not have the necessary permissions to perform this request";
+
     private static final String GROUP_ALREADY_EXISTS_MESSAGE = "Group already exists";
 
     private static final String ALREADY_MEMBER_OF_GROUP_MESSAGE = "you're already a member of this group or have submitted a request to join group";
-
-    private static final String REQUEST_NOT_AUTHORIZED = "You do not have the necessary permissions to perform this request";
 
     private static final String NOT_MEMBER_OF_GROUP_MESSAGE = "you're not a member of this group";
 
@@ -125,10 +125,10 @@ public class GroupServiceImpl implements GroupService {
         GroupUser groupUser = groupUserRepository.findByIdOptional(groupUserId)
                 .orElseThrow(() -> new ResourceNotFoundException(GROUP_USER_NOT_FOUND_MESSAGE));
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
+        GroupUser admin = groupUserRepository.findByGroupIdUserId(groupUser.getGroupId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!creator.getRole().equals(GroupUser.Role.ADMIN)) {
+        if (!admin.getRole().equals(GroupUser.Role.ADMIN)) {
             throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 
@@ -138,13 +138,13 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public PanacheQuery<GroupUser> findUsersWithPendingRole(UUID groupId, UUID creatorId, int page, int size) {
+    public PanacheQuery<GroupUser> findUsersWithPendingRole(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching join requests of group with id {}", groupId);
 
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupId, creatorId)
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (creator.getRole().equals(GroupUser.Role.ADMIN)) {
+        if (!groupUser.getRole().equals(GroupUser.Role.ADMIN)) {
             throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
         }
 

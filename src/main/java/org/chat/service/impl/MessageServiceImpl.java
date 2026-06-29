@@ -20,6 +20,8 @@ import org.chat.service.MessageService;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.chat.service.impl.GroupServiceImpl.REQUEST_NOT_AUTHORIZED;
+
 @Slf4j
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -82,9 +84,12 @@ public class MessageServiceImpl implements MessageService {
 
         UUID userId = userPrincipal.id();
 
-        groupUserRepository.findByGroupIdUserId(groupId, userId)
-                .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
-                .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
+
+        if (groupUser.getRole().equals(GroupUser.Role.PENDING)) {
+            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
+        }
 
         Message message = new Message(
                 UUID.randomUUID(),
@@ -108,9 +113,12 @@ public class MessageServiceImpl implements MessageService {
     public PanacheQuery<Message> getGroupMessages(UUID groupId, UUID userId, int page, int size) {
         log.info("fetching messages of group with id {}, page {} and size {}", groupId, page, size);
 
-        groupUserRepository.findByGroupIdUserId(groupId, userId)
-                .filter(user -> user.getRole().equals(GroupUser.Role.PENDING))
-                .orElseThrow(() -> new UnauthorizedException(NOT_MEMBER_OF_GROUP_MESSAGE));
+        GroupUser groupUser = groupUserRepository.findByGroupIdUserId(groupId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
+
+        if (groupUser.getRole().equals(GroupUser.Role.PENDING)) {
+            throw new UnauthorizedException(REQUEST_NOT_AUTHORIZED);
+        }
 
         var messages = messageRepository.findByGroupId(groupId, page, size);
 

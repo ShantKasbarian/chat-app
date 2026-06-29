@@ -3,10 +3,12 @@ package org.chat.service.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
+import org.chat.exception.ResourceAlreadyExistsException;
 import org.chat.model.TokenDto;
 import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -38,11 +40,13 @@ class UserServiceImplTest {
 
     private User user;
 
+    private String password;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User(UUID.randomUUID(), "user", "Password123+");
+        password = "Password123+";
+        user = new User(UUID.randomUUID(), "user", BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
     @Test
@@ -52,7 +56,7 @@ class UserServiceImplTest {
         when(jwtService.generateToken(anyString(), anyString()))
                 .thenReturn(TEST_TOKEN);
 
-        TokenDto response = userService.login(user.getUsername(), "Password123+");
+        TokenDto response = userService.login(user.getUsername(), password);
 
         assertNotNull(response);
         assertEquals(TEST_TOKEN, response.token());
@@ -85,7 +89,7 @@ class UserServiceImplTest {
     void signUpShouldThrowResourceAlreadyExistsExceptionWhenUserWithUsernameAlreadyExists() {
         when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
-        Exception exception = assertThrows(InvalidCredentialsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
+        Exception exception = assertThrows(ResourceAlreadyExistsException.class, () -> userService.signUp(user.getUsername(), user.getPassword()));
         assertEquals(USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE, exception.getMessage());
     }
 
