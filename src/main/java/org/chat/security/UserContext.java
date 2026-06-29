@@ -2,11 +2,11 @@ package org.chat.security;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ApplicationScoped
 public class UserContext {
     private static final String UPN_CLAIM = "upn";

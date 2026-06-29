@@ -3,7 +3,6 @@ package org.chat.repository.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupMember;
 import org.chat.repository.GroupMemberRepository;
@@ -12,7 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
 @ApplicationScoped
 public class GroupMemberRepositoryImpl implements GroupMemberRepository {
     private static final String GROUP_ID = "groupId";

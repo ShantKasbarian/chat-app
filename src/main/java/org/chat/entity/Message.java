@@ -11,7 +11,6 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @MongoEntity(collection = "messages")
 public class Message {
     @BsonId

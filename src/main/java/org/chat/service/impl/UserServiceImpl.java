@@ -3,7 +3,7 @@ package org.chat.service.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
@@ -16,7 +16,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
     private static final String INVALID_CREDENTIALS_MESSAGE = "Invalid username or password";

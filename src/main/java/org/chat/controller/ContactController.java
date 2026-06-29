@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.ContactConverter;
 import org.chat.model.ContactDto;
@@ -16,7 +16,7 @@ import org.chat.service.ContactService;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Path("/contacts")
 @Authenticated
 @Consumes(MediaType.APPLICATION_JSON)

@@ -2,7 +2,6 @@ package org.chat.repository.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
 import org.chat.repository.GroupRepository;
@@ -12,7 +11,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Slf4j
-@AllArgsConstructor
 @ApplicationScoped
 public class GroupRepositoryImpl implements GroupRepository {
     private static final String FIND_BY_NAME_QUERY = "{ 'name' : { $regex: ?1, $options: 'i' } }";

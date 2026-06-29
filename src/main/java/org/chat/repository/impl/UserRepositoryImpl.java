@@ -3,7 +3,6 @@ package org.chat.repository.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.User;
 import org.chat.repository.UserRepository;
@@ -12,7 +11,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Slf4j
-@AllArgsConstructor
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository {
     private static final String FIND_BY_USERNAME_MATCHES = "{ 'username': { $regex: ?1, $options: 'i' } }";

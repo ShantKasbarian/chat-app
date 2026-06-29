@@ -3,7 +3,6 @@ package org.chat.repository.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.repository.ContactRepository;
@@ -11,12 +10,11 @@ import org.chat.repository.ContactRepository;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
 @ApplicationScoped
 public class ContactRepositoryImpl implements ContactRepository {
-    private final static String USER_ID = "userId";
+    private static final String USER_ID = "userId";
 
-    private final static String TARGET_USER_ID = "targetUserId";
+    private static final String TARGET_USER_ID = "targetUserId";
 
     private static final String FIND_BY_USER_ID_AND_TARGET_USER_ID = USER_ID + " = ?1 and " + TARGET_USER_ID + " = ?2";
 

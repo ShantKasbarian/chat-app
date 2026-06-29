@@ -1,11 +1,9 @@
 package org.chat.converter;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
 import org.chat.entity.Message;
 import org.chat.model.GroupMessageDto;
 
-@AllArgsConstructor
 @ApplicationScoped
 public class GroupMessageConverter implements ToModelConverter<GroupMessageDto, Message> {
     @Override

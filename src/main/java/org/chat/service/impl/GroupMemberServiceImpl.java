@@ -3,7 +3,7 @@ package org.chat.service.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
@@ -20,7 +20,7 @@ import java.util.UUID;
 import static org.chat.service.impl.GroupServiceImpl.REQUEST_NOT_AUTHORIZED;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ApplicationScoped
 public class GroupMemberServiceImpl implements GroupMemberService {
     private static final String ALREADY_MEMBER_OF_GROUP_MESSAGE = "you're already a member of this group or have submitted a request to join group";

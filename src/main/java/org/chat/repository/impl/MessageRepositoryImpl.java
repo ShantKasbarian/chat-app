@@ -3,7 +3,6 @@ package org.chat.repository.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Message;
 import org.chat.repository.MessageRepository;
@@ -11,7 +10,6 @@ import org.chat.repository.MessageRepository;
 import java.util.UUID;
 
 @Slf4j
-@AllArgsConstructor
 @ApplicationScoped
 public class MessageRepositoryImpl implements MessageRepository {
     private static final String SENDER_ID = "senderId";
