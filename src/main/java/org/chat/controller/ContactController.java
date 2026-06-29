@@ -1,7 +1,6 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -55,7 +54,6 @@ public class ContactController {
 
     @POST
     @Path("/users/{userId}")
-    @Transactional
     public Response addContact(@PathParam("userId") UUID userId) {
         log.info("POST /users/{userId} called");
 

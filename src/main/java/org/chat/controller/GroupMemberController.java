@@ -1,7 +1,6 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -34,7 +33,6 @@ public class GroupMemberController {
     @POST
     @Path("/{groupId}/members")
     @ResponseStatus(201)
-    @Transactional
     public Response joinGroup(@PathParam("groupId") UUID groupId) {
         log.info("POST /groups/{groupId}/members called");
 
@@ -52,7 +50,6 @@ public class GroupMemberController {
     @DELETE
     @Path("/{groupId}/members")
     @ResponseStatus(204)
-    @Transactional
     public void leaveGroup(@PathParam("groupId") UUID groupId) {
         log.info("DELETE /groups/{groupId}/members called");
 
@@ -63,7 +60,6 @@ public class GroupMemberController {
 
     @PATCH
     @Path("/members/{id}")
-    @Transactional
     public Response acceptUserToGroup(@PathParam("id") UUID id) {
         log.info("PUT /groups/members/{id} called");
 
@@ -79,7 +75,6 @@ public class GroupMemberController {
     @DELETE
     @Path("/members/{id}")
     @ResponseStatus(204)
-    @Transactional
     public void rejectUserFromGroup(@PathParam("id") UUID id) {
         log.info("DELETE /groups/members/{id} called");
 

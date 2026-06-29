@@ -1,7 +1,6 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
@@ -35,7 +34,6 @@ public class MessageController {
     private final UserContext userContext;
 
     @POST
-    @Transactional
     public Response sendMessage(@Valid MessageDto messageDto) {
         log.info("POST /messages called");
 
@@ -83,7 +81,6 @@ public class MessageController {
 
     @POST
     @Path("/groups")
-    @Transactional
     public Response messageGroup(@Valid GroupMessageDto messageDto) {
         log.info("POST /messages/group called");
 

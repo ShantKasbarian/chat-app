@@ -27,14 +27,20 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
                         .build();
             }
 
-            case UnauthorizedException e -> {
-                return Response.status(Response.Status.FORBIDDEN)
+            case ResourceAlreadyExistsException e -> {
+                return Response.status(Response.Status.CONFLICT)
                         .entity(new ErrorMessageDto(e.getMessage()))
                         .build();
             }
 
             case ResourceNotFoundException e -> {
                 return Response.status(Response.Status.NOT_FOUND)
+                        .entity(new ErrorMessageDto(e.getMessage()))
+                        .build();
+            }
+
+            case UnauthorizedException e -> {
+                return Response.status(Response.Status.FORBIDDEN)
                         .entity(new ErrorMessageDto(e.getMessage()))
                         .build();
             }

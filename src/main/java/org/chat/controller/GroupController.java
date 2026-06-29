@@ -1,7 +1,6 @@
 package org.chat.controller;
 
 import io.quarkus.security.Authenticated;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
@@ -29,7 +28,6 @@ public class GroupController {
     private final UserContext userContext;
 
     @POST
-    @Transactional
     public Response create(@Valid GroupDto groupDto) {
         log.info("POST /groups called");
 

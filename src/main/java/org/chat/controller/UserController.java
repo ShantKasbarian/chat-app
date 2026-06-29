@@ -13,8 +13,6 @@ import org.chat.model.PageDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
 
-import java.util.List;
-
 @Slf4j
 @RequiredArgsConstructor
 @Path("/users")
