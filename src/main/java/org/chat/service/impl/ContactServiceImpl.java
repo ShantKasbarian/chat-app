@@ -3,7 +3,7 @@ package org.chat.service.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
@@ -16,7 +16,7 @@ import org.chat.service.ContactService;
 import java.util.UUID;
 
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor
 @ApplicationScoped
 public class ContactServiceImpl implements ContactService {
     private static final String USER_NOT_FOUND_MESSAGE = "user not found";

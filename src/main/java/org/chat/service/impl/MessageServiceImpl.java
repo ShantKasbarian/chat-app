@@ -3,14 +3,13 @@ package org.chat.service.impl;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupUser;
 import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.UnauthorizedException;
 import org.chat.exception.ResourceNotFoundException;
-import org.chat.repository.GroupRepository;
 import org.chat.repository.GroupUserRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
@@ -23,20 +22,16 @@ import java.util.UUID;
 import static org.chat.service.impl.GroupServiceImpl.REQUEST_NOT_AUTHORIZED;
 
 @Slf4j
+@AllArgsConstructor
 @ApplicationScoped
-@RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
     private static final String USER_NOT_FOUND = "user not found";
-
-    private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
 
     private static final String NOT_MEMBER_OF_GROUP_MESSAGE = "you are not a member of this group";
 
     private final MessageRepository messageRepository;
 
     private final UserRepository userRepository;
-
-    private final GroupRepository groupRepository;
 
     private final GroupUserRepository groupUserRepository;
 

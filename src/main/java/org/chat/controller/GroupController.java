@@ -33,8 +33,6 @@ public class GroupController {
 
     private final GroupConverter groupConverter;
 
-    private final GroupUserConverter groupUserConverter;
-
     private final UserContext userContext;
 
     @POST
@@ -56,92 +54,8 @@ public class GroupController {
                 .build();
     }
 
-    @POST
-    @Path("/{groupId}/join")
-    @ResponseStatus(201)
-    @Transactional
-    public Response joinGroup(@PathParam("groupId") UUID groupId) {
-        log.info("POST /groups/{groupId}/join called");
-
-        var groupUserDto = groupUserConverter.convertToModel(
-                groupService.joinGroup(groupId, userContext.get())
-        );
-
-        log.info("POST /groups/{groupId}/join returning a {}", GroupUserDto.class.getName());
-
-        return Response.status(Response.Status.CREATED)
-                .entity(groupUserDto)
-                .build();
-    }
-
-    @DELETE
-    @Path("/{groupId}/leave")
-    @ResponseStatus(204)
-    @Transactional
-    public void leaveGroup(@PathParam("groupId") UUID groupId) {
-        log.info("DELETE /groups/{groupId}/leave called");
-
-        groupService.leaveGroup(groupId, userContext.get().id());
-
-        log.info("DELETE /groups/{groupId}/leave user left group");
-    }
-
-    @PATCH
-    @Path("/accept/{groupUserId}")
-    @Transactional
-    public Response acceptUserToGroup(@PathParam("groupUserId") UUID groupUserId) {
-        log.info("PUT /groups/accept/{groupUserId} called");
-
-        var groupUserDto = groupUserConverter.convertToModel(
-                groupService.acceptJoinGroup(userContext.get().id(), groupUserId)
-        );
-
-        log.info("/groups/accept/{groupUserId} with PUT returning a {}", GroupUserDto.class.getName());
-
-        return Response.ok(groupUserDto).build();
-    }
-
-    @DELETE
-    @Path("/reject/{groupUserId}")
-    @ResponseStatus(204)
-    @Transactional
-    public void rejectUserFromGroup(@PathParam("groupUserId") UUID groupUserId) {
-        log.info("DELETE /groups/reject/{groupUserId} called");
-
-        groupService.rejectJoinGroup(userContext.get().id(), groupUserId);
-
-        log.info("DELETE /groups/reject/{groupUserId} returning a response");
-    }
-
     @GET
-    @Path("/{groupId}/waiting/users")
-    public Response getWaitingUsers(
-            @PathParam("groupId") UUID groupId,
-            @QueryParam("page")
-            @DefaultValue("0")
-            @Min(value = 0, message = "page must be at least 0")
-            int page,
-            @QueryParam("size")
-            @DefaultValue("10")
-            @Min(value = 1, message = "size must be at least 1")
-            int size
-    ) {
-        log.info("GET /groups/{groupId}/waiting/users called");
-
-        var query = groupService.findUsersWithPendingRole(groupId, userContext.get().id(), page, size);
-        var users = query.list()
-                .stream()
-                .map(groupUserConverter::convertToModel)
-                .toList();
-        var pageDto = new PageDto<>(users, query.count(), query.pageCount());
-
-        log.info("GET /groups/{groupId}/waiting/users returning a {} of {}", PageDto.class.getName(), GroupUserDto.class);
-
-        return Response.ok(pageDto).build();
-    }
-
-    @GET
-    @Path("/joined")
+    @Path("/me")
     public Response getJoinedGroups(
             @QueryParam("page")
             @DefaultValue("0")
@@ -152,7 +66,7 @@ public class GroupController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /groups/joined called");
+        log.info("GET /groups/me called");
 
         var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
         var groups = pageDto.content()
@@ -160,7 +74,7 @@ public class GroupController {
                 .map(groupConverter::convertToModel)
                 .toList();
 
-        log.info("GET /groups/joined returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
+        log.info("GET /groups/me returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
 
         return Response.ok(new PageDto<>(groups, page, size)).build();
     }
