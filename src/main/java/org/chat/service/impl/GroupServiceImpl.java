@@ -2,7 +2,6 @@ package org.chat.service.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
@@ -29,7 +28,6 @@ public class GroupServiceImpl implements GroupService {
     private final GroupMemberRepository groupMemberRepository;
 
     @Override
-    @Transactional
     public Group createGroup(Group group, UserPrincipal userPrincipal) {
         String groupName = group.getName();
 

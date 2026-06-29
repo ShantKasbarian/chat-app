@@ -16,7 +16,6 @@ import org.chat.service.UserService;
 @Slf4j
 @RequiredArgsConstructor
 @Path("/users")
-@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserController {
@@ -25,29 +24,29 @@ public class UserController {
     private final UserConverter userConverter;
 
     @POST
-    @Path("/login")
+    @Path("/auth/login")
     public Response login(@Valid UserDto userDto) {
         String username = userDto.username();
 
-        log.info("POST /auth/login is authenticating user {}", username);
+        log.info("POST /users/auth/login is authenticating user {}", username);
 
         var tokenDto = userService.login(userDto.username(), userDto.password());
 
-        log.info("POST /auth/login authenticated user {}", username);
+        log.info("POST /users/auth/login authenticated user {}", username);
 
         return Response.ok(tokenDto).build();
     }
 
     @POST
-    @Path("/signup")
+    @Path("/auth/signup")
     public Response signup(@Valid UserDto userDto) {
         String username = userDto.username();
 
-        log.info("POST/auth/signup is registering user {}", username);
+        log.info("POST /users/auth/signup is registering user {}", username);
 
         var tokenDto = userService.signup(username, userDto.password());
 
-        log.info("POST/auth/signup is registered user {}", username);
+        log.info("POST /users/auth/signup is registered user {}", username);
 
         return Response.status(Response.Status.CREATED)
                 .entity(tokenDto)
@@ -56,6 +55,7 @@ public class UserController {
 
     @GET
     @Path("/{username}")
+    @Authenticated
     public Response findByUsername(
             @PathParam("username") String username,
             @QueryParam("page")

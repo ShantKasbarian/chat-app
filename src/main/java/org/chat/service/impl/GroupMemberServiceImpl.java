@@ -2,7 +2,6 @@ package org.chat.service.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
@@ -36,7 +35,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private final GroupMemberRepository groupMemberRepository;
 
     @Override
-    @Transactional
     public GroupMember joinGroup(UUID groupId, UserPrincipal userPrincipal) {
         log.info("joining group with id {}", groupId);
 
@@ -58,7 +56,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
-    @Transactional
     public void leaveGroup(UUID groupId, UUID userId) {
         log.info("leaving group with id {}", groupId);
 
@@ -71,7 +68,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
-    @Transactional
     public GroupMember acceptJoinGroup(UUID userId, UUID groupMemberId) {
         log.info("accepting groupMember with id {} join request", groupMemberId);
 
@@ -94,7 +90,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
-    @Transactional
     public void rejectJoinGroup(UUID userId, UUID groupMemberId) {
         log.info("rejecting groupMember with id {} join request", groupMemberId);
 

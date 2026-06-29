@@ -2,7 +2,6 @@ package org.chat.service.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Contact;
@@ -39,7 +38,6 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    @Transactional
     public Contact addContact(UUID userId, UUID targetUserId) {
         log.info("adding user with id {} as contact to user with id {}", targetUserId, userId);
 
