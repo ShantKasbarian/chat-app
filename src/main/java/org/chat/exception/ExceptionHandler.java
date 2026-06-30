@@ -3,56 +3,33 @@ package org.chat.exception;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import lombok.extern.slf4j.Slf4j;
 import org.chat.model.ErrorMessageDto;
 
+@Slf4j
 @Provider
 public class ExceptionHandler implements ExceptionMapper<Throwable> {
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "internal server error";
 
     @Override
     public Response toResponse(Throwable throwable) {
+        Response.Status status;
+        String message = throwable.getMessage();
+
         switch (throwable) {
-            case InvalidCredentialsException e -> {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case InvalidRoleException e -> {
-                return Response.status(Response.Status.FORBIDDEN)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case ResourceNotFoundException e -> {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case InvalidGroupException e -> {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case InvalidInfoException e -> {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
-            case UnableToJoinGroupException e -> {
-                return Response.status(Response.Status.CONFLICT)
-                        .entity(new ErrorMessageDto(e.getMessage()))
-                        .build();
-            }
-
+            case InvalidCredentialsException e -> status = Response.Status.UNAUTHORIZED;
+            case ResourceAlreadyExistsException e -> status = Response.Status.CONFLICT;
+            case ResourceNotFoundException e -> status = Response.Status.NOT_FOUND;
+            case ForbiddenException e -> status = Response.Status.FORBIDDEN;
             default -> {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                        .entity(new ErrorMessageDto(throwable.getMessage()))
-                        .build();
+                log.error(throwable.getMessage(), throwable);
+                status = Response.Status.INTERNAL_SERVER_ERROR;
+                message = INTERNAL_SERVER_ERROR_MESSAGE;
             }
         }
+
+        return Response.status(status)
+                .entity(new ErrorMessageDto(message))
+                .build();
     }
 }

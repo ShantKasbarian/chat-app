@@ -9,17 +9,13 @@ public class GroupConverter implements ToEntityConverter<Group, GroupDto>, ToMod
     @Override
     public Group convertToEntity(GroupDto model) {
         Group group = new Group();
-        group.setName(model.getName());
+        group.setName(model.name());
 
         return group;
     }
 
     @Override
     public GroupDto convertToModel(Group entity) {
-        GroupDto groupDto = new GroupDto();
-        groupDto.setId(entity.getId());
-        groupDto.setName(entity.getName());
-
-        return groupDto;
+        return new GroupDto(entity.getId(), entity.getName());
     }
 }

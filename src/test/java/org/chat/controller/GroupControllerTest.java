@@ -1,13 +1,14 @@
 package org.chat.controller;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
-import org.chat.converter.ToEntityConverter;
-import org.chat.converter.ToModelConverter;
+import org.chat.converter.GroupConverter;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
 import org.chat.entity.User;
 import org.chat.model.GroupDto;
-import org.chat.model.GroupUserDto;
+import org.chat.model.PageDto;
+import org.chat.security.UserContext;
+import org.chat.security.UserPrincipal;
 import org.chat.service.GroupService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.config.JwtService.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -33,26 +33,17 @@ class GroupControllerTest {
     private GroupService groupService;
 
     @Mock
-    private ToModelConverter<GroupDto, Group> groupToModelConverter;
+    private GroupConverter groupConverter;
 
     @Mock
-    private ToEntityConverter<Group, GroupDto> groupDtoToEntityConverter;
+    private UserContext userContext;
 
     @Mock
-    private ToModelConverter<GroupUserDto, GroupUser> groupUserToModelConverter;
-
-    @Mock
-    private JsonWebToken jsonWebToken;
+    private PanacheQuery<Group> panacheQuery;
 
     private Group group;
 
     private GroupDto groupDto;
-
-    private User user;
-
-    private GroupUser groupUser;
-
-    private GroupUserDto groupUserDto;
 
     @BeforeEach
     void setUp() {
@@ -62,100 +53,32 @@ class GroupControllerTest {
         group.setId(UUID.randomUUID());
         group.setName("group");
 
-        groupDto = new GroupDto(group.getId(), group.getName(), new UUID[]{});
+        groupDto = new GroupDto(group.getId(), group.getName());
 
-        user = new User();
+        User user = new User();
         user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
 
-        groupUser = new GroupUser(UUID.randomUUID(), group, user, false, false);
-        groupUserDto = new GroupUserDto(groupUser.getId(), group.getId(), group.getName(), user.getId(), user.getUsername(), groupUser.getIsMember(), groupUser.getIsCreator());
-
-        when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
+        when(userContext.get()).thenReturn(new UserPrincipal(user.getId(), user.getUsername()));
     }
 
     @Test
     void create() {
-        when(groupToModelConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
-        when(groupService.createGroup(any(Group.class), (UUID[]) any(UUID.class.arrayType()), any(UUID.class)))
+        when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+        when(groupService.createGroup(any(Group.class), any(UserPrincipal.class)))
                 .thenReturn(group);
-        when(groupDtoToEntityConverter.convertToEntity(any(GroupDto.class))).thenReturn(group);
+        when(groupConverter.convertToEntity(any(GroupDto.class))).thenReturn(group);
 
-        var response = groupController.create(jsonWebToken, groupDto);
+        var response = groupController.create(groupDto);
 
         assertNotNull(response);
         assertEquals(groupDto, response.getEntity());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(groupToModelConverter).convertToModel(any(Group.class));
-        verify(groupService).createGroup(any(Group.class), (UUID[]) any(UUID.class.arrayType()), any(UUID.class));
-        verify(groupDtoToEntityConverter).convertToEntity(any(GroupDto.class));
-    }
-
-    @Test
-    void joinGroup() {
-        when(groupUserToModelConverter.convertToModel(any(GroupUser.class))).thenReturn(groupUserDto);
-        when(groupService.joinGroup(any(UUID.class), any(UUID.class))).thenReturn(groupUser);
-
-        var response = groupController.joinGroup(group.getId());
-
-        assertNotNull(response);
-        assertEquals(groupUserDto, response.getEntity());
-        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(groupUserToModelConverter).convertToModel(any(GroupUser.class));
-        verify(groupService).joinGroup(any(UUID.class), any(UUID.class));
-    }
-
-    @Test
-    void leaveGroup() {
-        when(groupService.leaveGroup(any(UUID.class), any(UUID.class))).thenReturn("");
-
-        groupController.leaveGroup(group.getId());
-
-        verify(groupService).leaveGroup(any(UUID.class), any(UUID.class));
-    }
-
-    @Test
-    void acceptUserToGroup() {
-        when(groupUserToModelConverter.convertToModel(any(GroupUser.class)))
-                .thenReturn(groupUserDto);
-        when(groupService.acceptJoinGroup(any(UUID.class), any(UUID.class)))
-                .thenReturn(groupUser);
-
-        var response = groupController.acceptUserToGroup(groupUser.getId());
-
-        assertNotNull(response);
-        assertEquals(groupUserDto, response.getEntity());
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(groupUserToModelConverter).convertToModel(any(GroupUser.class));
-        verify(groupService).acceptJoinGroup(any(UUID.class), any(UUID.class));
-    }
-
-    @Test
-    void rejectUserFromGroup() {
-        when(groupService.rejectJoinGroup(any(UUID.class), any(UUID.class))).thenReturn("");
-
-        groupController.rejectUserFromGroup(groupUser.getId());
-
-        verify(groupService).rejectJoinGroup(any(UUID.class), any(UUID.class));
-    }
-
-    @Test
-    void getWaitingUsers() {
-        List<GroupUser> groupUsers = new ArrayList<>();
-        groupUsers.add(groupUser);
-
-        when(groupService.getWaitingUsers(any(UUID.class), any(UUID.class)))
-                .thenReturn(groupUsers);
-        when(groupUserToModelConverter.convertToModel(any(GroupUser.class)))
-                .thenReturn(groupUserDto);
-
-        var response = groupController.getWaitingUsers(group.getId());
-
-        assertNotNull(response);
-        assertNotNull(response.getEntity());
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(groupService).getWaitingUsers(any(UUID.class), any(UUID.class));
+        verify(groupConverter).convertToModel(any(Group.class));
+        verify(groupService).createGroup(any(Group.class), any(UserPrincipal.class));
+        verify(userContext).get();
+        verify(groupConverter).convertToEntity(any(GroupDto.class));
     }
 
     @Test
@@ -163,15 +86,19 @@ class GroupControllerTest {
         List<Group> groups = new ArrayList<>();
         groups.add(group);
 
-        when(groupService.getUserJoinedGroups(any(UUID.class))).thenReturn(groups);
-        when(groupToModelConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+        when(groupService.getUserJoinedGroups(any(UUID.class), anyInt(), anyInt()))
+                .thenReturn(new PageDto<>(groups, 10, 1));
+        when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+        when(panacheQuery.count()).thenReturn(10L);
+        when(panacheQuery.pageCount()).thenReturn(1);
 
-        var response = groupController.getJoinedGroups();
+        var response = groupController.getJoinedGroups(0, 10);
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(groupService).getUserJoinedGroups(any(UUID.class));
+        verify(groupService).getUserJoinedGroups(any(UUID.class), anyInt(), anyInt());
+        verify(groupConverter, times(groups.size())).convertToModel(any(Group.class));
     }
 
     @Test
@@ -179,14 +106,19 @@ class GroupControllerTest {
         List<Group> groups = new ArrayList<>();
         groups.add(group);
 
-        when(groupService.getGroups(anyString())).thenReturn(groups);
-        when(groupToModelConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+        when(groupService.getGroups(anyString(), anyInt(), anyInt()))
+                .thenReturn(panacheQuery);
+        when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+        when(panacheQuery.list()).thenReturn(groups);
+        when(panacheQuery.count()).thenReturn(10L);
+        when(panacheQuery.pageCount()).thenReturn(1);
 
-        var response = groupController.getGroups("g");
+        var response = groupController.getGroups("g", 0, 10);
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(groupService).getGroups(anyString());
+        verify(groupService).getGroups(anyString(), anyInt(), anyInt());
+        verify(groupConverter, atLeast(1)).convertToModel(any(Group.class));
     }
 }

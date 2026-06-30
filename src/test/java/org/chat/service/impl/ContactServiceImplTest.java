@@ -1,8 +1,10 @@
 package org.chat.service.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.exception.ResourceAlreadyExistsException;
+import org.chat.exception.ResourceNotFoundException;
 import org.chat.repository.ContactRepository;
 import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,16 +13,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class ContactServiceImplTest {
+    private static final String USER_NOT_FOUND_MESSAGE = "user not found";
+
+    private static final String CONTACT_ALREADY_EXISTS_MESSAGE = "contact already exists";
+
     @InjectMocks
     private ContactServiceImpl contactService;
 
@@ -29,6 +33,9 @@ public class ContactServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PanacheQuery<Contact> panacheQuery;
 
     private User user1;
 
@@ -48,41 +55,56 @@ public class ContactServiceImplTest {
         user2.setId(UUID.randomUUID());
         user2.setUsername("user2");
 
-        contact = new Contact(UUID.randomUUID(), user1, user2);
+        contact = new Contact(UUID.randomUUID(), user1.getId(), user2.getId(), user2.getUsername());
     }
 
     @Test
-    void getContacts() {
-        List<Contact> contacts = new ArrayList<>();
-        contacts.add(contact);
+    void findByUserId() {
+        when(contactRepository.findByUserId(any(UUID.class), anyInt(), anyInt()))
+                .thenReturn(panacheQuery);
 
-        when(contactRepository.getContacts(any(UUID.class))).thenReturn(contacts);
-        List<Contact> response = contactService.getContacts(user1.getId());
+        var response = contactService.findByUserId(user1.getId(), 0, 10);
 
-        assertEquals(contacts.size(), response.size());
+        assertNotNull(response);
     }
 
     @Test
     void addContact() {
-        when(userRepository.findById(user1.getId())).thenReturn(user1);
-        when(userRepository.findById(user2.getId())).thenReturn(user2);
-        when(contactRepository.existsByUserIdTargetUserId(user1.getId(), user2.getId()))
+        when(userRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.of(user2));
+        when(contactRepository.existsByUserIdTargetUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(false);
         doNothing().when(contactRepository).persist(contact);
 
         Contact response = contactService.addContact(user1.getId(), user2.getId());
 
-        assertEquals(user1.getId(), response.getUser().getId());
-        assertEquals(user2.getId(), response.getTarget().getId());
+        assertNotNull(response);
+        verify(userRepository).findByIdOptional(any(UUID.class));
+        verify(contactRepository).existsByUserIdTargetUserId(any(UUID.class), any(UUID.class));
         verify(contactRepository).persist(any(Contact.class));
     }
 
     @Test
     void addContactShouldThrowResourceAlreadyExistsExceptionWhenContactAlreadyExists() {
-        when(userRepository.findById(any(UUID.class))).thenReturn(user1);
         when(contactRepository.existsByUserIdTargetUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(true);
 
-        assertThrows(ResourceAlreadyExistsException.class, () -> contactService.addContact(user1.getId(), user2.getId()));
+        Exception exception = assertThrows(ResourceAlreadyExistsException.class, () -> contactService.addContact(user1.getId(), user2.getId()));
+        assertEquals(CONTACT_ALREADY_EXISTS_MESSAGE, exception.getMessage());
+
+        verify(contactRepository).existsByUserIdTargetUserId(any(UUID.class), any(UUID.class));
+    }
+
+    @Test
+    void addContactShouldThrowResourceNotFoundExceptionWhenTargetUserNotFound() {
+        when(contactRepository.existsByUserIdTargetUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(false);
+        when(userRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResourceNotFoundException.class, () -> contactService.addContact(user1.getId(), user2.getId()));
+        assertEquals(USER_NOT_FOUND_MESSAGE, exception.getMessage());
+        verify(contactRepository).existsByUserIdTargetUserId(any(UUID.class), any(UUID.class));
+        verify(userRepository).findByIdOptional(any(UUID.class));
     }
 }

@@ -1,80 +1,48 @@
 package org.chat.service.impl;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
-import org.chat.entity.GroupUser;
-import org.chat.entity.User;
+import org.chat.entity.GroupMember;
 import org.chat.exception.*;
+import org.chat.model.PageDto;
 import org.chat.repository.GroupRepository;
-import org.chat.repository.GroupUserRepository;
-import org.chat.repository.UserRepository;
+import org.chat.repository.GroupMemberRepository;
+import org.chat.security.UserPrincipal;
 import org.chat.service.GroupService;
 
 import java.util.*;
 
 @Slf4j
+@AllArgsConstructor
 @ApplicationScoped
-@RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
-    private static final String INVALID_GROUP_NAME_MESSAGE = "Invalid group name";
+    static final String REQUEST_NOT_AUTHORIZED = "You do not have the necessary permissions to perform this request";
 
     private static final String GROUP_ALREADY_EXISTS_MESSAGE = "Group already exists";
 
-    private static final String GROUP_NOT_FOUND_MESSAGE = "group not found";
-
-    private static final String ALREADY_MEMBER_OF_GROUP_MESSAGE = "you're already a member of this group or have submitted a request to join group";
-
-    private static final String SUCCESSFUL_LEAVE_GROUP_MESSAGE = "you left the group";
-
-    private static final String REQUEST_NOT_AUTHORIZED = "You do not have the necessary permissions to perform this request";
-
-    private static final String USER_REJECTION_MESSAGE = "user has been rejected";
-
-    private static final String TARGET_USER_ALREADY_MEMBER_OF_GROUP = "this user is already a member";
-
     private final GroupRepository groupRepository;
 
-    private final GroupUserRepository groupUserRepository;
-
-    private final UserRepository userRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     @Override
-    @Transactional
-    public Group createGroup(Group group, UUID[] creators, UUID userId) {
+    public Group createGroup(Group group, UserPrincipal userPrincipal) {
         String groupName = group.getName();
-
-        if (group.getName() == null || groupName.isEmpty()) {
-            throw new InvalidGroupException(INVALID_GROUP_NAME_MESSAGE);
-        }
 
         log.info("creating group with name {}", groupName);
 
-        if (creators == null) {
-            creators = new UUID[]{};
-        }
-
         if (groupRepository.existsByName(group.getName())) {
-            throw new InvalidGroupException(GROUP_ALREADY_EXISTS_MESSAGE);
+            throw new ResourceAlreadyExistsException(GROUP_ALREADY_EXISTS_MESSAGE);
         }
 
+        UUID groupId = UUID.randomUUID();
+        group.setId(groupId);
         groupRepository.persist(group);
 
-        User currentUser = userRepository.findById(userId);
-
-        List<GroupUser> creatorsList = new ArrayList<>(
-            Arrays.stream(creators)
-                .map(userRepository::findById)
-                .filter(creator -> !creator.getId().equals(userId))
-                .map(creator -> new GroupUser(group, creator, true, true))
-                .toList()
-        );
-
-        creatorsList.add(new GroupUser(group, currentUser, true, true));
-
-        groupUserRepository.persist(creatorsList);
+        GroupMember groupMember = new GroupMember(UUID.randomUUID(), groupId, userPrincipal.id(), userPrincipal.username(), GroupMember.Role.ADMIN);
+        groupMemberRepository.persist(groupMember);
 
         log.info("created group with name {}", groupName);
 
@@ -82,124 +50,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    @Transactional
-    public GroupUser joinGroup(UUID groupId, UUID userId) {
-        log.info("joining group with id {}", groupId);
-
-        Group group = groupRepository.findById(groupId);
-
-        if (groupUserRepository.existsByGroupIdUserId(group.getId(), userId)) {
-            throw new UnableToJoinGroupException(ALREADY_MEMBER_OF_GROUP_MESSAGE);
-        }
-
-        User user = userRepository.findById(userId);
-
-        GroupUser groupUser = new GroupUser();
-        groupUser.setGroup(group);
-        groupUser.setUser(user);
-        groupUser.setIsCreator(false);
-        groupUser.setIsMember(false);
-
-        groupUserRepository.persist(groupUser);
-
-        log.info("joined group with id {}", groupId);
-
-        return groupUser;
-    }
-
-    @Override
-    @Transactional
-    public String leaveGroup(UUID groupId, UUID userId) {
-        log.info("leaving group with id {}", groupId);
-
-        if (!groupRepository.existsById(groupId)) {
-            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
-        }
-
-        groupUserRepository.delete(groupUserRepository.findByGroupIdUserId(groupId, userId));
-
-        log.info("left group with id {}", groupId);
-
-        return SUCCESSFUL_LEAVE_GROUP_MESSAGE;
-    }
-
-    @Override
-    @Transactional
-    public GroupUser acceptJoinGroup(UUID userId, UUID groupUserId) {
-        log.info("accepting groupUser with id {} join request", groupUserId);
-
-        GroupUser groupUser = groupUserRepository.findById(groupUserId);
-
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(
-                groupUser.getGroup().getId(), userId
-        );
-
-        if (!creator.getIsCreator()) {
-            throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
-        }
-
-        if (groupUser.getIsMember()) {
-            throw new UnableToJoinGroupException(TARGET_USER_ALREADY_MEMBER_OF_GROUP);
-        }
-
-        groupUser.setIsCreator(false);
-        groupUser.setIsMember(true);
-
-        groupUserRepository.getEntityManager().merge(groupUser);
-
-        log.info("accepted groupUser with id {} join request", groupUserId);
-
-        return groupUser;
-    }
-
-    @Override
-    @Transactional
-    public String rejectJoinGroup(UUID userId, UUID groupUserId) {
-        log.info("rejecting groupUser with id {} join request", groupUserId);
-
-        GroupUser groupUser = groupUserRepository.findById(groupUserId);
-
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(
-                groupUser.getGroup().getId(), userId
-        );
-
-        if (!creator.getIsCreator()) {
-            throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
-        }
-
-        groupUserRepository.delete(groupUser);
-
-        log.info("rejected member with id {} to join group", groupUserId);
-
-        return USER_REJECTION_MESSAGE;
-    }
-
-    @Override
-    public List<GroupUser> getWaitingUsers(UUID groupId, UUID creatorId) {
-        log.info("fetching join requests of group with id {}", groupId);
-
-        if (!groupRepository.existsById(groupId)) {
-            throw new ResourceNotFoundException(GROUP_NOT_FOUND_MESSAGE);
-        }
-
-        GroupUser creator = groupUserRepository.findByGroupIdUserId(groupId, creatorId);
-
-        if (!creator.getIsCreator()) {
-            throw new InvalidRoleException(REQUEST_NOT_AUTHORIZED);
-        }
-
-        var users = groupUserRepository.getWaitingUsers(groupId);
-
-        log.info("fetched join requests of group with id {}", groupId);
-
-        return users;
-    }
-
-    @Override
-    public List<Group> getUserJoinedGroups(UUID userId) {
+    public PageDto<Group> getUserJoinedGroups(UUID userId, int page, int size) {
         log.info("fetching joined groups of user with id {}", userId);
 
-        var groups = groupRepository.getUserGroups(userId);
+        var query = groupMemberRepository.findByUserId(userId, page, size);
+        var ids = query.list()
+                .stream()
+                .map(GroupMember::getGroupId)
+                .toList();
+        var groups = new PageDto<>(groupRepository.findByIds(ids), query.count(), query.pageCount());
 
         log.info("fetched joined groups of user with id {}", userId);
 
@@ -207,12 +66,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<Group> getGroups(String groupName) {
-        log.info("fetching groups with name {}", groupName);
+    public PanacheQuery<Group> getGroups(String name, int page, int size) {
+        log.info("fetching groups with name {}", name);
 
-        var groups = groupRepository.getGroups(groupName);
+        var groups = groupRepository.findByName(name, page, size);
 
-        log.info("fetched groups with name {}", groupName);
+        log.info("fetched groups with name {}", name);
 
         return groups;
     }

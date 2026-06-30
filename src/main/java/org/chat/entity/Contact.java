@@ -1,12 +1,11 @@
 package org.chat.entity;
 
-import jakarta.persistence.*;
+import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UuidGenerator;
+import org.bson.codecs.pojo.annotations.BsonId;
 
 import java.util.UUID;
 
@@ -14,20 +13,14 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "contacts")
+@MongoEntity(collection = "contacts")
 public class Contact {
-    @Id
-    @GeneratedValue
-    @UuidGenerator
-    @Column(name = "id", updatable = false, nullable = false)
+    @BsonId
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private UUID userId;
 
-    @ManyToOne
-    @JoinColumn(name = "target_user_id")
-    private User target;
+    private UUID targetUserId;
+
+    private String targetUsernameSnapshot;
 }

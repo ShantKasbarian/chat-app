@@ -1,40 +1,32 @@
 package org.chat.entity;
 
-import jakarta.persistence.*;
+import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
+import org.bson.codecs.pojo.annotations.BsonId;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@Entity
-@Table(name = "messages")
+@MongoEntity(collection = "messages")
 public class Message {
-    @Id
-    @GeneratedValue
-    @UuidGenerator
-    @Column(name = "id", updatable = false, nullable = false)
+    @BsonId
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "sender_id")
-    private User sender;
+    private UUID senderId;
 
-    @ManyToOne
-    @JoinColumn(name = "target_user_id")
-    private User target;
+    private String senderUsernameSnapshot;
 
-    @Column(name = "text")
+    private UUID targetUserId;
+
+    private String targetUsernameSnapshot;
+
+    private UUID groupId;
+
     private String text;
 
-    @Column(name = "sent_time")
-    private LocalDateTime time;
-
-    @ManyToOne
-    private Group group;
+    private Instant time;
 }

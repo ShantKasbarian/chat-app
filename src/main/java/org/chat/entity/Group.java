@@ -1,34 +1,22 @@
 package org.chat.entity;
 
-import jakarta.persistence.*;
+import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
+import org.bson.codecs.pojo.annotations.BsonId;
 
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "groups")
+@MongoEntity(collection = "groups")
 public class Group {
-    @Id
-    @GeneratedValue
-    @UuidGenerator
-    @Column(name = "id", updatable = false, nullable = false)
+    @BsonId
     private UUID id;
 
-    @Column(name = "name", unique = true)
     private String name;
-
-    @OneToMany(mappedBy = "group")
-    private List<Message> messages;
-
-    @OneToMany(mappedBy = "group")
-    private List<GroupUser> users;
 }

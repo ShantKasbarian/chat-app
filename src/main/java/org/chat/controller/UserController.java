@@ -1,54 +1,83 @@
 package org.chat.controller;
 
-import io.quarkus.security.Authenticated;
-import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chat.converter.ToModelConverter;
-import org.chat.entity.Contact;
-import org.chat.entity.User;
-import org.chat.model.ContactDto;
+import org.chat.converter.UserConverter;
+import org.chat.model.LoginDto;
+import org.chat.model.PageDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.chat.config.JwtService.USER_ID_CLAIM;
 
 @Slf4j
 @RequiredArgsConstructor
 @Path("/users")
-@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserController {
     private final UserService userService;
 
-    private final ToModelConverter<UserDto, User> userToModelConverter;
+    private final UserConverter userConverter;
 
-    @Context
-    private final SecurityContext securityContext;
+    @POST
+    @Path("/auth/login")
+    public Response login(@Valid LoginDto loginDto) {
+        String username = loginDto.username();
 
-    private final JsonWebToken token;
+        log.info("POST /users/auth/login is authenticating user {}", username);
+
+        var tokenDto = userService.login(loginDto.username(), loginDto.password());
+
+        log.info("POST /users/auth/login authenticated user {}", username);
+
+        return Response.ok(tokenDto).build();
+    }
+
+    @POST
+    @Path("/auth/signup")
+    public Response signup(@Valid UserDto userDto) {
+        String username = userDto.username();
+
+        log.info("POST /users/auth/signup is registering user {}", username);
+
+        var tokenDto = userService.signup(username, userDto.password());
+
+        log.info("POST /users/auth/signup is registered user {}", username);
+
+        return Response.status(Response.Status.CREATED)
+                .entity(tokenDto)
+                .build();
+    }
 
     @GET
     @Path("/{username}")
-    public Response searchUserByUsername(@PathParam("username") String username) {
-        log.info("/users/{username} with GET called");
+    public Response findByUsername(
+            @PathParam("username") String username,
+            @QueryParam("page")
+            @DefaultValue("0")
+            @Min(value = 0, message = "page must be at least 0")
+            int page,
+            @QueryParam("size")
+            @DefaultValue("10")
+            @Min(value = 1, message = "size must be at least 1")
+            int size
+    ) {
+        log.info("GET /users/{} is fetching users with page {} and size {}", username, page, size);
 
-        var users = userService.searchUserByUsername(username)
-                .stream().map(userToModelConverter::convertToModel)
+        var query = userService.findByUsername(username, page, size);
+        var users = query.list()
+                .stream()
+                .map(userConverter::convertToModel)
                 .toList();
 
-        log.info("/users/{username} with GET returning a {} of {}", List.class.getName(), UserDto.class.getName());
+        PageDto<UserDto> pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
-        return Response.ok(users).build();
+        log.info("GET /users/{} is returning users with page {} and size {}", username, page, size);
+
+        return Response.ok(pageDto).build();
     }
 }

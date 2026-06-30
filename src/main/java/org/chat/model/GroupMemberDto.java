@@ -1,14 +1,14 @@
 package org.chat.model;
 
+import org.chat.entity.GroupMember;
+
 import java.util.UUID;
 
-public record GroupUserDto(
+public record GroupMemberDto(
         UUID id,
         UUID groupId,
-        String groupName,
         UUID userId,
         String username,
-        boolean isMember,
-        boolean isCreator
+        GroupMember.Role role
 ) {
 }

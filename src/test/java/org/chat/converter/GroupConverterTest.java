@@ -27,7 +27,7 @@ class GroupConverterTest {
         group.setId(UUID.randomUUID());
         group.setName("group");
 
-        groupDto = new GroupDto(group.getId(), group.getName(), new UUID[]{});
+        groupDto = new GroupDto(group.getId(), group.getName());
     }
 
     @Test
@@ -35,7 +35,7 @@ class GroupConverterTest {
         Group group = groupConverter.convertToEntity(groupDto);
 
         assertNotNull(group);
-        assertEquals(groupDto.getName(), group.getName());
+        assertEquals(groupDto.name(), group.getName());
     }
 
     @Test
@@ -43,7 +43,7 @@ class GroupConverterTest {
         GroupDto groupDto = groupConverter.convertToModel(group);
 
         assertNotNull(groupDto);
-        assertEquals(group.getId(), groupDto.getId());
-        assertEquals(group.getName(), groupDto.getName());
+        assertEquals(group.getId(), groupDto.id());
+        assertEquals(group.getName(), groupDto.name());
     }
 }

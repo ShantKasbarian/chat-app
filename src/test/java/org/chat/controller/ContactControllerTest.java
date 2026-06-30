@@ -1,10 +1,13 @@
 package org.chat.controller;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.ws.rs.core.Response;
-import org.chat.converter.ToModelConverter;
+import org.chat.converter.ContactConverter;
 import org.chat.entity.Contact;
 import org.chat.entity.User;
 import org.chat.model.ContactDto;
+import org.chat.security.UserContext;
+import org.chat.security.UserPrincipal;
 import org.chat.service.ContactService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,11 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.chat.config.JwtService.USER_ID_CLAIM;
+import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,12 +34,13 @@ public class ContactControllerTest {
     private ContactService contactService;
 
     @Mock
-    private ToModelConverter<ContactDto, Contact> contactToModelConverter;
+    private ContactConverter contactConverter;
 
     @Mock
-    private JsonWebToken jsonWebToken;
+    private UserContext userContext;
 
-    private User user;
+    @Mock
+    private PanacheQuery<Contact> panacheQuery;
 
     private User target;
 
@@ -49,7 +52,7 @@ public class ContactControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        user = new User();
+        User user = new User();
         user.setId(UUID.randomUUID());
         user.setUsername("user");
         user.setPassword("Password123+");
@@ -59,42 +62,45 @@ public class ContactControllerTest {
         target.setUsername("target");
         target.setPassword("Password123+");
 
-        contact = new Contact(UUID.randomUUID(), user, target);
+        contact = new Contact(UUID.randomUUID(), user.getId(), target.getId(), target.getUsername());
         contactDto = new ContactDto(contact.getId(), target.getId(), target.getUsername());
 
-        when(jsonWebToken.getClaim(USER_ID_CLAIM)).thenReturn(user.getId().toString());
+        UserPrincipal userPrincipal = new UserPrincipal(user.getId(), user.getUsername());
+        when(userContext.get()).thenReturn(userPrincipal);
     }
 
     @Test
     void getContacts() {
-        List<Contact> contacts = new ArrayList<>();
-        contacts.add(contact);
-
-        when(contactToModelConverter.convertToModel(any(Contact.class)))
+        when(contactService.findByUserId(any(UUID.class), anyInt(), anyInt()))
+                .thenReturn(panacheQuery);
+        when(panacheQuery.list()).thenReturn(List.of(contact));
+        when(contactConverter.convertToModel(any(Contact.class)))
                 .thenReturn(contactDto);
-        when(contactService.getContacts(any(UUID.class))).thenReturn(contacts);
+        when(panacheQuery.count()).thenReturn(10L);
+        when(panacheQuery.pageCount()).thenReturn(1);
 
-        var response = contactController.getContacts();
+        var response = contactController.getContacts(0, 10);
 
         assertNotNull(response);
         assertNotNull(response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter, times(contacts.size())).convertToModel(any(Contact.class));
-        verify(contactService).getContacts(any(UUID.class));
+        verify(contactConverter, atLeast(1)).convertToModel(any(Contact.class));
+        verify(contactService).findByUserId(any(UUID.class), anyInt(), anyInt());
     }
 
     @Test
     void addContact() {
-        when(contactToModelConverter.convertToModel(any(Contact.class)))
+        when(contactService.addContact(any(UUID.class), any(UUID.class)))
+                .thenReturn(contact);
+        when(contactConverter.convertToModel(any(Contact.class)))
                 .thenReturn(contactDto);
-        when(contactService.addContact(any(UUID.class), any(UUID.class))).thenReturn(contact);
 
         var response = contactController.addContact(target.getId());
 
         assertNotNull(response);
         assertEquals(contactDto, response.getEntity());
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(contactToModelConverter).convertToModel(any(Contact.class));
         verify(contactService).addContact(any(UUID.class), any(UUID.class));
+        verify(contactConverter).convertToModel(any(Contact.class));
     }
 }
