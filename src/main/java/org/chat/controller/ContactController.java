@@ -37,7 +37,7 @@ public class ContactController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /contacts called");
+        log.info("GET /contacts called with page {} and size {}", page, size);
 
         var query = contactService.findByUserId(userContext.get().id(), page, size);
         var contacts = query.list().stream()
@@ -45,7 +45,7 @@ public class ContactController {
                 .toList();
         PageDto<ContactDto> pageDto = new PageDto<>(contacts, page, size);
 
-        log.info("GET /contacts returning a {} of {}", PageDto.class.getName(), ContactDto.class.getName());
+        log.info("GET /contacts returning a {} of {} with page {} and size {}", PageDto.class.getName(), ContactDto.class.getName(), page, size);
 
         return Response.ok(pageDto).build();
     }
@@ -53,13 +53,13 @@ public class ContactController {
     @POST
     @Path("/users/{userId}")
     public Response addContact(@PathParam("userId") UUID userId) {
-        log.info("POST /users/{userId} called");
+        log.info("POST /users/{} called", userId);
 
         var contact = contactConverter.convertToModel(
                 contactService.addContact(userContext.get().id(), userId)
         );
 
-        log.info("POST /users/{userId} is returning a {}", ContactDto.class.getName());
+        log.info("POST /users/{} is returning a {}", userId, ContactDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(contact)

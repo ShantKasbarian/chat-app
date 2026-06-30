@@ -55,7 +55,7 @@ public class GroupController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /groups/me called");
+        log.info("GET /groups/me called with page {} and size {}", page, size);
 
         var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
         var groups = pageDto.content()
@@ -63,7 +63,7 @@ public class GroupController {
                 .map(groupConverter::convertToModel)
                 .toList();
 
-        log.info("GET /groups/me returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
+        log.info("GET /groups/me returning a {} of {} with page {} and size {}", PageDto.class.getName(), GroupDto.class.getName(), page, size);
 
         return Response.ok(new PageDto<>(groups, page, size)).build();
     }
@@ -81,7 +81,7 @@ public class GroupController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /groups/{name} called");
+        log.info("GET /groups/{} called", name);
 
         var query = groupService.getGroups(name, page, size);
         var groups = query.list()
@@ -90,7 +90,7 @@ public class GroupController {
                 .toList();
         var pageDto = new PageDto<>(groups, page, size);
 
-        log.info("GET /groups/{name} returning a {} of {}", PageDto.class.getName(), GroupDto.class.getName());
+        log.info("GET /groups/{} returning a {} of {}", name, PageDto.class.getName(), GroupDto.class.getName());
 
         return Response.ok(pageDto).build();
     }

@@ -32,13 +32,13 @@ public class GroupMemberController {
     @Path("/{groupId}/members")
     @ResponseStatus(201)
     public Response joinGroup(@PathParam("groupId") UUID groupId) {
-        log.info("POST /groups/{groupId}/members called");
+        log.info("POST /groups/{}/members called", groupId);
 
         var groupUserDto = groupMemberConverter.convertToModel(
                 groupMemberService.joinGroup(groupId, userContext.get())
         );
 
-        log.info("POST /groups/{groupId}/members returning a {}", GroupMemberDto.class.getName());
+        log.info("POST /groups/{}/members returning a {}", groupId, GroupMemberDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(groupUserDto)
@@ -49,23 +49,23 @@ public class GroupMemberController {
     @Path("/{groupId}/members")
     @ResponseStatus(204)
     public void leaveGroup(@PathParam("groupId") UUID groupId) {
-        log.info("DELETE /groups/{groupId}/members called");
+        log.info("DELETE /groups/{}/members called", groupId);
 
         groupMemberService.leaveGroup(groupId, userContext.get().id());
 
-        log.info("DELETE /groups/{groupId}/members user left group");
+        log.info("DELETE /groups/{}/members operation successful", groupId);
     }
 
     @PATCH
     @Path("/members/{id}")
     public Response acceptJoinRequest(@PathParam("id") UUID id) {
-        log.info("PATCH /groups/members/{id} called");
+        log.info("PATCH /groups/members/{} called", id);
 
         var groupUserDto = groupMemberConverter.convertToModel(
                 groupMemberService.acceptJoinRequest(userContext.get().id(), id)
         );
 
-        log.info("PATCH /groups/members/{id} is returning a {}", GroupMemberDto.class.getName());
+        log.info("PATCH /groups/members/{} is returning a {}", id, GroupMemberDto.class.getName());
 
         return Response.ok(groupUserDto).build();
     }
@@ -74,11 +74,11 @@ public class GroupMemberController {
     @Path("/members/{id}")
     @ResponseStatus(204)
     public void rejectJoinRequest(@PathParam("id") UUID id) {
-        log.info("DELETE /groups/members/{id} called");
+        log.info("DELETE /groups/members/{} called", id);
 
         groupMemberService.rejectJoinRequest(userContext.get().id(), id);
 
-        log.info("DELETE /groups/members/{id} returning a response");
+        log.info("DELETE /groups/members/{} operation successful", id);
     }
 
     @GET
@@ -97,7 +97,7 @@ public class GroupMemberController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /groups/{groupId}/members called");
+        log.info("GET /groups/{}/members called with page {} and size {}", groupId, page, size);
 
         var query = groupMemberService.findUsersByRole(groupId, userContext.get().id(), role, page, size);
         var users = query.list()
@@ -106,7 +106,7 @@ public class GroupMemberController {
                 .toList();
         var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
-        log.info("GET /groups/{groupId}/members returning a {} of {}", PageDto.class.getName(), GroupMemberDto.class);
+        log.info("GET /groups/{}/members returning a {} of {} with page {} and size {}", groupId, PageDto.class.getName(), GroupMemberDto.class, page, size);
 
         return Response.ok(pageDto).build();
     }

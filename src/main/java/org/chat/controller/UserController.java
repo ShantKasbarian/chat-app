@@ -66,7 +66,7 @@ public class UserController {
             @Min(value = 1, message = "size must be at least 1")
             int size
     ) {
-        log.info("GET /users/{username} is fetching users with size {} and page {}", size, page);
+        log.info("GET /users/{} is fetching users with page {} and size {}", username, page, size);
 
         var query = userService.findByUsername(username, page, size);
         var users = query.list()
@@ -76,7 +76,7 @@ public class UserController {
 
         PageDto<UserDto> pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
-        log.info("GET /users/{username} is returning users with size {} and page {}", size, page);
+        log.info("GET /users/{} is returning users with page {} and size {}", username, page, size);
 
         return Response.ok(pageDto).build();
     }

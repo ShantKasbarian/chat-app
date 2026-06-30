@@ -62,7 +62,7 @@ public class MessageController {
             int size
 
     ) {
-        log.info("GET /messages/{userId} called");
+        log.info("GET /messages/{} called with page {} and size {}", userId, page, size);
 
         var query = messageService.getMessages(userContext.get().id(), userId, page, size);
         var messages = query.list()
@@ -72,7 +72,7 @@ public class MessageController {
 
         var pageDto = new PageDto<>(messages, query.count(), query.pageCount());
 
-        log.info("GET /messages/{userId} returning a {} of {}", PageDto.class.getName(), MessageDto.class.getName());
+        log.info("GET /messages/{} returning a {} of {} with page {} and size {}", userId, PageDto.class.getName(), MessageDto.class.getName(), page, size);
 
         return Response.ok(pageDto).build();
     }
@@ -104,7 +104,7 @@ public class MessageController {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        log.info("GET /messages/group/{groupId} called");
+        log.info("GET /messages/groups/{} called with page {}, size {}", groupId, page, size);
 
         var query = messageService.getGroupMessages(groupId, userContext.get().id(), page, size);
         var messages = query.list()
@@ -114,7 +114,7 @@ public class MessageController {
 
         var pageDto = new PageDto<>(messages, query.count(), query.pageCount());
 
-        log.info("GET /messages/group/{groupId} returning a {} of {}", PageDto.class.getName(), GroupMessageDto.class.getName());
+        log.info("GET /messages/groups/{} returning a {} of {} with page {}, size {}", groupId, PageDto.class.getName(), GroupMessageDto.class.getName(), page, size);
 
         return Response.ok(pageDto).build();
     }
