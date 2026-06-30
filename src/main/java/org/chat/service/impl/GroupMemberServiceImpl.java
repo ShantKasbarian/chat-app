@@ -68,7 +68,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
-    public GroupMember acceptJoinGroup(UUID userId, UUID groupMemberId) {
+    public GroupMember acceptJoinRequest(UUID userId, UUID groupMemberId) {
         log.info("accepting groupMember with id {} join request", groupMemberId);
 
         GroupMember groupMember = groupMemberRepository.findByIdOptional(groupMemberId)
@@ -82,7 +82,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         }
 
         groupMember.setRole(GroupMember.Role.MEMBER);
-        groupMemberRepository.persist(groupMember);
+        groupMemberRepository.update(groupMember);
 
         log.info("accepted groupMember with id {} join request", groupMemberId);
 
@@ -90,7 +90,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
-    public void rejectJoinGroup(UUID userId, UUID groupMemberId) {
+    public void rejectJoinRequest(UUID userId, UUID groupMemberId) {
         log.info("rejecting groupMember with id {} join request", groupMemberId);
 
         GroupMember groupMember = groupMemberRepository.findByIdOptional(groupMemberId)

@@ -58,14 +58,14 @@ public class GroupMemberController {
 
     @PATCH
     @Path("/members/{id}")
-    public Response acceptUserToGroup(@PathParam("id") UUID id) {
-        log.info("PUT /groups/members/{id} called");
+    public Response acceptJoinRequest(@PathParam("id") UUID id) {
+        log.info("PATCH /groups/members/{id} called");
 
         var groupUserDto = groupMemberConverter.convertToModel(
-                groupMemberService.acceptJoinGroup(userContext.get().id(), id)
+                groupMemberService.acceptJoinRequest(userContext.get().id(), id)
         );
 
-        log.info("PUT /groups/members/{id} is returning a {}", GroupMemberDto.class.getName());
+        log.info("PATCH /groups/members/{id} is returning a {}", GroupMemberDto.class.getName());
 
         return Response.ok(groupUserDto).build();
     }
@@ -73,10 +73,10 @@ public class GroupMemberController {
     @DELETE
     @Path("/members/{id}")
     @ResponseStatus(204)
-    public void rejectUserFromGroup(@PathParam("id") UUID id) {
+    public void rejectJoinRequest(@PathParam("id") UUID id) {
         log.info("DELETE /groups/members/{id} called");
 
-        groupMemberService.rejectJoinGroup(userContext.get().id(), id);
+        groupMemberService.rejectJoinRequest(userContext.get().id(), id);
 
         log.info("DELETE /groups/members/{id} returning a response");
     }

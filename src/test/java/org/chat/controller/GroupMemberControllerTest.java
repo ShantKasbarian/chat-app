@@ -94,29 +94,29 @@ class GroupMemberControllerTest {
     }
 
     @Test
-    void acceptUserToGroup() {
+    void acceptJoinRequest() {
         when(groupMemberConverter.convertToModel(any(GroupMember.class)))
                 .thenReturn(groupMemberDto);
-        when(groupMemberService.acceptJoinGroup(any(UUID.class), any(UUID.class)))
+        when(groupMemberService.acceptJoinRequest(any(UUID.class), any(UUID.class)))
                 .thenReturn(groupMember);
 
-        var response = groupMemberController.acceptUserToGroup(groupMember.getId());
+        var response = groupMemberController.acceptJoinRequest(groupMember.getId());
 
         assertNotNull(response);
         assertEquals(groupMemberDto, response.getEntity());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(groupMemberConverter).convertToModel(any(GroupMember.class));
-        verify(groupMemberService).acceptJoinGroup(any(UUID.class), any(UUID.class));
+        verify(groupMemberService).acceptJoinRequest(any(UUID.class), any(UUID.class));
         verify(userContext).get();
     }
 
     @Test
-    void rejectUserFromGroup() {
-        doNothing().when(groupMemberService).rejectJoinGroup(any(UUID.class), any(UUID.class));
+    void rejectJoinRequest() {
+        doNothing().when(groupMemberService).rejectJoinRequest(any(UUID.class), any(UUID.class));
 
-        groupMemberController.rejectUserFromGroup(groupMember.getId());
+        groupMemberController.rejectJoinRequest(groupMember.getId());
 
-        verify(groupMemberService).rejectJoinGroup(any(UUID.class), any(UUID.class));
+        verify(groupMemberService).rejectJoinRequest(any(UUID.class), any(UUID.class));
         verify(userContext).get();
     }
 

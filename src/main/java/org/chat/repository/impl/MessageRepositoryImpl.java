@@ -2,6 +2,7 @@ package org.chat.repository.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Message;
@@ -18,13 +19,15 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     private static final String GROUP_ID = "groupId";
 
+    private static final String TIME = "time";
+
     private static final String USERS_MESSAGE_QUERY = "(" + SENDER_ID + " = ?1 AND " + TARGET_USER_ID + " = ?2) OR (" + SENDER_ID + " = ?2 AND " + TARGET_USER_ID + " = ?1)";
 
     @Override
     public PanacheQuery<Message> findByUserIdTargetUserId(UUID currentUserId, UUID targetUserId, int page, int size) {
         log.debug("fetching user with id {} target user with id {} messages", currentUserId, targetUserId);
 
-        var messages = find(USERS_MESSAGE_QUERY, currentUserId, targetUserId)
+        var messages = find(USERS_MESSAGE_QUERY, Sort.by(TIME).descending(), currentUserId, targetUserId)
                 .page(Page.of(page, size));
 
         log.debug("fetched user with id {} target user with id {} messages", currentUserId, targetUserId);
@@ -36,7 +39,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public PanacheQuery<Message> findByGroupId(UUID groupId, int page, int size) {
         log.debug("fetching messages of group with id {}", groupId);
 
-        var messages = find(GROUP_ID, groupId)
+        var messages = find(GROUP_ID, Sort.by(TIME).descending(), groupId)
                 .page(Page.of(page, size));
 
         log.debug("fetched messages of group with id {}", groupId);

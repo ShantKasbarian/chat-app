@@ -2,7 +2,6 @@ package org.chat.service.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.GroupMember;
@@ -36,7 +35,6 @@ public class MessageServiceImpl implements MessageService {
     private final GroupMemberRepository groupMemberRepository;
 
     @Override
-    @Transactional
     public Message sendMessage(UserPrincipal userPrincipal, String content, UUID targetUserId) {
         log.info("sending message to user with id {}", targetUserId);
 
@@ -73,7 +71,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    @Transactional
     public Message messageGroup(UserPrincipal userPrincipal, String content, UUID groupId) {
         log.info("sending message to group with id {}", groupId);
 

@@ -80,7 +80,7 @@ public class MessageController {
     @POST
     @Path("/groups")
     public Response messageGroup(@Valid GroupMessageDto messageDto) {
-        log.info("POST /messages/group called");
+        log.info("POST /messages/groups called");
 
         var message = groupMessageConverter.convertToModel(
                 messageService.messageGroup(
@@ -90,7 +90,7 @@ public class MessageController {
                 )
         );
 
-        log.info("POST /messages/group returning a {}", MessageDto.class.getName());
+        log.info("POST /messages/groups returning a {}", MessageDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
                 .entity(message)

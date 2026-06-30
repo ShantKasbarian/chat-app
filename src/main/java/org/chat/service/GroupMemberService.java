@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface GroupMemberService {
     GroupMember joinGroup(UUID groupId, UserPrincipal userPrincipal);
     void leaveGroup(UUID groupId, UUID userId);
-    GroupMember acceptJoinGroup(UUID userId, UUID groupMemberId);
-    void rejectJoinGroup(UUID userId, UUID groupMemberId);
+    GroupMember acceptJoinRequest(UUID userId, UUID groupMemberId);
+    void rejectJoinRequest(UUID userId, UUID groupMemberId);
     PanacheQuery<GroupMember> findUsersByRole(UUID groupId, UUID userId, GroupMember.Role role, int page, int size);
 }

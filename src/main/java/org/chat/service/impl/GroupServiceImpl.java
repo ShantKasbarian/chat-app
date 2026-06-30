@@ -56,7 +56,7 @@ public class GroupServiceImpl implements GroupService {
         var query = groupMemberRepository.findByUserId(userId, page, size);
         var ids = query.list()
                 .stream()
-                .map(GroupMember::getId)
+                .map(GroupMember::getGroupId)
                 .toList();
         var groups = new PageDto<>(groupRepository.findByIds(ids), query.count(), query.pageCount());
 

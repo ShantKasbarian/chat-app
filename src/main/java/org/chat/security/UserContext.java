@@ -1,22 +1,22 @@
 package org.chat.security;
 
-import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.RequestScoped;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+
+import java.util.UUID;
 
 import static org.chat.service.impl.JwtServiceImpl.USER_ID_CLAIM;
 
 @RequiredArgsConstructor
-@ApplicationScoped
+@RequestScoped
 public class UserContext {
-    private static final String UPN_CLAIM = "upn";
-
-    private final SecurityIdentity identity;
+    private final JsonWebToken jsonWebToken;
 
     public UserPrincipal get() {
         return new UserPrincipal(
-                identity.getAttribute(USER_ID_CLAIM),
-                identity.getAttribute(UPN_CLAIM)
+                UUID.fromString(jsonWebToken.getClaim(USER_ID_CLAIM)),
+                jsonWebToken.getName()
         );
     }
 }
