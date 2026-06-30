@@ -1,5 +1,6 @@
 package org.chat.exception;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -11,6 +12,8 @@ import org.chat.model.ErrorMessageDto;
 public class ExceptionHandler implements ExceptionMapper<Throwable> {
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "internal server error";
 
+    private static final String RESOURCE_NOT_FOUND_MESSAGE = "resource not found";
+
     @Override
     public Response toResponse(Throwable throwable) {
         Response.Status status;
@@ -21,6 +24,10 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
             case ResourceAlreadyExistsException e -> status = Response.Status.CONFLICT;
             case ResourceNotFoundException e -> status = Response.Status.NOT_FOUND;
             case ForbiddenException e -> status = Response.Status.FORBIDDEN;
+            case NotFoundException e -> {
+                status = Response.Status.NOT_FOUND;
+                message = RESOURCE_NOT_FOUND_MESSAGE;
+            }
             default -> {
                 log.error(throwable.getMessage(), throwable);
                 status = Response.Status.INTERNAL_SERVER_ERROR;
