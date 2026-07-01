@@ -26,7 +26,16 @@ public class Message {
 
     private UUID groupId;
 
+    private String groupNameSnapshot;
+
     private String text;
 
+    private Type type;
+
     private Instant time;
+
+    public enum Type {
+        USER,
+        GROUP
+    }
 }

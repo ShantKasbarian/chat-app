@@ -4,12 +4,16 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.ForbiddenException;
 import org.chat.exception.ResourceNotFoundException;
+import org.chat.model.ConversationDto;
+import org.chat.model.PageDto;
 import org.chat.repository.GroupMemberRepository;
+import org.chat.repository.GroupRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
 import org.chat.security.UserPrincipal;
@@ -34,6 +38,8 @@ public class MessageServiceImpl implements MessageService {
 
     private final GroupMemberRepository groupMemberRepository;
 
+    private final GroupRepository groupRepository;
+
     @Override
     public Message sendMessage(UserPrincipal userPrincipal, String content, UUID targetUserId) {
         log.info("sending message to user with id {}", targetUserId);
@@ -48,7 +54,9 @@ public class MessageServiceImpl implements MessageService {
                 targetUserId,
                 target.getUsername(),
                 null,
+                null,
                 content,
+                Message.Type.USER,
                 Instant.now()
         );
 
@@ -83,6 +91,8 @@ public class MessageServiceImpl implements MessageService {
             throw new ForbiddenException(REQUEST_NOT_AUTHORIZED);
         }
 
+        Group group = groupRepository.findById(groupId);
+
         Message message = new Message(
                 UUID.randomUUID(),
                 userId,
@@ -90,7 +100,9 @@ public class MessageServiceImpl implements MessageService {
                 null,
                 null,
                 groupId,
+                group.getName(),
                 content,
+                Message.Type.GROUP,
                 Instant.now()
         );
 
@@ -117,5 +129,10 @@ public class MessageServiceImpl implements MessageService {
         log.info("fetched messages of group with id {}, page {} and size {}", groupId, page, size);
 
         return messages;
+    }
+
+    @Override
+    public PageDto<ConversationDto> findConversations(UUID id, int page, int size) {
+        return messageRepository.findConversations(id, page, size);
     }
 }

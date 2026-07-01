@@ -185,4 +185,14 @@ public class MessageController {
         return Response.ok(pageDto)
                 .build();
     }
+
+    @GET
+    public Response getConversations(
+            @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @QueryParam("size") @DefaultValue("10") @Min(1) int size
+    ) {
+        return Response.ok()
+                .entity(messageService.findConversations(userContext.get().id(), page, size))
+                .build();
+    }
 }
