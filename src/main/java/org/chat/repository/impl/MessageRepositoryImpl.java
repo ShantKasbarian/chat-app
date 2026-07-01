@@ -18,12 +18,11 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.lang.Math.ceil;
+import static org.chat.utils.MongoUtils.*;
 
 @Slf4j
 @ApplicationScoped
 public class MessageRepositoryImpl implements MessageRepository {
-    private static final String COLLECTION = "messages";
-
     private static final String ID = "_id";
 
     private static final String SENDER_ID = "senderId";
@@ -72,16 +71,14 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public PageDto<ConversationDto> findConversations(UUID id, int page, int size) {
+        log.debug("fetching conversations of user with id {}, page {} and size {}", id, page, size);
 
         List<Document> pipeline = new ArrayList<>(basePipeline(id));
-
-        pipeline.addAll(List.of(
-                sortMessages(),
-                groupToConversations(id),
-                sortConversations(),
-                skip(page, size),
-                limit(size)
-        ));
+        pipeline.add(sortMessages());
+        pipeline.add(groupToConversations(id));
+        pipeline.add(sortConversations());
+        pipeline.add(skip(page, size));
+        pipeline.add(limit(size));
 
         var conversations = mongoCollection()
                 .aggregate(pipeline, ConversationDto.class)
@@ -89,21 +86,26 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         long count = countConversations(id);
 
+        log.debug("fetched conversations of user with id {}, page {}, size {}", id, page, size);
+
         return new PageDto<>(conversations, count, (long) ceil((double) count / size));
     }
 
     private long countConversations(UUID id) {
+        log.debug("counting conversations of user with id {}", id);
+
         List<Document> pipeline = new ArrayList<>(basePipeline(id));
         pipeline.add(groupByConversationKey());
-        pipeline.add(new Document("$count", "total"));
+        pipeline.add(new Document(COUNT, TOTAL));
 
-        MongoCollection<Document> collection =
-                mongoCollection().withDocumentClass(Document.class);
+        var collection = mongoCollection().withDocumentClass(Document.class);
 
         Document result = collection.aggregate(pipeline)
                 .first();
 
-        return result != null ? result.getInteger("total") : 0L;
+        log.debug("counted conversations of user with id {}", id);
+
+        return result != null ? result.getInteger(TOTAL) : 0L;
     }
 
     private List<Document> basePipeline(UUID id) {
@@ -111,10 +113,10 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     private Document matchMessages(UUID id) {
-        return new Document("$match", new Document("$or", List.of(
-                new Document(SENDER_ID, id),
-                new Document(TARGET_USER_ID, id)
-        )));
+        Document senderDoc = new Document(SENDER_ID, id);
+        Document targetDoc = new Document(TARGET_USER_ID, id);
+
+        return new Document(MATCH, new Document(OR, List.of(senderDoc, targetDoc)));
     }
 
     private Document addConversationKey() {
@@ -122,120 +124,70 @@ public class MessageRepositoryImpl implements MessageRepository {
         String target = "$" + TARGET_USER_ID;
         String group = "$" + GROUP_ID;
 
-        Document isGroup = new Document(
-                "$ne",
-                List.of(group, BsonNull.VALUE)
-        );
-
-        // Convert BOTH IDs to STRING FIRST (safe boundary)
-        Document senderStr = new Document("$toString", sender);
-        Document targetStr = new Document("$toString", target);
-
-        // Determine stable ordering using ORIGINAL UUIDs (safe)
-        Document isSenderLess = new Document(
-                "$lt",
-                List.of(sender, target)
-        );
+        Document groupDoc = new Document(NE, List.of(group, BsonNull.VALUE));
+        Document senderDoc = new Document(TO_STRING, sender);
+        Document targetDoc = new Document(TO_STRING, target);
+        Document senderLessDoc = new Document(LT, List.of(sender, target));
 
         Document orderedSender = new Document(
-                "$cond",
-                List.of(
-                        isSenderLess,
-                        senderStr,
-                        targetStr
-                )
+                COND, List.of(senderLessDoc, senderDoc, targetDoc)
         );
 
         Document orderedTarget = new Document(
-                "$cond",
-                List.of(
-                        isSenderLess,
-                        targetStr,
-                        senderStr
-                )
+                COND, List.of(senderLessDoc, targetDoc, senderDoc)
         );
 
-        // SAFE CONCAT (ONLY STRINGS)
         Document userKeyString = new Document(
-                "$concat",
-                List.of(
-                        orderedSender,
-                        "-",
-                        orderedTarget
-                )
+                CONCAT, List.of(orderedSender, "-", orderedTarget)
         );
 
-        // Convert final string → UUID
-        Document userConversationKey = new Document(
-                "$toUUID",
-                userKeyString
-        );
+        Document userConversationKey = new Document(TO_UUID, userKeyString);
 
         Document conversationKey = new Document(
-                "$cond",
-                List.of(
-                        isGroup,
-                        group,
-                        userConversationKey
-                )
+                COND, List.of(groupDoc, group, userConversationKey)
         );
 
         return new Document(
-                "$addFields",
-                new Document("conversationKey", conversationKey)
+                ADD_FIELDS, new Document(CONVERSATION_KEY, conversationKey)
         );
     }
 
     private Document groupByConversationKey() {
-        return new Document("$group",
-                new Document(ID, "$conversationKey")
-        );
+        return new Document(GROUP, new Document(ID, "$" + CONVERSATION_KEY));
     }
 
     private Document sortMessages() {
-        return new Document("$sort", new Document(TIME, -1));
+        return new Document(SORT, new Document(TIME, -1));
     }
 
     private Document groupToConversations(UUID id) {
-        String senderField = "$" + SENDER_ID;
+        Document senderDoc = new Document(EQ, List.of("$" + SENDER_ID, id));
+        Document messageTypeDoc = new Document(EQ, List.of("$" + TYPE, Message.Type.GROUP.name()));
+        var list = List.of(senderDoc, "$" + TARGET_USERNAME_SNAPSHOT, "$" + SENDER_USERNAME_SNAPSHOT);
+        Document usersDoc = new Document(COND, list);
+        var nameResolverList = List.of(messageTypeDoc, "$" + GROUP_NAME_SNAPSHOT, usersDoc);
 
-        Document isSender = new Document(
-                "$eq",
-                List.of(senderField, id)
-        );
+        Document nameResolver = new Document(COND, nameResolverList);
 
-        Document nameResolver = new Document(
-                "$cond",
-                List.of(
-                        new Document("$eq", List.of("$" + TYPE, Message.Type.GROUP.name())),
-                        "$" + GROUP_NAME_SNAPSHOT,
-                        new Document("$cond", List.of(
-                                isSender,
-                                "$" + TARGET_USERNAME_SNAPSHOT,
-                                "$" + SENDER_USERNAME_SNAPSHOT
-                        ))
-                )
-        );
+        var conversationDoc = new Document(ID, "$" + CONVERSATION_KEY)
+                .append("id", new Document(FIRST, "$" + ID))
+                .append("message", new Document(FIRST, "$" + TEXT))
+                .append("messageType", new Document(FIRST, "$" + TYPE))
+                .append(TIME, new Document(FIRST, "$" + TIME))
+                .append("name", new Document(FIRST, nameResolver));
 
-        return new Document("$group",
-                new Document("_id", "$conversationKey")
-                        .append("id", new Document("$first", "$_id"))
-                        .append("message", new Document("$first", "$" + TEXT))
-                        .append("messageType", new Document("$first", "$" + TYPE))
-                        .append("time", new Document("$first", "$" + TIME))
-                        .append("name", new Document("$first", nameResolver))
-        );
+        return new Document(GROUP, conversationDoc);
     }
 
     private Document sortConversations() {
-        return new Document("$sort", new Document(TIME, -1));
+        return new Document(SORT, new Document(TIME, -1));
     }
 
     private Document skip(int page, int size) {
-        return new Document("$skip", page * size);
+        return new Document(SKIP, page * size);
     }
 
     private Document limit(int size) {
-        return new Document("$limit", size);
+        return new Document(LIMIT, size);
     }
 }
