@@ -237,8 +237,23 @@ class GroupMemberServiceImplTest {
     }
 
     @Test
-    void rejectJoinRequestShouldThrowForbiddenExceptionWhenRequestMemberIsNotAdmin() {
+    void rejectJoinRequestShouldThrowForbiddenExceptionWhenCurrentUserIsNotAdmin() {
         groupMember1.setRole(GroupMember.Role.MEMBER);
+
+        when(groupUserRepository.findByIdOptional(any(UUID.class)))
+                .thenReturn(Optional.of(groupMember2));
+        when(groupUserRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
+                .thenReturn(Optional.of(groupMember1));
+
+        Exception exception = assertThrows(ForbiddenException.class, () -> groupUserService.rejectJoinRequest(user1.getId(), groupMember1.getId()));
+        assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
+        verify(groupUserRepository).findByIdOptional(any(UUID.class));
+        verify(groupUserRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+    }
+
+    @Test
+    void rejectJoinRequestShouldThrowForbiddenExceptionWhenGroupMemberRoleIsNotPending() {
+        groupMember2.setRole(GroupMember.Role.MEMBER);
 
         when(groupUserRepository.findByIdOptional(any(UUID.class)))
                 .thenReturn(Optional.of(groupMember2));

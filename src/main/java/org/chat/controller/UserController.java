@@ -12,12 +12,17 @@ import org.chat.model.LoginDto;
 import org.chat.model.PageDto;
 import org.chat.model.UserDto;
 import org.chat.service.UserService;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Slf4j
 @RequiredArgsConstructor
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "users", description = "user management")
 public class UserController {
     private final UserService userService;
 
@@ -25,6 +30,10 @@ public class UserController {
 
     @POST
     @Path("/auth/login")
+    @Operation(summary = "user authentication", description = "returns a jwt token")
+    @APIResponse(responseCode = "200", description = "login successful")
+    @APIResponse(responseCode = "400", description = "invalid values in request body")
+    @APIResponse(responseCode = "401", description = "wrong username or password")
     public Response login(@Valid LoginDto loginDto) {
         String username = loginDto.username();
 
@@ -39,6 +48,10 @@ public class UserController {
 
     @POST
     @Path("/auth/signup")
+    @Operation(summary = "user registration", description = "returns a jwt token")
+    @APIResponse(responseCode = "200", description = "registration successful")
+    @APIResponse(responseCode = "400", description = "invalid values in request body")
+    @APIResponse(responseCode = "409", description = "user with given username already exists")
     public Response signup(@Valid UserDto userDto) {
         String username = userDto.username();
 
@@ -55,6 +68,9 @@ public class UserController {
 
     @GET
     @Path("/{username}")
+    @SecurityRequirement(name = "SecurityScheme")
+    @Operation(summary = "get users by username", description = "returns a list of users")
+    @APIResponse(responseCode = "200", description = "users fetched successfully")
     public Response findByUsername(
             @PathParam("username") String username,
             @QueryParam("page")
