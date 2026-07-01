@@ -87,8 +87,10 @@ class GroupMemberControllerTest {
     void leaveGroup() {
         doNothing().when(groupMemberService).leaveGroup(any(UUID.class), any(UUID.class));
 
-        groupMemberController.leaveGroup(group.getId());
+        Response response = groupMemberController.leaveGroup(group.getId());
 
+        assertNotNull(response);
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
         verify(groupMemberService).leaveGroup(any(UUID.class), any(UUID.class));
         verify(userContext).get();
     }
@@ -114,8 +116,10 @@ class GroupMemberControllerTest {
     void rejectJoinRequest() {
         doNothing().when(groupMemberService).rejectJoinRequest(any(UUID.class), any(UUID.class));
 
-        groupMemberController.rejectJoinRequest(groupMember.getId());
+        Response response = groupMemberController.rejectJoinRequest(groupMember.getId());
 
+        assertNotNull(response);
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
         verify(groupMemberService).rejectJoinRequest(any(UUID.class), any(UUID.class));
         verify(userContext).get();
     }

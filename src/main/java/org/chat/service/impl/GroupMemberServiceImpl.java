@@ -99,7 +99,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         GroupMember admin = groupMemberRepository.findByGroupIdUserId(groupMember.getGroupId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_MEMBER_OF_GROUP_MESSAGE));
 
-        if (!admin.getRole().equals(GroupMember.Role.ADMIN)) {
+        if (!admin.getRole().equals(GroupMember.Role.ADMIN) || !groupMember.getRole().equals(GroupMember.Role.PENDING)) {
             throw new ForbiddenException(REQUEST_NOT_AUTHORIZED);
         }
 
