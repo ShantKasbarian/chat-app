@@ -9,12 +9,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMessageConverter;
 import org.chat.converter.MessageConverter;
-import org.chat.model.GroupMessageDto;
-import org.chat.model.MessageDto;
-import org.chat.model.PageDto;
+import org.chat.model.*;
 import org.chat.security.UserContext;
 import org.chat.service.MessageService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -39,9 +39,21 @@ public class MessageController {
 
     @POST
     @Operation(summary = "send message to user", description = "returns a new message")
-    @APIResponse(responseCode = "201", description = "message created")
-    @APIResponse(responseCode = "400", description = "invalid values in request body")
-    @APIResponse(responseCode = "404", description = "target user not found")
+    @APIResponse(
+            responseCode = "201",
+            description = "message created",
+            content = @Content(schema = @Schema(implementation = MessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "invalid values in request body",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "target user not found",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response sendMessage(@Valid MessageDto messageDto) {
         log.info("POST /messages called");
 
@@ -61,7 +73,11 @@ public class MessageController {
     @GET
     @Path("/{userId}")
     @Operation(summary = "get messages between current and target user", description = "returns a list of messages")
-    @APIResponse(responseCode = "200", description = "messages fetched successfully")
+    @APIResponse(
+            responseCode = "200",
+            description = "messages fetched successfully",
+            content = @Content(schema = @Schema(implementation = PageDto.class))
+    )
     public Response getMessages(
             @PathParam("userId") UUID userId,
             @QueryParam("page")
@@ -86,16 +102,33 @@ public class MessageController {
 
         log.info("GET /messages/{} returning a {} of {} with page {} and size {}", userId, PageDto.class.getName(), MessageDto.class.getName(), page, size);
 
-        return Response.ok(pageDto).build();
+        return Response.ok(pageDto)
+                .build();
     }
 
     @POST
     @Path("/groups")
     @Operation(summary = "send message to group", description = "returns a new message")
-    @APIResponse(responseCode = "201", description = "messages created successfully")
-    @APIResponse(responseCode = "400", description = "invalid values in request body")
-    @APIResponse(responseCode = "403", description = "current user is not ADMIN or MEMBER")
-    @APIResponse(responseCode = "404", description = "current user is not a member of group")
+    @APIResponse(
+            responseCode = "201",
+            description = "messages created successfully",
+            content = @Content(schema = @Schema(implementation = GroupMessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "invalid values in request body",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "current user is not ADMIN or MEMBER",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "current user is not a member of group",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response messageGroup(@Valid GroupMessageDto messageDto) {
         log.info("POST /messages/groups called");
 
@@ -117,9 +150,21 @@ public class MessageController {
     @GET
     @Path("/groups/{groupId}")
     @Operation(summary = "get group messages", description = "returns a list of messages")
-    @APIResponse(responseCode = "200", description = "messages fetched successfully")
-    @APIResponse(responseCode = "403", description = "current user is not ADMIN or MEMBER")
-    @APIResponse(responseCode = "404", description = "current user is not a member of group")
+    @APIResponse(
+            responseCode = "200",
+            description = "messages fetched successfully",
+            content = @Content(schema = @Schema(implementation = GroupMessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "current user is not ADMIN or MEMBER",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "current user is not a member of group",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response getGroupMessages(
             @PathParam("groupId") UUID groupId,
             @QueryParam("page") @DefaultValue("0") int page,
@@ -137,6 +182,7 @@ public class MessageController {
 
         log.info("GET /messages/groups/{} returning a {} of {} with page {}, size {}", groupId, PageDto.class.getName(), GroupMessageDto.class.getName(), page, size);
 
-        return Response.ok(pageDto).build();
+        return Response.ok(pageDto)
+                .build();
     }
 }

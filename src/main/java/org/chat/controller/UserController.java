@@ -8,11 +8,11 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.UserConverter;
-import org.chat.model.LoginDto;
-import org.chat.model.PageDto;
-import org.chat.model.UserDto;
+import org.chat.model.*;
 import org.chat.service.UserService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -31,9 +31,21 @@ public class UserController {
     @POST
     @Path("/auth/login")
     @Operation(summary = "user authentication", description = "returns a jwt token")
-    @APIResponse(responseCode = "200", description = "login successful")
-    @APIResponse(responseCode = "400", description = "invalid values in request body")
-    @APIResponse(responseCode = "401", description = "wrong username or password")
+    @APIResponse(
+            responseCode = "200",
+            description = "login successful",
+            content = @Content(schema = @Schema(implementation = TokenDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "invalid values in request body",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "wrong username or password",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response login(@Valid LoginDto loginDto) {
         String username = loginDto.username();
 
@@ -43,15 +55,28 @@ public class UserController {
 
         log.info("POST /users/auth/login authenticated user {}", username);
 
-        return Response.ok(tokenDto).build();
+        return Response.ok(tokenDto)
+                .build();
     }
 
     @POST
     @Path("/auth/signup")
     @Operation(summary = "user registration", description = "returns a jwt token")
-    @APIResponse(responseCode = "200", description = "registration successful")
-    @APIResponse(responseCode = "400", description = "invalid values in request body")
-    @APIResponse(responseCode = "409", description = "user with given username already exists")
+    @APIResponse(
+            responseCode = "200",
+            description = "registration successful",
+            content = @Content(schema = @Schema(implementation = TokenDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "invalid values in request body",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "user with given username already exists",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response signup(@Valid UserDto userDto) {
         String username = userDto.username();
 
@@ -70,7 +95,11 @@ public class UserController {
     @Path("/{username}")
     @SecurityRequirement(name = "SecurityScheme")
     @Operation(summary = "get users by username", description = "returns a list of users")
-    @APIResponse(responseCode = "200", description = "users fetched successfully")
+    @APIResponse(
+            responseCode = "200",
+            description = "users fetched successfully",
+            content = @Content(schema = @Schema(implementation = PageDto.class))
+    )
     public Response findByUsername(
             @PathParam("username") String username,
             @QueryParam("page")
@@ -94,6 +123,7 @@ public class UserController {
 
         log.info("GET /users/{} is returning users with page {} and size {}", username, page, size);
 
-        return Response.ok(pageDto).build();
+        return Response.ok(pageDto)
+                .build();
     }
 }

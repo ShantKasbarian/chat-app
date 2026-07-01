@@ -8,11 +8,15 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupConverter;
+import org.chat.model.ErrorMessageDto;
+import org.chat.model.ErrorResponseDto;
 import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.service.GroupService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -33,9 +37,21 @@ public class GroupController {
 
     @POST
     @Operation(summary = "create group", description = "returns a new group")
-    @APIResponse(responseCode = "201", description = "group created")
-    @APIResponse(responseCode = "400", description = "invalid values in request body")
-    @APIResponse(responseCode = "409", description = "group with given name already exists")
+    @APIResponse(
+            responseCode = "201",
+            description = "group created",
+            content = @Content(schema = @Schema(implementation = GroupDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "invalid values in request body",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "group with given name already exists",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response create(@Valid GroupDto groupDto) {
         log.info("POST /groups called");
 
@@ -56,7 +72,11 @@ public class GroupController {
     @GET
     @Path("/me")
     @Operation(summary = "get current users' joined groups", description = "returns current users' joined groups")
-    @APIResponse(responseCode = "200", description = "fetch successful")
+    @APIResponse(
+            responseCode = "200",
+            description = "fetch successful",
+            content = @Content(schema = @Schema(implementation = PageDto.class))
+    )
     public Response getJoinedGroups(
             @QueryParam("page")
             @DefaultValue("0")
@@ -84,7 +104,11 @@ public class GroupController {
     @GET
     @Path("/{name}")
     @Operation(summary = "get groups by name", description = "returns groups with name similar to inputted name")
-    @APIResponse(responseCode = "200", description = "groups fetched successfully")
+    @APIResponse(
+            responseCode = "200",
+            description = "groups fetched successfully",
+            content = @Content(schema = @Schema(implementation = PageDto.class))
+    )
     public Response getGroups(
             @PathParam("name") String name,
             @QueryParam("page")

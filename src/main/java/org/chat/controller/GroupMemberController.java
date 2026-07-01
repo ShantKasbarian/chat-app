@@ -8,11 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMemberConverter;
 import org.chat.entity.GroupMember;
+import org.chat.model.ErrorMessageDto;
 import org.chat.model.GroupMemberDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.service.GroupMemberService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -36,19 +39,27 @@ public class GroupMemberController {
     @POST
     @Path("/{groupId}/members")
     @Operation(summary = "create request to join group", description = "returns a new group member with PENDING role")
-    @APIResponse(responseCode = "201", description = "group member created")
-    @APIResponse(responseCode = "409", description = "group member with current user id already exists")
+    @APIResponse(
+            responseCode = "201",
+            description = "group member created",
+            content = @Content(schema = @Schema(implementation = GroupMemberDto.class))
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "group member with current user id already exists",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response joinGroup(@PathParam("groupId") UUID groupId) {
         log.info("POST /groups/{}/members called", groupId);
 
-        var groupUserDto = groupMemberConverter.convertToModel(
+        var groupMemberDto = groupMemberConverter.convertToModel(
                 groupMemberService.joinGroup(groupId, userContext.get())
         );
 
         log.info("POST /groups/{}/members returning a {}", groupId, GroupMemberDto.class.getName());
 
         return Response.status(Response.Status.CREATED)
-                .entity(groupUserDto)
+                .entity(groupMemberDto)
                 .build();
     }
 
@@ -56,7 +67,11 @@ public class GroupMemberController {
     @Path("/{groupId}/members")
     @Operation(summary = "leave group", description = "deletes group member")
     @APIResponse(responseCode = "204", description = "group member successfully deleted")
-    @APIResponse(responseCode = "404", description = "group member with current user id not found")
+    @APIResponse(
+            responseCode = "404",
+            description = "group member with current user id not found",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response leaveGroup(@PathParam("groupId") UUID groupId) {
         log.info("DELETE /groups/{}/members called", groupId);
 
@@ -71,19 +86,31 @@ public class GroupMemberController {
     @PATCH
     @Path("/members/{id}")
     @Operation(summary = "accept join group request", description = "updates group member role to MEMBER")
-    @APIResponse(responseCode = "200", description = "group member role successfully updated")
-    @APIResponse(responseCode = "403", description = "current user is not the groups' admin")
-    @APIResponse(responseCode = "404", description = "group member with current user id or group member id not found")
+    @APIResponse(
+            responseCode = "200",
+            description = "group member role successfully updated",
+            content = @Content(schema = @Schema(implementation = GroupMemberDto.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "current user is not the groups' admin",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "group member with current user id or group member id not found",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response acceptJoinRequest(@PathParam("id") UUID id) {
         log.info("PATCH /groups/members/{} called", id);
 
-        var groupUserDto = groupMemberConverter.convertToModel(
+        var groupMemberDto = groupMemberConverter.convertToModel(
                 groupMemberService.acceptJoinRequest(userContext.get().id(), id)
         );
 
         log.info("PATCH /groups/members/{} is returning a {}", id, GroupMemberDto.class.getName());
 
-        return Response.ok(groupUserDto)
+        return Response.ok(groupMemberDto)
                 .build();
     }
 
@@ -91,8 +118,16 @@ public class GroupMemberController {
     @Path("/members/{id}")
     @Operation(summary = "reject request to join group", description = "deletes group member")
     @APIResponse(responseCode = "204", description = "group member successfully deleted")
-    @APIResponse(responseCode = "403", description = "current user is not ADMIN or group member role is not PENDING")
-    @APIResponse(responseCode = "404", description = "group member with current user id or group member id not found")
+    @APIResponse(
+            responseCode = "403",
+            description = "current user is not ADMIN or group member role is not PENDING",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "group member with current user id or group member id not found",
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
+    )
     public Response rejectJoinRequest(@PathParam("id") UUID id) {
         log.info("DELETE /groups/members/{} called", id);
 
@@ -107,7 +142,11 @@ public class GroupMemberController {
     @GET
     @Path("/{groupId}/members")
     @Operation(summary = "get group members by role", description = "returns a list of group members with the given role")
-    @APIResponse(responseCode = "200", description = "group members fetched successfully")
+    @APIResponse(
+            responseCode = "200",
+            description = "group members fetched successfully",
+            content = @Content(schema = @Schema(implementation = PageDto.class))
+    )
     public Response getUsersByRole(
             @PathParam("groupId") UUID groupId,
             @QueryParam("role")
