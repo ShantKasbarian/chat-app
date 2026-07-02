@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.ConversationConverter;
 import org.chat.model.ConversationDto;
-import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.service.MessageService;
