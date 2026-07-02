@@ -74,7 +74,7 @@ public class GroupController {
     @Operation(summary = "get current users' joined groups", description = "returns current users' joined groups")
     @APIResponse(
             responseCode = "200",
-            description = "fetch successful",
+            description = "groups fetched successfully",
             content = @Content(schema = @Schema(implementation = PageDto.class))
     )
     public Response getJoinedGroups(
