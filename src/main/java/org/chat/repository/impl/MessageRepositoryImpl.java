@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.BsonNull;
 import org.bson.Document;
 import org.chat.entity.Message;
-import org.chat.model.ConversationDto;
 import org.chat.model.PageDto;
 import org.chat.repository.MessageRepository;
 
@@ -69,25 +68,30 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public PageDto<ConversationDto> findConversations(UUID id, int page, int size) {
+    public PageDto<Message> findLatestByUserId(UUID id, int page, int size) {
         log.debug("fetching conversations of user with id {}, page {} and size {}", id, page, size);
+
+        long totalElements = countConversations(id);
+        long totalPages = (long) ceil((double) totalElements / size);
+
+        if (totalPages - 1 > page) {
+            return new PageDto<>(List.of(), totalElements, totalPages);
+        }
 
         List<Document> pipeline = new ArrayList<>(basePipeline(id));
         pipeline.add(sortMessages());
-        pipeline.add(groupToConversations(id));
+        pipeline.add(groupToConversations());
         pipeline.add(sortConversations());
         pipeline.add(skip(page, size));
         pipeline.add(limit(size));
 
         var conversations = mongoCollection()
-                .aggregate(pipeline, ConversationDto.class)
+                .aggregate(pipeline, Message.class)
                 .into(new ArrayList<>());
-
-        long count = countConversations(id);
 
         log.debug("fetched conversations of user with id {}, page {}, size {}", id, page, size);
 
-        return new PageDto<>(conversations, count, (long) ceil((double) count / size));
+        return new PageDto<>(conversations, totalElements, totalPages);
     }
 
     private long countConversations(UUID id) {
@@ -159,26 +163,18 @@ public class MessageRepositoryImpl implements MessageRepository {
         return new Document(SORT, new Document(TIME, -1));
     }
 
-    private Document groupToConversations(UUID id) {
-        Document senderDoc = new Document(EQ, List.of("$" + SENDER_ID, id));
-        Document messageTypeDoc = new Document(EQ, List.of("$" + TYPE, Message.Type.GROUP.name()));
-        var list = List.of(senderDoc, "$" + TARGET_USERNAME_SNAPSHOT, "$" + SENDER_USERNAME_SNAPSHOT);
-        Document usersDoc = new Document(COND, list);
-        var nameResolverList = List.of(messageTypeDoc, "$" + GROUP_NAME_SNAPSHOT, usersDoc);
-
-        Document groupMessage = new Document("$eq", List.of("$" + TYPE, Message.Type.GROUP.name()));
-        var senderUsernameResolverList = List.of(groupMessage, "$" + SENDER_USERNAME_SNAPSHOT, BsonNull.VALUE);
-        Document senderUsernameResolver = new Document(COND, senderUsernameResolverList);
-
-        Document nameResolver = new Document(COND, nameResolverList);
-
+    private Document groupToConversations() {
         var conversationDoc = new Document(ID, "$" + CONVERSATION_KEY)
                 .append("id", new Document(FIRST, "$" + ID))
-                .append("message", new Document(FIRST, "$" + TEXT))
-                .append("messageType", new Document(FIRST, "$" + TYPE))
-                .append(TIME, new Document(FIRST, "$" + TIME))
-                .append("name", new Document(FIRST, nameResolver))
-                .append("senderUsername", new Document("$first", senderUsernameResolver));
+                .append(SENDER_ID, new Document(FIRST, "$" + SENDER_ID))
+                .append(SENDER_USERNAME_SNAPSHOT, new Document(FIRST, "$" + SENDER_USERNAME_SNAPSHOT))
+                .append(TARGET_USER_ID, new Document(FIRST, "$" + TARGET_USER_ID))
+                .append(TARGET_USERNAME_SNAPSHOT, new Document(FIRST, "$" + TARGET_USERNAME_SNAPSHOT))
+                .append(GROUP_ID, new Document(FIRST, "$" + GROUP_ID))
+                .append(GROUP_NAME_SNAPSHOT, new Document(FIRST, "$" + GROUP_NAME_SNAPSHOT))
+                .append(TEXT, new Document(FIRST, "$" + TEXT))
+                .append(TYPE, new Document(FIRST, "$" + TYPE))
+                .append(TIME, new Document(FIRST, "$" + TIME));
 
         return new Document(GROUP, conversationDoc);
     }

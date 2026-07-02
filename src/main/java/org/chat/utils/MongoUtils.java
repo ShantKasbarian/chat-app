@@ -25,8 +25,6 @@ public class MongoUtils {
 
     public static final String GROUP = "$group";
 
-    public static final String EQ = "$eq";
-
     public static final String CONVERSATION_KEY = "conversationKey";
 
     public static final String FIRST = "$first";

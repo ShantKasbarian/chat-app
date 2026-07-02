@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chat.converter.ConversationConverter;
 import org.chat.converter.GroupMessageConverter;
 import org.chat.converter.MessageConverter;
 import org.chat.model.*;
@@ -34,6 +35,8 @@ public class MessageController {
     private final MessageConverter messageConverter;
 
     private final GroupMessageConverter groupMessageConverter;
+
+    private final ConversationConverter conversationConverter;
 
     private final UserContext userContext;
 
@@ -191,8 +194,17 @@ public class MessageController {
             @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @QueryParam("size") @DefaultValue("10") @Min(1) int size
     ) {
+        UUID id = userContext.get().id();
+
+        var messages = messageService.findConversations(id, page, size);
+        var conversations = messages.content()
+                .stream()
+                .map(message -> conversationConverter.convertToModel(message, id))
+                .toList();
+        var pageDto = new PageDto<>(conversations, messages.totalElements(), messages.totalPages());
+
         return Response.ok()
-                .entity(messageService.findConversations(userContext.get().id(), page, size))
+                .entity(pageDto)
                 .build();
     }
 }
