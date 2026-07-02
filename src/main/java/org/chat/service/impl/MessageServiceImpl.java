@@ -132,7 +132,13 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public PageDto<Message> findConversations(UUID id, int page, int size) {
-        return messageRepository.findLatestByUserId(id, page, size);
+    public PageDto<Message> findLatestByUserId(UUID id, int page, int size) {
+        log.info("fetching the latest messages of user with id {}, page {}, size {}", id, page, size);
+
+        var messages = messageRepository.findLatestByUserId(id, page, size);
+
+        log.info("fetched the latest messages of user with id {}, page {}, size {}", id, page, size);
+
+        return messages;
     }
 }

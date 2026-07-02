@@ -7,6 +7,7 @@ import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.exception.ForbiddenException;
+import org.chat.model.PageDto;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.GroupRepository;
 import org.chat.repository.MessageRepository;
@@ -19,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,6 +65,8 @@ class MessageServiceImplTest {
 
     private UserPrincipal userPrincipal;
 
+    private PageDto<Message> pageDto;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -94,6 +98,8 @@ class MessageServiceImplTest {
 
         groupMember = new GroupMember(UUID.randomUUID(), group.getId(), user1.getId(), user1.getUsername(), GroupMember.Role.MEMBER);
         userPrincipal = new UserPrincipal(UUID.randomUUID(), user1.getUsername());
+
+        pageDto = new PageDto<>(List.of(message), 1, 1);
     }
 
     @Test
@@ -198,5 +204,17 @@ class MessageServiceImplTest {
         Exception exception = assertThrows(ForbiddenException.class, () -> messageService.getGroupMessages(group.getId(), user1.getId(), 0, 10));
         assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
         verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
+    }
+
+    @Test
+    void findLatestByUserId() {
+        when(messageRepository.findLatestByUserId(any(UUID.class), anyInt(), anyInt()))
+                .thenReturn(pageDto);
+
+        var response = messageService.findLatestByUserId(userPrincipal.id(), 0, 10);
+
+        assertNotNull(response);
+        assertEquals(pageDto, response);
+        verify(messageRepository).findLatestByUserId(any(UUID.class), anyInt(), anyInt());
     }
 }
