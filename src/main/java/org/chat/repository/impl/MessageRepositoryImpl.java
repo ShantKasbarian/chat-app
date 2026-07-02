@@ -1,6 +1,5 @@
 package org.chat.repository.impl;
 
-import com.mongodb.client.MongoCollection;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
@@ -167,6 +166,10 @@ public class MessageRepositoryImpl implements MessageRepository {
         Document usersDoc = new Document(COND, list);
         var nameResolverList = List.of(messageTypeDoc, "$" + GROUP_NAME_SNAPSHOT, usersDoc);
 
+        Document groupMessage = new Document("$eq", List.of("$" + TYPE, Message.Type.GROUP.name()));
+        var senderUsernameResolverList = List.of(groupMessage, "$" + SENDER_USERNAME_SNAPSHOT, BsonNull.VALUE);
+        Document senderUsernameResolver = new Document(COND, senderUsernameResolverList);
+
         Document nameResolver = new Document(COND, nameResolverList);
 
         var conversationDoc = new Document(ID, "$" + CONVERSATION_KEY)
@@ -174,7 +177,8 @@ public class MessageRepositoryImpl implements MessageRepository {
                 .append("message", new Document(FIRST, "$" + TEXT))
                 .append("messageType", new Document(FIRST, "$" + TYPE))
                 .append(TIME, new Document(FIRST, "$" + TIME))
-                .append("name", new Document(FIRST, nameResolver));
+                .append("name", new Document(FIRST, nameResolver))
+                .append("senderUsername", new Document("$first", senderUsernameResolver));
 
         return new Document(GROUP, conversationDoc);
     }

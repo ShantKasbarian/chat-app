@@ -8,6 +8,7 @@ import org.chat.entity.User;
 import org.chat.exception.ResourceNotFoundException;
 import org.chat.exception.ForbiddenException;
 import org.chat.repository.GroupMemberRepository;
+import org.chat.repository.GroupRepository;
 import org.chat.repository.MessageRepository;
 import org.chat.repository.UserRepository;
 import org.chat.security.UserPrincipal;
@@ -41,6 +42,9 @@ class MessageServiceImplTest {
 
     @Mock
     private GroupMemberRepository groupMemberRepository;
+
+    @Mock
+    private GroupRepository groupRepository;
 
     @Mock
     private PanacheQuery<Message> panacheQuery;
@@ -131,6 +135,7 @@ class MessageServiceImplTest {
         when(groupMemberRepository.findByGroupIdUserId(any(UUID.class), any(UUID.class)))
                 .thenReturn(Optional.ofNullable(groupMember));
         doNothing().when(messageRepository).persist(any(Message.class));
+        when(groupRepository.findById(any(UUID.class))).thenReturn(group);
 
         Message response = messageService.messageGroup(userPrincipal, groupMessage.getText(), group.getId());
 
