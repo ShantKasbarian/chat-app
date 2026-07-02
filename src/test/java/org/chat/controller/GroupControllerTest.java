@@ -10,7 +10,6 @@ import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.security.UserPrincipal;
 import org.chat.service.GroupService;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

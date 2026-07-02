@@ -98,4 +98,13 @@ class MessageRepositoryImplTest {
         assertNotNull(messages);
         assertFalse(messages.list().isEmpty());
     }
+
+    @Test
+    void findLatestByUserId() {
+        var messages = messageRepository.findLatestByUserId(user.getId(), 0, 10);
+
+        assertNotNull(messages);
+        assertFalse(messages.content().isEmpty());
+        assertTrue(messages.totalElements() >= 1);
+    }
 }
