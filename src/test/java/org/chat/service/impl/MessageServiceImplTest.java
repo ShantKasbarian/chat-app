@@ -120,7 +120,7 @@ class MessageServiceImplTest {
         when(userRepository.findByIdOptional(any(UUID.class)))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(ResourceNotFoundException.class, () -> messageService.sendMessage(userPrincipal, message.getText(),user1.getId()));
+        Exception exception = assertThrows(ResourceNotFoundException.class, () -> messageService.sendMessage(userPrincipal, message.getText(), user1.getId()));
         assertEquals(USER_NOT_FOUND, exception.getMessage());
         verify(userRepository).findByIdOptional(any(UUID.class));
     }
