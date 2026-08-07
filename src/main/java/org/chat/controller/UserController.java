@@ -39,7 +39,7 @@ public class UserController {
     @APIResponse(
             responseCode = "400",
             description = "invalid values in request body",
-            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -70,7 +70,7 @@ public class UserController {
     @APIResponse(
             responseCode = "400",
             description = "invalid values in request body",
-            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
     )
     @APIResponse(
             responseCode = "409",
