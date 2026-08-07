@@ -9,7 +9,8 @@ This guide walks you through setting up and running the application on your loca
 Make sure the following tools are installed on your system:
 
 1. **Java 21**
-   Download from: [https://www.oracle.com/java/technologies/downloads/](https://www.oracle.com/java/technologies/downloads/)
+   Download
+   from: [https://www.oracle.com/java/technologies/downloads/](https://www.oracle.com/java/technologies/downloads/)
 
 2. **Apache Maven**
    Download from: [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
@@ -19,11 +20,11 @@ Make sure the following tools are installed on your system:
 
 ## generate private and public ssh keys
 
-To generate a private key execute the following command in bash: 
-    openssl genpkey -algorithm RSA -out privateKey.pem
+To generate a private key execute the following command in bash:
+openssl genpkey -algorithm RSA -out privateKey.pem
 
 To generate a public key based on the private key execute the following command in bash:
-    openssl rsa -pubout -in privateKey.pem -out publicKey.pem
+openssl rsa -pubout -in privateKey.pem -out publicKey.pem
 
 ## info about app
 
@@ -49,8 +50,8 @@ The application can be packaged using:
 ./mvnw package
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory. Be aware that it’s not an _über-jar_ as
+the dependencies are copied into the `target/quarkus-app/lib/` directory.
 
 The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
 
@@ -87,3 +88,9 @@ If you want to learn more about building native executables, please consult <htt
 Easily start your REST Web Services
 
 [Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+
+## License & Attribution
+
+- This project is provided for learning and personal use.
+- Do not claim this project or its code as your own work.
+- If you use or modify this project, please provide appropriate credit to the original author.
