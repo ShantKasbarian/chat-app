@@ -16,10 +16,7 @@ public record UserDto(
         @NotBlank(message = "password must be specified")
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{6,}$",
-                message = """
-                password must be at least 6 characters long contain one uppercase,
-                one lowercase, one digit and one special character"""
-        )
+                message = "password must be at least 6 characters long contain one uppercase, one lowercase, one digit and one special character")
         String password
 ) {
 

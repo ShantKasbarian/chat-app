@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupConverter;
 import org.chat.model.ErrorMessageDto;
-import org.chat.model.ErrorResponseDto;
 import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
@@ -45,7 +44,7 @@ public class GroupController {
     @APIResponse(
             responseCode = "400",
             description = "invalid values in request body",
-            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
     )
     @APIResponse(
             responseCode = "409",
@@ -56,10 +55,10 @@ public class GroupController {
         log.info("POST /groups called");
 
         var group = groupConverter.convertToModel(
-            groupService.createGroup(
-                groupConverter.convertToEntity(groupDto),
-                userContext.get()
-            )
+                groupService.createGroup(
+                        groupConverter.convertToEntity(groupDto),
+                        userContext.get()
+                )
         );
 
         log.info("POST /groups returning a {}", GroupDto.class.getName());

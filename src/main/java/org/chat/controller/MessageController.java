@@ -47,7 +47,7 @@ public class MessageController {
     @APIResponse(
             responseCode = "400",
             description = "invalid values in request body",
-            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
     )
     @APIResponse(
             responseCode = "404",
@@ -58,9 +58,9 @@ public class MessageController {
         log.info("POST /messages called");
 
         var message = messageConverter.convertToModel(
-            messageService.sendMessage(
-                userContext.get(), messageDto.text(), messageDto.targetUserId()
-            )
+                messageService.sendMessage(
+                        userContext.get(), messageDto.text(), messageDto.targetUserId()
+                )
         );
 
         log.info("POST /messages returning a {}", MessageDto.class.getName());
@@ -94,9 +94,9 @@ public class MessageController {
 
         var query = messageService.getMessages(userContext.get().id(), userId, page, size);
         var messages = query.list()
-            .stream()
-            .map(messageConverter::convertToModel)
-            .toList();
+                .stream()
+                .map(messageConverter::convertToModel)
+                .toList();
 
         var pageDto = new PageDto<>(messages, query.count(), query.pageCount());
 
@@ -117,7 +117,7 @@ public class MessageController {
     @APIResponse(
             responseCode = "400",
             description = "invalid values in request body",
-            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
     )
     @APIResponse(
             responseCode = "403",
@@ -174,9 +174,9 @@ public class MessageController {
 
         var query = messageService.getGroupMessages(groupId, userContext.get().id(), page, size);
         var messages = query.list()
-            .stream()
-            .map(groupMessageConverter::convertToModel)
-            .toList();
+                .stream()
+                .map(groupMessageConverter::convertToModel)
+                .toList();
 
         var pageDto = new PageDto<>(messages, query.count(), query.pageCount());
 
