@@ -5,7 +5,9 @@ import org.chat.entity.User;
 import org.chat.model.TokenDto;
 
 public interface UserService {
-    TokenDto login(String username, String password);
-    TokenDto signup(String username, String password);
-    PanacheQuery<User> findByUsername(String username, int page, int size);
+  TokenDto login(String username, String password);
+
+  TokenDto signup(String username, String password);
+
+  PanacheQuery<User> findByUsername(String username, int page, int size);
 }
