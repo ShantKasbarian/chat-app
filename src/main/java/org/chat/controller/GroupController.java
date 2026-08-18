@@ -28,109 +28,94 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "groups", description = "group management")
 public class GroupController {
-    private final GroupService groupService;
+  private final GroupService groupService;
 
-    private final GroupConverter groupConverter;
+  private final GroupConverter groupConverter;
 
-    private final UserContext userContext;
+  private final UserContext userContext;
 
-    @POST
-    @Operation(summary = "create group", description = "returns a new group")
-    @APIResponse(
-            responseCode = "201",
-            description = "group created",
-            content = @Content(schema = @Schema(implementation = GroupDto.class))
-    )
-    @APIResponse(
-            responseCode = "400",
-            description = "invalid values in request body",
-            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
-    )
-    @APIResponse(
-            responseCode = "409",
-            description = "group with given name already exists",
-            content = @Content(schema = @Schema(implementation = ErrorMessageDto.class))
-    )
-    public Response create(@Valid GroupDto groupDto) {
-        log.info("POST /groups called");
+  @POST
+  @Operation(summary = "create group", description = "returns a new group")
+  @APIResponse(
+      responseCode = "201",
+      description = "group created",
+      content = @Content(schema = @Schema(implementation = GroupDto.class)))
+  @APIResponse(
+      responseCode = "400",
+      description = "invalid values in request body",
+      content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
+  @APIResponse(
+      responseCode = "409",
+      description = "group with given name already exists",
+      content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
+  public Response create(@Valid GroupDto groupDto) {
+    log.info("POST /groups called");
 
-        var group = groupConverter.convertToModel(
-                groupService.createGroup(
-                        groupConverter.convertToEntity(groupDto),
-                        userContext.get()
-                )
-        );
+    var group =
+        groupConverter.convertToModel(
+            groupService.createGroup(groupConverter.convertToEntity(groupDto), userContext.get()));
 
-        log.info("POST /groups returning a {}", GroupDto.class.getName());
+    log.info("POST /groups returning a {}", GroupDto.class.getName());
 
-        return Response.status(Response.Status.CREATED)
-                .entity(group)
-                .build();
-    }
+    return Response.status(Response.Status.CREATED).entity(group).build();
+  }
 
-    @GET
-    @Path("/me")
-    @Operation(summary = "get current users' joined groups", description = "returns current users' joined groups")
-    @APIResponse(
-            responseCode = "200",
-            description = "groups fetched successfully",
-            content = @Content(schema = @Schema(implementation = PageDto.class))
-    )
-    public Response getJoinedGroups(
-            @QueryParam("page")
-            @DefaultValue("0")
-            @Min(value = 0, message = "page must be at least 0")
-            int page,
-            @QueryParam("size")
-            @DefaultValue("10")
-            @Min(value = 1, message = "size must be at least 1")
-            int size
-    ) {
-        log.info("GET /groups/me called with page {} and size {}", page, size);
+  @GET
+  @Path("/me")
+  @Operation(
+      summary = "get current users' joined groups",
+      description = "returns current users' joined groups")
+  @APIResponse(
+      responseCode = "200",
+      description = "groups fetched successfully",
+      content = @Content(schema = @Schema(implementation = PageDto.class)))
+  public Response getJoinedGroups(
+      @QueryParam("page") @DefaultValue("0") @Min(value = 0, message = "page must be at least 0")
+          int page,
+      @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
+          int size) {
+    log.info("GET /groups/me called with page {} and size {}", page, size);
 
-        var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
-        var groups = pageDto.content()
-                .stream()
-                .map(groupConverter::convertToModel)
-                .toList();
+    var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
+    var groups = pageDto.content().stream().map(groupConverter::convertToModel).toList();
 
-        log.info("GET /groups/me returning a {} of {} with page {} and size {}", PageDto.class.getName(), GroupDto.class.getName(), page, size);
+    log.info(
+        "GET /groups/me returning a {} of {} with page {} and size {}",
+        PageDto.class.getName(),
+        GroupDto.class.getName(),
+        page,
+        size);
 
-        return Response.ok(new PageDto<>(groups, page, size))
-                .build();
-    }
+    return Response.ok(new PageDto<>(groups, page, size)).build();
+  }
 
-    @GET
-    @Path("/{name}")
-    @Operation(summary = "get groups by name", description = "returns groups with name similar to inputted name")
-    @APIResponse(
-            responseCode = "200",
-            description = "groups fetched successfully",
-            content = @Content(schema = @Schema(implementation = PageDto.class))
-    )
-    public Response getGroups(
-            @PathParam("name") String name,
-            @QueryParam("page")
-            @DefaultValue("0")
-            @Min(value = 0, message = "page must be at least 0")
-            int page,
-            @QueryParam("size")
-            @DefaultValue("10")
-            @Min(value = 1, message = "size must be at least 1")
-            int size
-    ) {
-        log.info("GET /groups/{} called", name);
+  @GET
+  @Path("/{name}")
+  @Operation(
+      summary = "get groups by name",
+      description = "returns groups with name similar to inputted name")
+  @APIResponse(
+      responseCode = "200",
+      description = "groups fetched successfully",
+      content = @Content(schema = @Schema(implementation = PageDto.class)))
+  public Response getGroups(
+      @PathParam("name") String name,
+      @QueryParam("page") @DefaultValue("0") @Min(value = 0, message = "page must be at least 0")
+          int page,
+      @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
+          int size) {
+    log.info("GET /groups/{} called", name);
 
-        var query = groupService.getGroups(name, page, size);
-        var groups = query.list()
-                .stream()
-                .map(groupConverter::convertToModel)
-                .toList();
-        var pageDto = new PageDto<>(groups, page, size);
+    var query = groupService.getGroups(name, page, size);
+    var groups = query.list().stream().map(groupConverter::convertToModel).toList();
+    var pageDto = new PageDto<>(groups, page, size);
 
-        log.info("GET /groups/{} returning a {} of {}", name, PageDto.class.getName(), GroupDto.class.getName());
+    log.info(
+        "GET /groups/{} returning a {} of {}",
+        name,
+        PageDto.class.getName(),
+        GroupDto.class.getName());
 
-        return Response.ok(pageDto)
-                .build();
-    }
+    return Response.ok(pageDto).build();
+  }
 }

@@ -1,4 +1,3 @@
 package org.chat.model;
 
-public record TokenDto(String token) {
-}
+public record TokenDto(String token) {}

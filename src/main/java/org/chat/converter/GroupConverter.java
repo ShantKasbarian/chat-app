@@ -5,17 +5,18 @@ import org.chat.entity.Group;
 import org.chat.model.GroupDto;
 
 @ApplicationScoped
-public class GroupConverter implements ToEntityConverter<Group, GroupDto>, ToModelConverter<GroupDto, Group> {
-    @Override
-    public Group convertToEntity(GroupDto model) {
-        Group group = new Group();
-        group.setName(model.name());
+public class GroupConverter
+    implements ToEntityConverter<Group, GroupDto>, ToModelConverter<GroupDto, Group> {
+  @Override
+  public Group convertToEntity(GroupDto model) {
+    Group group = new Group();
+    group.setName(model.name());
 
-        return group;
-    }
+    return group;
+  }
 
-    @Override
-    public GroupDto convertToModel(Group entity) {
-        return new GroupDto(entity.getId(), entity.getName());
-    }
+  @Override
+  public GroupDto convertToModel(Group entity) {
+    return new GroupDto(entity.getId(), entity.getName());
+  }
 }
