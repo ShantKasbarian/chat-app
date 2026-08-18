@@ -83,25 +83,40 @@ public class MessageRepositoryImpl implements MessageRepository {
     log.debug("fetching conversations of user with id {}, page {} and size {}", id, page, size);
 
     long totalElements = countConversations(id);
-    long totalPages = (long) ceil((double) totalElements / size);
+    long totalPages = calculateTotalPages(totalElements, size);
 
-    if (totalPages - 1 > page) {
+    if (isPageOutOfRange(page, totalPages)) {
       return new PageDto<>(List.of(), totalElements, totalPages);
     }
 
+    var conversations = aggregateLatestConversations(id, page, size);
+
+    log.debug("fetched conversations of user with id {}, page {}, size {}", id, page, size);
+
+    return new PageDto<>(conversations, totalElements, totalPages);
+  }
+
+  private long calculateTotalPages(long totalElements, int size) {
+    return totalElements == 0 ? 0 : (long) ceil((double) totalElements / size);
+  }
+
+  private boolean isPageOutOfRange(int page, long totalPages) {
+    return page >= totalPages;
+  }
+
+  private List<Message> aggregateLatestConversations(UUID id, int page, int size) {
+    List<Document> pipeline = buildLatestConversationPipeline(id, page, size);
+    return mongoCollection().aggregate(pipeline, Message.class).into(new ArrayList<>());
+  }
+
+  private List<Document> buildLatestConversationPipeline(UUID id, int page, int size) {
     List<Document> pipeline = new ArrayList<>(basePipeline(id));
     pipeline.add(sortMessages());
     pipeline.add(groupToConversations());
     pipeline.add(sortConversations());
     pipeline.add(skip(page, size));
     pipeline.add(limit(size));
-
-    var conversations =
-        mongoCollection().aggregate(pipeline, Message.class).into(new ArrayList<>());
-
-    log.debug("fetched conversations of user with id {}, page {}, size {}", id, page, size);
-
-    return new PageDto<>(conversations, totalElements, totalPages);
+    return pipeline;
   }
 
   private long countConversations(UUID id) {
