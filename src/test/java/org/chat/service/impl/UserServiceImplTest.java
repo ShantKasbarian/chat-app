@@ -9,7 +9,9 @@ import java.util.UUID;
 import org.chat.entity.User;
 import org.chat.exception.InvalidCredentialsException;
 import org.chat.exception.ResourceAlreadyExistsException;
+import org.chat.model.LoginDto;
 import org.chat.model.TokenDto;
+import org.chat.model.UserDto;
 import org.chat.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,13 +38,18 @@ class UserServiceImplTest {
 
   private User user;
 
-  private String password;
+  private UserDto userDto;
+
+  private LoginDto loginDto;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    password = "Password123+";
+
+    String password = "Password123+";
     user = new User(UUID.randomUUID(), "user", BCrypt.hashpw(password, BCrypt.gensalt()));
+    loginDto = new LoginDto(user.getUsername(), password);
+    userDto = new UserDto(user.getId(), user.getUsername(), password);
   }
 
   @Test
@@ -50,7 +57,7 @@ class UserServiceImplTest {
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.ofNullable(user));
     when(jwtService.generateToken(anyString(), anyString())).thenReturn(TEST_TOKEN);
 
-    TokenDto response = userService.login(user.getUsername(), password);
+    TokenDto response = userService.login(loginDto);
 
     assertNotNull(response);
     assertEquals(TEST_TOKEN, response.token());
@@ -58,12 +65,13 @@ class UserServiceImplTest {
 
   @Test
   void loginShouldThrowInvalidCredentialsExceptionWhenPasswordDoesNotMatch() {
+    LoginDto invalidCredsLoginDto = new LoginDto("invalid", "password");
+
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.ofNullable(user));
 
     Exception exception =
         assertThrows(
-            InvalidCredentialsException.class,
-            () -> userService.login(user.getUsername(), "somePassword"));
+            InvalidCredentialsException.class, () -> userService.login(invalidCredsLoginDto));
     assertEquals(INVALID_CREDENTIALS_MESSAGE, exception.getMessage());
   }
 
@@ -73,7 +81,7 @@ class UserServiceImplTest {
     doNothing().when(userRepository).persist(any(User.class));
     when(jwtService.generateToken(anyString(), anyString())).thenReturn(TEST_TOKEN);
 
-    TokenDto response = userService.signup(user.getUsername(), user.getPassword());
+    TokenDto response = userService.signup(userDto);
 
     assertNotNull(response);
     assertEquals(TEST_TOKEN, response.token());
@@ -86,9 +94,7 @@ class UserServiceImplTest {
     when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
     Exception exception =
-        assertThrows(
-            ResourceAlreadyExistsException.class,
-            () -> userService.signup(user.getUsername(), user.getPassword()));
+        assertThrows(ResourceAlreadyExistsException.class, () -> userService.signup(userDto));
     assertEquals(USER_WITH_GIVEN_USERNAME_EXISTS_MESSAGE, exception.getMessage());
   }
 

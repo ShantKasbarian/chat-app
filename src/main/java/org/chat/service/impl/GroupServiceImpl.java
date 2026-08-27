@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.exception.*;
+import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.GroupRepository;
@@ -28,17 +29,18 @@ public class GroupServiceImpl implements GroupService {
   private final GroupMemberRepository groupMemberRepository;
 
   @Override
-  public Group createGroup(Group group, UserPrincipal userPrincipal) {
-    String groupName = group.getName();
+  public Group createGroup(GroupDto groupDto, UserPrincipal userPrincipal) {
+    String groupName = groupDto.name();
 
     log.info("creating group with name {}", groupName);
 
-    if (groupRepository.existsByName(group.getName())) {
+    if (groupRepository.existsByName(groupName)) {
       throw new ResourceAlreadyExistsException(GROUP_ALREADY_EXISTS_MESSAGE);
     }
 
     UUID groupId = UUID.randomUUID();
-    group.setId(groupId);
+
+    Group group = new Group(groupId, groupName);
     groupRepository.persist(group);
 
     GroupMember groupMember =

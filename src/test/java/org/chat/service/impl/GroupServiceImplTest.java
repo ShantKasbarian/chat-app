@@ -12,6 +12,7 @@ import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.entity.User;
 import org.chat.exception.ResourceAlreadyExistsException;
+import org.chat.model.GroupDto;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.GroupRepository;
 import org.chat.security.UserPrincipal;
@@ -36,6 +37,8 @@ class GroupServiceImplTest {
 
   private Group group;
 
+  private GroupDto groupDto;
+
   private User user2;
 
   private UserPrincipal userPrincipal;
@@ -51,6 +54,8 @@ class GroupServiceImplTest {
     group = new Group();
     group.setId(UUID.randomUUID());
     group.setName("group");
+
+    groupDto = new GroupDto(group.getId(), group.getName());
 
     User user1 = new User();
     user1.setId(UUID.randomUUID());
@@ -86,9 +91,8 @@ class GroupServiceImplTest {
     doNothing().when(groupRepository).persist(any(Group.class));
     doNothing().when(groupMemberRepository).persist(any(GroupMember.class));
 
-    Group response = groupService.createGroup(group, userPrincipal);
+    Group response = groupService.createGroup(groupDto, userPrincipal);
 
-    assertEquals(group.getId(), response.getId());
     assertEquals(group.getName(), response.getName());
     verify(groupRepository).existsByName(anyString());
     verify(groupRepository).persist(any(Group.class));
@@ -102,7 +106,7 @@ class GroupServiceImplTest {
     Exception exception =
         assertThrows(
             ResourceAlreadyExistsException.class,
-            () -> groupService.createGroup(group, userPrincipal));
+            () -> groupService.createGroup(groupDto, userPrincipal));
     assertEquals(GROUP_ALREADY_EXISTS_MESSAGE, exception.getMessage());
   }
 

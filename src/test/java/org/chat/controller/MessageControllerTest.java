@@ -99,7 +99,7 @@ class MessageControllerTest {
 
   @Test
   void sendMessage() {
-    when(messageService.sendMessage(any(UserPrincipal.class), anyString(), any(UUID.class)))
+    when(messageService.sendMessage(any(MessageDto.class), any(UserPrincipal.class)))
         .thenReturn(message);
     when(messageConverter.convertToModel(any(Message.class))).thenReturn(messageDto);
 
@@ -109,7 +109,7 @@ class MessageControllerTest {
     assertEquals(messageDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
     verify(messageConverter).convertToModel(any(Message.class));
-    verify(messageService).sendMessage(any(UserPrincipal.class), anyString(), any(UUID.class));
+    verify(messageService).sendMessage(any(MessageDto.class), any(UserPrincipal.class));
   }
 
   @Test
@@ -135,7 +135,7 @@ class MessageControllerTest {
 
   @Test
   void messageGroup() {
-    when(messageService.messageGroup(any(UserPrincipal.class), anyString(), any(UUID.class)))
+    when(messageService.messageGroup(any(GroupMessageDto.class), any(UserPrincipal.class)))
         .thenReturn(message);
     when(groupMessageConverter.convertToModel(any(Message.class))).thenReturn(groupMessageDto);
 
@@ -144,7 +144,7 @@ class MessageControllerTest {
     assertNotNull(response);
     assertEquals(groupMessageDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-    verify(messageService).messageGroup(any(UserPrincipal.class), anyString(), any(UUID.class));
+    verify(messageService).messageGroup(any(GroupMessageDto.class), any(UserPrincipal.class));
     verify(groupMessageConverter).convertToModel(any(Message.class));
   }
 

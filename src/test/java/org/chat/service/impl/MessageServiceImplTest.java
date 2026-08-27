@@ -15,6 +15,8 @@ import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.ForbiddenException;
 import org.chat.exception.ResourceNotFoundException;
+import org.chat.model.GroupMessageDto;
+import org.chat.model.MessageDto;
 import org.chat.model.PageDto;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.GroupRepository;
@@ -50,11 +52,15 @@ class MessageServiceImplTest {
 
   private Message message;
 
+  private MessageDto messageDto;
+
   private Group group;
 
   private GroupMember groupMember;
 
   private Message groupMessage;
+
+  private GroupMessageDto groupMessageDto;
 
   private UserPrincipal userPrincipal;
 
@@ -82,12 +88,31 @@ class MessageServiceImplTest {
     message.setText("some message");
     message.setTime(Instant.now());
 
+    messageDto =
+        new MessageDto(
+            message.getId(),
+            user1.getId(),
+            user1.getUsername(),
+            user2.getId(),
+            user2.getUsername(),
+            message.getText(),
+            message.getTime());
+
     groupMessage = new Message();
     groupMessage.setId(UUID.randomUUID());
     groupMessage.setSenderId(user2.getId());
     groupMessage.setText("some message");
     groupMessage.setTime(Instant.now());
     groupMessage.setGroupId(group.getId());
+
+    groupMessageDto =
+        new GroupMessageDto(
+            groupMessage.getId(),
+            user1.getId(),
+            user1.getUsername(),
+            groupMessage.getText(),
+            group.getId(),
+            groupMessage.getTime());
 
     groupMember =
         new GroupMember(
@@ -106,7 +131,7 @@ class MessageServiceImplTest {
     when(userRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.of(user2));
     doNothing().when(messageRepository).persist(message);
 
-    Message response = messageService.sendMessage(userPrincipal, message.getText(), user1.getId());
+    Message response = messageService.sendMessage(messageDto, userPrincipal);
 
     assertNotNull(response);
     verify(userRepository).findByIdOptional(any(UUID.class));
@@ -120,7 +145,7 @@ class MessageServiceImplTest {
     Exception exception =
         assertThrows(
             ResourceNotFoundException.class,
-            () -> messageService.sendMessage(userPrincipal, message.getText(), user1.getId()));
+            () -> messageService.sendMessage(messageDto, userPrincipal));
     assertEquals(USER_NOT_FOUND, exception.getMessage());
     verify(userRepository).findByIdOptional(any(UUID.class));
   }
@@ -145,8 +170,7 @@ class MessageServiceImplTest {
     doNothing().when(messageRepository).persist(any(Message.class));
     when(groupRepository.findById(any(UUID.class))).thenReturn(group);
 
-    Message response =
-        messageService.messageGroup(userPrincipal, groupMessage.getText(), group.getId());
+    Message response = messageService.messageGroup(groupMessageDto, userPrincipal);
 
     assertNotNull(response);
     verify(groupMemberRepository).findByGroupIdUserId(any(UUID.class), any(UUID.class));
@@ -161,9 +185,7 @@ class MessageServiceImplTest {
     Exception exception =
         assertThrows(
             ResourceNotFoundException.class,
-            () ->
-                messageService.messageGroup(
-                    userPrincipal, groupMessage.getText(), groupMessage.getGroupId()));
+            () -> messageService.messageGroup(groupMessageDto, userPrincipal));
     assertEquals(NOT_MEMBER_OF_GROUP_MESSAGE, exception.getMessage());
   }
 
@@ -177,9 +199,7 @@ class MessageServiceImplTest {
     Exception exception =
         assertThrows(
             ForbiddenException.class,
-            () ->
-                messageService.messageGroup(
-                    userPrincipal, groupMessage.getText(), groupMessage.getGroupId()));
+            () -> messageService.messageGroup(groupMessageDto, userPrincipal));
     assertEquals(REQUEST_NOT_AUTHORIZED, exception.getMessage());
   }
 

@@ -14,6 +14,8 @@ import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.chat.exception.ForbiddenException;
 import org.chat.exception.ResourceNotFoundException;
+import org.chat.model.GroupMessageDto;
+import org.chat.model.MessageDto;
 import org.chat.model.PageDto;
 import org.chat.repository.GroupMemberRepository;
 import org.chat.repository.GroupRepository;
@@ -39,7 +41,9 @@ public class MessageServiceImpl implements MessageService {
   private final GroupRepository groupRepository;
 
   @Override
-  public Message sendMessage(UserPrincipal userPrincipal, String content, UUID targetUserId) {
+  public Message sendMessage(MessageDto messageDto, UserPrincipal userPrincipal) {
+    UUID targetUserId = messageDto.targetUserId();
+
     log.info("sending message to user with id {}", targetUserId);
 
     User target =
@@ -56,7 +60,7 @@ public class MessageServiceImpl implements MessageService {
             target.getUsername(),
             null,
             null,
-            content,
+            messageDto.text(),
             Message.Type.USER,
             Instant.now());
 
@@ -89,7 +93,9 @@ public class MessageServiceImpl implements MessageService {
   }
 
   @Override
-  public Message messageGroup(UserPrincipal userPrincipal, String content, UUID groupId) {
+  public Message messageGroup(GroupMessageDto groupMessageDto, UserPrincipal userPrincipal) {
+    UUID groupId = groupMessageDto.groupId();
+
     log.info("sending message to group with id {}", groupId);
 
     UUID userId = userPrincipal.id();
@@ -114,7 +120,7 @@ public class MessageServiceImpl implements MessageService {
             null,
             groupId,
             group.getName(),
-            content,
+            groupMessageDto.text(),
             Message.Type.GROUP,
             Instant.now());
 

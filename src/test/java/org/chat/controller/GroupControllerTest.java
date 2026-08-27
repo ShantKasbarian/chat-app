@@ -59,8 +59,7 @@ class GroupControllerTest {
   @Test
   void create() {
     when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
-    when(groupService.createGroup(any(Group.class), any(UserPrincipal.class))).thenReturn(group);
-    when(groupConverter.convertToEntity(any(GroupDto.class))).thenReturn(group);
+    when(groupService.createGroup(any(GroupDto.class), any(UserPrincipal.class))).thenReturn(group);
 
     var response = groupController.create(groupDto);
 
@@ -68,9 +67,8 @@ class GroupControllerTest {
     assertEquals(groupDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
     verify(groupConverter).convertToModel(any(Group.class));
-    verify(groupService).createGroup(any(Group.class), any(UserPrincipal.class));
+    verify(groupService).createGroup(any(GroupDto.class), any(UserPrincipal.class));
     verify(userContext).get();
-    verify(groupConverter).convertToEntity(any(GroupDto.class));
   }
 
   @Test
