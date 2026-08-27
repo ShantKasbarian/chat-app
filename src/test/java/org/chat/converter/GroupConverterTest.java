@@ -15,8 +15,6 @@ class GroupConverterTest {
 
   private Group group;
 
-  private GroupDto groupDto;
-
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
@@ -24,16 +22,6 @@ class GroupConverterTest {
     group = new Group();
     group.setId(UUID.randomUUID());
     group.setName("group");
-
-    groupDto = new GroupDto(group.getId(), group.getName());
-  }
-
-  @Test
-  void convertToEntity() {
-    Group group = groupConverter.convertToEntity(groupDto);
-
-    assertNotNull(group);
-    assertEquals(groupDto.name(), group.getName());
   }
 
   @Test

@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupMemberConverter;
 import org.chat.entity.GroupMember;
 import org.chat.model.ErrorMessageDto;
@@ -21,7 +20,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-@Slf4j
 @RequiredArgsConstructor
 @Path("/groups")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -49,13 +47,8 @@ public class GroupMemberController {
       description = "group member with current user id already exists",
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response joinGroup(@PathParam("groupId") UUID groupId) {
-    log.info("POST /groups/{}/members called", groupId);
-
-    var groupMemberDto =
-        groupMemberConverter.convertToModel(
-            groupMemberService.joinGroup(groupId, userContext.get()));
-
-    log.info("POST /groups/{}/members returning a {}", groupId, GroupMemberDto.class.getName());
+    var groupMember = groupMemberService.joinGroup(groupId, userContext.get());
+    var groupMemberDto = groupMemberConverter.convertToModel(groupMember);
 
     return Response.status(Response.Status.CREATED).entity(groupMemberDto).build();
   }
@@ -69,11 +62,7 @@ public class GroupMemberController {
       description = "group member with current user id not found",
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response leaveGroup(@PathParam("groupId") UUID groupId) {
-    log.info("DELETE /groups/{}/members called", groupId);
-
     groupMemberService.leaveGroup(groupId, userContext.get().id());
-
-    log.info("DELETE /groups/{}/members operation successful", groupId);
 
     return Response.noContent().build();
   }
@@ -96,13 +85,8 @@ public class GroupMemberController {
       description = "group member with current user id or group member id not found",
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response acceptJoinRequest(@PathParam("id") UUID id) {
-    log.info("PATCH /groups/members/{} called", id);
-
-    var groupMemberDto =
-        groupMemberConverter.convertToModel(
-            groupMemberService.acceptJoinRequest(userContext.get().id(), id));
-
-    log.info("PATCH /groups/members/{} is returning a {}", id, GroupMemberDto.class.getName());
+    var groupMember = groupMemberService.acceptJoinRequest(userContext.get().id(), id);
+    var groupMemberDto = groupMemberConverter.convertToModel(groupMember);
 
     return Response.ok(groupMemberDto).build();
   }
@@ -120,11 +104,7 @@ public class GroupMemberController {
       description = "group member with current user id or group member id not found",
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response rejectJoinRequest(@PathParam("id") UUID id) {
-    log.info("DELETE /groups/members/{} called", id);
-
     groupMemberService.rejectJoinRequest(userContext.get().id(), id);
-
-    log.info("DELETE /groups/members/{} operation successful", id);
 
     return Response.noContent().build();
   }
@@ -145,20 +125,10 @@ public class GroupMemberController {
           int page,
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
-    log.info("GET /groups/{}/members called with page {} and size {}", groupId, page, size);
-
     var query =
         groupMemberService.findUsersByRole(groupId, userContext.get().id(), role, page, size);
     var users = query.list().stream().map(groupMemberConverter::convertToModel).toList();
     var pageDto = new PageDto<>(users, query.count(), query.pageCount());
-
-    log.info(
-        "GET /groups/{}/members returning a {} of {} with page {} and size {}",
-        groupId,
-        PageDto.class.getName(),
-        GroupMemberDto.class,
-        page,
-        size);
 
     return Response.ok(pageDto).build();
   }

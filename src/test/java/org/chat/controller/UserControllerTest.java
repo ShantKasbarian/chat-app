@@ -58,26 +58,26 @@ class UserControllerTest {
 
   @Test
   void login() {
-    when(userService.login(anyString(), anyString())).thenReturn(tokenDto);
+    when(userService.login(any(LoginDto.class))).thenReturn(tokenDto);
 
     var response = userController.login(loginDto);
 
     assertNotNull(response);
     assertEquals(tokenDto, response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    verify(userService).login(anyString(), anyString());
+    verify(userService).login(any(LoginDto.class));
   }
 
   @Test
   void signup() {
-    when(userService.signup(anyString(), anyString())).thenReturn(tokenDto);
+    when(userService.signup(any(UserDto.class))).thenReturn(tokenDto);
 
     var response = userController.signup(userDto);
 
     assertNotNull(response);
     assertEquals(tokenDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-    verify(userService).signup(anyString(), anyString());
+    verify(userService).signup(any(UserDto.class));
   }
 
   @Test

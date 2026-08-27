@@ -6,7 +6,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.chat.converter.GroupConverter;
 import org.chat.model.ErrorMessageDto;
 import org.chat.model.GroupDto;
@@ -20,7 +19,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-@Slf4j
 @RequiredArgsConstructor
 @Path("/groups")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -49,15 +47,10 @@ public class GroupController {
       description = "group with given name already exists",
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response create(@Valid GroupDto groupDto) {
-    log.info("POST /groups called");
+    var group = groupService.createGroup(groupDto, userContext.get());
+    var responseDto = groupConverter.convertToModel(group);
 
-    var group =
-        groupConverter.convertToModel(
-            groupService.createGroup(groupConverter.convertToEntity(groupDto), userContext.get()));
-
-    log.info("POST /groups returning a {}", GroupDto.class.getName());
-
-    return Response.status(Response.Status.CREATED).entity(group).build();
+    return Response.status(Response.Status.CREATED).entity(responseDto).build();
   }
 
   @GET
@@ -74,17 +67,8 @@ public class GroupController {
           int page,
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
-    log.info("GET /groups/me called with page {} and size {}", page, size);
-
     var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
     var groups = pageDto.content().stream().map(groupConverter::convertToModel).toList();
-
-    log.info(
-        "GET /groups/me returning a {} of {} with page {} and size {}",
-        PageDto.class.getName(),
-        GroupDto.class.getName(),
-        page,
-        size);
 
     return Response.ok(new PageDto<>(groups, page, size)).build();
   }
@@ -104,17 +88,9 @@ public class GroupController {
           int page,
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
-    log.info("GET /groups/{} called", name);
-
     var query = groupService.getGroups(name, page, size);
     var groups = query.list().stream().map(groupConverter::convertToModel).toList();
     var pageDto = new PageDto<>(groups, page, size);
-
-    log.info(
-        "GET /groups/{} returning a {} of {}",
-        name,
-        PageDto.class.getName(),
-        GroupDto.class.getName());
 
     return Response.ok(pageDto).build();
   }

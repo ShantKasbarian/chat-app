@@ -15,23 +15,11 @@ class UserConverterTest {
 
   private User user;
 
-  private UserDto userDto;
-
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
 
     user = new User(UUID.randomUUID(), "user", "Password123+");
-    userDto = new UserDto(user.getId(), user.getUsername(), user.getPassword());
-  }
-
-  @Test
-  void convertToEntity() {
-    User user = userConverter.convertToEntity(userDto);
-
-    assertNotNull(user);
-    assertEquals(userDto.username(), user.getUsername());
-    assertEquals(userDto.password(), user.getPassword());
   }
 
   @Test
