@@ -12,9 +12,6 @@ import org.chat.repository.UserRepository;
 @Slf4j
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository {
-  private static final String FIND_BY_USERNAME_MATCHES =
-      "{ 'username': { $regex: ?1, $options: 'i' } }";
-
   private static final String USERNAME = "username";
 
   @Override
@@ -32,7 +29,8 @@ public class UserRepositoryImpl implements UserRepository {
   public PanacheQuery<User> findByUsername(String username, int page, int size) {
     log.debug("fetching users with username {}, page {}, size {}", username, page, size);
 
-    var query = find(FIND_BY_USERNAME_MATCHES, Pattern.quote(username)).page(Page.of(page, size));
+    Pattern pattern = Pattern.compile(Pattern.quote(username), Pattern.CASE_INSENSITIVE);
+    var query = find(USERNAME, pattern).page(Page.of(page, size));
 
     log.debug("fetched users with username {}, page {}, size {}", username, page, size);
 

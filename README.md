@@ -8,7 +8,7 @@ This guide walks you through setting up and running the application on your loca
 
 Make sure the following tools are installed on your system:
 
-1. **Java 21**
+1. **Java 25**
    Download
    from: [https://www.oracle.com/java/technologies/downloads/](https://www.oracle.com/java/technologies/downloads/)
 

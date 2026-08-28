@@ -1,6 +1,7 @@
 package org.chat.repository.impl;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
@@ -12,8 +13,6 @@ import org.chat.repository.GroupRepository;
 @Slf4j
 @ApplicationScoped
 public class GroupRepositoryImpl implements GroupRepository {
-  private static final String FIND_BY_NAME_QUERY = "{ 'name' : { $regex: ?1, $options: 'i' } }";
-
   private static final String FIND_BY_IDS_QUERY = "_id in ?1";
 
   private static final String NAME = "name";
@@ -33,11 +32,12 @@ public class GroupRepositoryImpl implements GroupRepository {
   public PanacheQuery<Group> findByName(String name, int page, int size) {
     log.debug("fetching groups with name {}", name);
 
-    var groups = find(FIND_BY_NAME_QUERY, Pattern.quote(name)).page(page, size);
+    Pattern pattern = Pattern.compile(Pattern.quote(name), Pattern.CASE_INSENSITIVE);
+    var query = find(NAME, pattern).page(Page.of(page, size));
 
     log.debug("fetched groups with name {}", name);
 
-    return groups;
+    return query;
   }
 
   @Override
