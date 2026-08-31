@@ -1,10 +1,10 @@
 # chat-app
 
-This guide walks you through setting up and running the application on your local machine using java, maven and mongo.
+This guide walks you through setting up and running the application on your local machine using Java, Maven and MongoDB.
 
 ---
 
-## prerequisites:
+## Prerequisites
 
 Make sure the following tools are installed on your system:
 
@@ -18,76 +18,96 @@ Make sure the following tools are installed on your system:
 3. **MongoDB**
    Download from: [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
 
-## generate private and public ssh keys
+4. **OpenSSL**
+   Download from: [https://openssl-library.org/source/](https://openssl-library.org/source/)
 
-To generate a private key execute the following command in bash:
+You can verify that the required tools are installed by running:
+
+```bash
+java -version
+```
+
+```bash
+mvn -version
+```
+
+```bash
+mongosh --version
+```
+
+```bash
+openssl version
+```
+
+## Generate Private and Public SSH Keys
+
+The application requires a private and public RSA key pair.
+
+Generate a private key:
+
+```bash
 openssl genpkey -algorithm RSA -out privateKey.pem
+```
 
-To generate a public key based on the private key execute the following command in bash:
+Generate a public key from the private key:
+
+```bash
 openssl rsa -pubout -in privateKey.pem -out publicKey.pem
-
-## info about app
-
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
-
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
-
-## Running the application in dev mode
-
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+Make sure the generated keys are placed in `src/main/resourses`.
 
-## Packaging and running the application
+Important: Do not commit the private key (privateKey.pem) to the repository.
 
-The application can be packaged using:
+## Database Setup
 
-```shell script
-./mvnw package
+Make sure MongoDB is installed and running on your system.
+
+Configure the MongoDB connection in: `src/main/resources/application.properties`
+
+For example:
+
+```properties
+quarkus.mongodb.connection-string=mongodb://localhost:27017
+quarkus.mongodb.database=<database_name>
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory. Be aware that it’s not an _über-jar_ as
-the dependencies are copied into the `target/quarkus-app/lib/` directory.
+Replace <database_name> with the name of your MongoDB database.
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+## Run the Application
 
-If you want to build an _über-jar_, execute the following command:
+Run the application in dev mode:
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```bash
+mvn quarkus:dev
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+The application will be available at: http://localhost:8080
 
-## Creating a native executable
+## Build the Application
 
-You can create a native executable using:
+To package the application, run:
 
-```shell script
-./mvnw package -Dnative
+```bash
+mvn clean package
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+The packaged application will be created in the target/quarkus-app/ directory.
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+You can run the packaged application with:
+
+```bash
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-You can then execute your native executable with: `./target/chat-app-1.0.0-SNAPSHOT-runner`
+## API Documentation
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+The application provides API documentation using OpenAPI.
 
-## Provided Code
+Once the application is running, you can access:
 
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+- **Swagger UI:** http://localhost:8080/q/swagger-ui
+- **OpenAPI specification:** http://localhost:8080/q/openapi
 
 ## License & Attribution
 
