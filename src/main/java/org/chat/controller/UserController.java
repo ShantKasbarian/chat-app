@@ -6,7 +6,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
-import org.chat.converter.UserConverter;
+import org.chat.mapper.UserMapper;
 import org.chat.model.*;
 import org.chat.service.UserService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -24,7 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 public class UserController {
   private final UserService userService;
 
-  private final UserConverter userConverter;
+  private final UserMapper userMapper;
 
   @POST
   @Path("/auth/login")
@@ -83,7 +83,7 @@ public class UserController {
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
     var query = userService.findByUsername(username, page, size);
-    var users = query.list().stream().map(userConverter::convertToModel).toList();
+    var users = query.list().stream().map(userMapper::toModel).toList();
     var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
     return Response.ok(pageDto).build();

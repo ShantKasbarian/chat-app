@@ -10,11 +10,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.chat.converter.GroupMessageConverter;
-import org.chat.converter.MessageConverter;
 import org.chat.entity.Group;
 import org.chat.entity.Message;
 import org.chat.entity.User;
+import org.chat.mapper.GroupMessageMapper;
+import org.chat.mapper.MessageMapper;
 import org.chat.model.GroupMessageDto;
 import org.chat.model.MessageDto;
 import org.chat.security.UserContext;
@@ -31,9 +31,9 @@ class MessageControllerTest {
 
   @Mock private MessageService messageService;
 
-  @Mock private MessageConverter messageConverter;
+  @Mock private MessageMapper messageMapper;
 
-  @Mock private GroupMessageConverter groupMessageConverter;
+  @Mock private GroupMessageMapper groupMessageMapper;
 
   @Mock private UserContext userContext;
 
@@ -91,6 +91,7 @@ class MessageControllerTest {
             sender.getUsername(),
             message.getText(),
             group.getId(),
+            group.getName(),
             message.getTime());
     UserPrincipal userPrincipal = new UserPrincipal(sender.getId(), sender.getUsername());
 
@@ -101,14 +102,14 @@ class MessageControllerTest {
   void sendMessage() {
     when(messageService.sendMessage(any(MessageDto.class), any(UserPrincipal.class)))
         .thenReturn(message);
-    when(messageConverter.convertToModel(any(Message.class))).thenReturn(messageDto);
+    when(messageMapper.toModel(any(Message.class))).thenReturn(messageDto);
 
     var response = messageController.sendMessage(messageDto);
 
     assertNotNull(response);
     assertEquals(messageDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-    verify(messageConverter).convertToModel(any(Message.class));
+    verify(messageMapper).toModel(any(Message.class));
     verify(messageService).sendMessage(any(MessageDto.class), any(UserPrincipal.class));
   }
 
@@ -119,7 +120,7 @@ class MessageControllerTest {
 
     when(messageService.getMessages(any(UUID.class), any(UUID.class), anyInt(), anyInt()))
         .thenReturn(panacheQuery);
-    when(messageConverter.convertToModel(any(Message.class))).thenReturn(messageDto);
+    when(messageMapper.toModel(any(Message.class))).thenReturn(messageDto);
     when(panacheQuery.list()).thenReturn(messages);
     when(panacheQuery.count()).thenReturn(10L);
     when(panacheQuery.pageCount()).thenReturn(1);
@@ -129,7 +130,7 @@ class MessageControllerTest {
     assertNotNull(response);
     assertNotNull(response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    verify(messageConverter, times(messages.size())).convertToModel(any(Message.class));
+    verify(messageMapper, times(messages.size())).toModel(any(Message.class));
     verify(messageService).getMessages(any(UUID.class), any(UUID.class), anyInt(), anyInt());
   }
 
@@ -137,7 +138,7 @@ class MessageControllerTest {
   void messageGroup() {
     when(messageService.messageGroup(any(GroupMessageDto.class), any(UserPrincipal.class)))
         .thenReturn(message);
-    when(groupMessageConverter.convertToModel(any(Message.class))).thenReturn(groupMessageDto);
+    when(groupMessageMapper.toModel(any(Message.class))).thenReturn(groupMessageDto);
 
     var response = messageController.messageGroup(groupMessageDto);
 
@@ -145,7 +146,7 @@ class MessageControllerTest {
     assertEquals(groupMessageDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
     verify(messageService).messageGroup(any(GroupMessageDto.class), any(UserPrincipal.class));
-    verify(groupMessageConverter).convertToModel(any(Message.class));
+    verify(groupMessageMapper).toModel(any(Message.class));
   }
 
   @Test
@@ -155,7 +156,7 @@ class MessageControllerTest {
 
     when(messageService.getGroupMessages(any(UUID.class), any(UUID.class), anyInt(), anyInt()))
         .thenReturn(panacheQuery);
-    when(groupMessageConverter.convertToModel(any(Message.class))).thenReturn(groupMessageDto);
+    when(groupMessageMapper.toModel(any(Message.class))).thenReturn(groupMessageDto);
     when(panacheQuery.list()).thenReturn(messages);
     when(panacheQuery.count()).thenReturn(10L);
     when(panacheQuery.pageCount()).thenReturn(1);
@@ -166,6 +167,6 @@ class MessageControllerTest {
     assertNotNull(response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     verify(messageService).getGroupMessages(any(UUID.class), any(UUID.class), anyInt(), anyInt());
-    verify(groupMessageConverter, times(messages.size())).convertToModel(any(Message.class));
+    verify(groupMessageMapper, times(messages.size())).toModel(any(Message.class));
   }
 }

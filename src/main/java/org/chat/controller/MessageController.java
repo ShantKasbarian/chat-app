@@ -7,8 +7,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.chat.converter.GroupMessageConverter;
-import org.chat.converter.MessageConverter;
+import org.chat.mapper.GroupMessageMapper;
+import org.chat.mapper.MessageMapper;
 import org.chat.model.*;
 import org.chat.security.UserContext;
 import org.chat.service.MessageService;
@@ -28,9 +28,9 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 public class MessageController {
   private final MessageService messageService;
 
-  private final MessageConverter messageConverter;
+  private final MessageMapper messageMapper;
 
-  private final GroupMessageConverter groupMessageConverter;
+  private final GroupMessageMapper groupMessageMapper;
 
   private final UserContext userContext;
 
@@ -49,8 +49,7 @@ public class MessageController {
       description = "target user not found",
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response sendMessage(@Valid MessageDto messageDto) {
-    var message =
-        messageConverter.convertToModel(messageService.sendMessage(messageDto, userContext.get()));
+    var message = messageMapper.toModel(messageService.sendMessage(messageDto, userContext.get()));
 
     return Response.status(Response.Status.CREATED).entity(message).build();
   }
@@ -71,7 +70,7 @@ public class MessageController {
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
     var query = messageService.getMessages(userContext.get().id(), userId, page, size);
-    var messages = query.list().stream().map(messageConverter::convertToModel).toList();
+    var messages = query.list().stream().map(messageMapper::toModel).toList();
     var pageDto = new PageDto<>(messages, query.count(), query.pageCount());
 
     return Response.ok(pageDto).build();
@@ -98,8 +97,7 @@ public class MessageController {
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response messageGroup(@Valid GroupMessageDto groupMessageDto) {
     var message =
-        groupMessageConverter.convertToModel(
-            messageService.messageGroup(groupMessageDto, userContext.get()));
+        groupMessageMapper.toModel(messageService.messageGroup(groupMessageDto, userContext.get()));
 
     return Response.status(Response.Status.CREATED).entity(message).build();
   }
@@ -124,7 +122,7 @@ public class MessageController {
       @QueryParam("page") @DefaultValue("0") int page,
       @QueryParam("size") @DefaultValue("10") int size) {
     var query = messageService.getGroupMessages(groupId, userContext.get().id(), page, size);
-    var messages = query.list().stream().map(groupMessageConverter::convertToModel).toList();
+    var messages = query.list().stream().map(groupMessageMapper::toModel).toList();
     var pageDto = new PageDto<>(messages, query.count(), query.pageCount());
 
     return Response.ok(pageDto).build();

@@ -10,10 +10,10 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.chat.converter.GroupMemberConverter;
 import org.chat.entity.Group;
 import org.chat.entity.GroupMember;
 import org.chat.entity.User;
+import org.chat.mapper.GroupMemberMapper;
 import org.chat.model.GroupMemberDto;
 import org.chat.security.UserContext;
 import org.chat.security.UserPrincipal;
@@ -29,7 +29,7 @@ class GroupMemberControllerTest {
 
   @Mock private GroupMemberService groupMemberService;
 
-  @Mock private GroupMemberConverter groupMemberConverter;
+  @Mock private GroupMemberMapper groupMemberMapper;
 
   @Mock private PanacheQuery<GroupMember> panacheQuery;
 
@@ -74,7 +74,7 @@ class GroupMemberControllerTest {
 
   @Test
   void joinGroup() {
-    when(groupMemberConverter.convertToModel(any(GroupMember.class))).thenReturn(groupMemberDto);
+    when(groupMemberMapper.toModel(any(GroupMember.class))).thenReturn(groupMemberDto);
     when(groupMemberService.joinGroup(any(UUID.class), any(UserPrincipal.class)))
         .thenReturn(groupMember);
 
@@ -83,7 +83,7 @@ class GroupMemberControllerTest {
     assertNotNull(response);
     assertEquals(groupMemberDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-    verify(groupMemberConverter).convertToModel(any(GroupMember.class));
+    verify(groupMemberMapper).toModel(any(GroupMember.class));
     verify(groupMemberService).joinGroup(any(UUID.class), any(UserPrincipal.class));
     verify(userContext).get();
   }
@@ -102,7 +102,7 @@ class GroupMemberControllerTest {
 
   @Test
   void acceptJoinRequest() {
-    when(groupMemberConverter.convertToModel(any(GroupMember.class))).thenReturn(groupMemberDto);
+    when(groupMemberMapper.toModel(any(GroupMember.class))).thenReturn(groupMemberDto);
     when(groupMemberService.acceptJoinRequest(any(UUID.class), any(UUID.class)))
         .thenReturn(groupMember);
 
@@ -111,7 +111,7 @@ class GroupMemberControllerTest {
     assertNotNull(response);
     assertEquals(groupMemberDto, response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    verify(groupMemberConverter).convertToModel(any(GroupMember.class));
+    verify(groupMemberMapper).toModel(any(GroupMember.class));
     verify(groupMemberService).acceptJoinRequest(any(UUID.class), any(UUID.class));
     verify(userContext).get();
   }
@@ -137,7 +137,7 @@ class GroupMemberControllerTest {
             any(UUID.class), any(UUID.class), any(GroupMember.Role.class), anyInt(), anyInt()))
         .thenReturn(panacheQuery);
     when(panacheQuery.list()).thenReturn(groupMembers);
-    when(groupMemberConverter.convertToModel(any(GroupMember.class))).thenReturn(groupMemberDto);
+    when(groupMemberMapper.toModel(any(GroupMember.class))).thenReturn(groupMemberDto);
     when(panacheQuery.count()).thenReturn(10L);
     when(panacheQuery.pageCount()).thenReturn(1);
 
@@ -150,6 +150,6 @@ class GroupMemberControllerTest {
     verify(groupMemberService)
         .findUsersByRole(
             any(UUID.class), any(UUID.class), any(GroupMember.Role.class), anyInt(), anyInt());
-    verify(groupMemberConverter, times(groupMembers.size())).convertToModel(any(GroupMember.class));
+    verify(groupMemberMapper, times(groupMembers.size())).toModel(any(GroupMember.class));
   }
 }

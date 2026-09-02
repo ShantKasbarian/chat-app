@@ -9,8 +9,8 @@ import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.chat.converter.ConversationConverter;
 import org.chat.entity.Message;
+import org.chat.mapper.ConversationMapper;
 import org.chat.model.ConversationDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
@@ -27,7 +27,7 @@ class ConversationControllerTest {
 
   @Mock private MessageService messageService;
 
-  @Mock private ConversationConverter conversationConverter;
+  @Mock private ConversationMapper conversationMapper;
 
   @Mock private UserContext userContext;
 
@@ -53,7 +53,7 @@ class ConversationControllerTest {
     when(userContext.get()).thenReturn(userPrincipal);
     when(messageService.findLatestByUserId(any(UUID.class), anyInt(), anyInt()))
         .thenReturn(pageDto);
-    when(conversationConverter.convertToModel(any(Message.class), any(UUID.class)))
+    when(conversationMapper.toModel(any(Message.class), any(UUID.class)))
         .thenReturn(conversationDto);
 
     Response response = conversationController.getConversations(0, 10);
@@ -63,6 +63,6 @@ class ConversationControllerTest {
     assertNotNull(response.getEntity());
     verify(userContext).get();
     verify(messageService).findLatestByUserId(any(UUID.class), anyInt(), anyInt());
-    verify(conversationConverter, atLeast(1)).convertToModel(any(Message.class), any(UUID.class));
+    verify(conversationMapper, atLeast(1)).toModel(any(Message.class), any(UUID.class));
   }
 }

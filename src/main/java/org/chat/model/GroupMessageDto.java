@@ -11,4 +11,5 @@ public record GroupMessageDto(
     String senderUsername,
     @NotBlank(message = "text must be specified") String text,
     @NotNull(message = "groupId must be specified") UUID groupId,
+    String groupName,
     Instant time) {}

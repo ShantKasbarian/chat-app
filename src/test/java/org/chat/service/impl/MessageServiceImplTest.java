@@ -58,8 +58,6 @@ class MessageServiceImplTest {
 
   private GroupMember groupMember;
 
-  private Message groupMessage;
-
   private GroupMessageDto groupMessageDto;
 
   private UserPrincipal userPrincipal;
@@ -98,7 +96,7 @@ class MessageServiceImplTest {
             message.getText(),
             message.getTime());
 
-    groupMessage = new Message();
+    Message groupMessage = new Message();
     groupMessage.setId(UUID.randomUUID());
     groupMessage.setSenderId(user2.getId());
     groupMessage.setText("some message");
@@ -112,6 +110,7 @@ class MessageServiceImplTest {
             user1.getUsername(),
             groupMessage.getText(),
             group.getId(),
+            group.getName(),
             groupMessage.getTime());
 
     groupMember =
