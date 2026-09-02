@@ -6,8 +6,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.chat.converter.GroupMemberConverter;
 import org.chat.entity.GroupMember;
+import org.chat.mapper.GroupMemberMapper;
 import org.chat.model.ErrorMessageDto;
 import org.chat.model.GroupMemberDto;
 import org.chat.model.PageDto;
@@ -29,7 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 public class GroupMemberController {
   private final GroupMemberService groupMemberService;
 
-  private final GroupMemberConverter groupMemberConverter;
+  private final GroupMemberMapper groupMemberMapper;
 
   private final UserContext userContext;
 
@@ -48,7 +48,7 @@ public class GroupMemberController {
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response joinGroup(@PathParam("groupId") UUID groupId) {
     var groupMember = groupMemberService.joinGroup(groupId, userContext.get());
-    var groupMemberDto = groupMemberConverter.convertToModel(groupMember);
+    var groupMemberDto = groupMemberMapper.toModel(groupMember);
 
     return Response.status(Response.Status.CREATED).entity(groupMemberDto).build();
   }
@@ -86,7 +86,7 @@ public class GroupMemberController {
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response acceptJoinRequest(@PathParam("id") UUID id) {
     var groupMember = groupMemberService.acceptJoinRequest(userContext.get().id(), id);
-    var groupMemberDto = groupMemberConverter.convertToModel(groupMember);
+    var groupMemberDto = groupMemberMapper.toModel(groupMember);
 
     return Response.ok(groupMemberDto).build();
   }
@@ -127,7 +127,7 @@ public class GroupMemberController {
           int size) {
     var query =
         groupMemberService.findUsersByRole(groupId, userContext.get().id(), role, page, size);
-    var users = query.list().stream().map(groupMemberConverter::convertToModel).toList();
+    var users = query.list().stream().map(groupMemberMapper::toModel).toList();
     var pageDto = new PageDto<>(users, query.count(), query.pageCount());
 
     return Response.ok(pageDto).build();

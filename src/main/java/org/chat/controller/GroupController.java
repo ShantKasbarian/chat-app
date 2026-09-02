@@ -6,7 +6,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
-import org.chat.converter.GroupConverter;
+import org.chat.mapper.GroupMapper;
 import org.chat.model.ErrorMessageDto;
 import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
@@ -28,7 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 public class GroupController {
   private final GroupService groupService;
 
-  private final GroupConverter groupConverter;
+  private final GroupMapper groupMapper;
 
   private final UserContext userContext;
 
@@ -48,7 +48,7 @@ public class GroupController {
       content = @Content(schema = @Schema(implementation = ErrorMessageDto.class)))
   public Response create(@Valid GroupDto groupDto) {
     var group = groupService.createGroup(groupDto, userContext.get());
-    var responseDto = groupConverter.convertToModel(group);
+    var responseDto = groupMapper.toModel(group);
 
     return Response.status(Response.Status.CREATED).entity(responseDto).build();
   }
@@ -68,7 +68,7 @@ public class GroupController {
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
     var pageDto = groupService.getUserJoinedGroups(userContext.get().id(), page, size);
-    var groups = pageDto.content().stream().map(groupConverter::convertToModel).toList();
+    var groups = pageDto.content().stream().map(groupMapper::toModel).toList();
 
     return Response.ok(new PageDto<>(groups, page, size)).build();
   }
@@ -89,7 +89,7 @@ public class GroupController {
       @QueryParam("size") @DefaultValue("10") @Min(value = 1, message = "size must be at least 1")
           int size) {
     var query = groupService.getGroups(name, page, size);
-    var groups = query.list().stream().map(groupConverter::convertToModel).toList();
+    var groups = query.list().stream().map(groupMapper::toModel).toList();
     var pageDto = new PageDto<>(groups, page, size);
 
     return Response.ok(pageDto).build();

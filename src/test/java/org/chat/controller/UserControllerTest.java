@@ -10,8 +10,8 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.chat.converter.UserConverter;
 import org.chat.entity.User;
+import org.chat.mapper.UserMapper;
 import org.chat.model.LoginDto;
 import org.chat.model.TokenDto;
 import org.chat.model.UserDto;
@@ -28,7 +28,7 @@ class UserControllerTest {
 
   @Mock private UserService userService;
 
-  @Mock private UserConverter userConverter;
+  @Mock private UserMapper userMapper;
 
   @Mock private PanacheQuery<User> panacheQuery;
 
@@ -86,7 +86,7 @@ class UserControllerTest {
     users.add(user);
 
     when(userService.findByUsername(anyString(), anyInt(), anyInt())).thenReturn(panacheQuery);
-    when(userConverter.convertToModel(any(User.class))).thenReturn(userDto);
+    when(userMapper.toModel(any(User.class))).thenReturn(userDto);
     when(panacheQuery.list()).thenReturn(users);
     when(panacheQuery.count()).thenReturn(10L);
     when(panacheQuery.pageCount()).thenReturn(1);
@@ -96,7 +96,7 @@ class UserControllerTest {
     assertNotNull(response);
     assertNotNull(response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    verify(userConverter, times(users.size())).convertToModel(any(User.class));
+    verify(userMapper, times(users.size())).toModel(any(User.class));
     verify(userService).findByUsername(anyString(), anyInt(), anyInt());
   }
 }

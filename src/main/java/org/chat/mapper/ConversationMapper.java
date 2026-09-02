@@ -1,13 +1,13 @@
-package org.chat.converter;
+package org.chat.mapper;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 import org.chat.entity.Message;
 import org.chat.model.ConversationDto;
+import org.mapstruct.Mapper;
 
-@ApplicationScoped
-public class ConversationConverter {
-  public ConversationDto convertToModel(Message entity, UUID currentUserId) {
+@Mapper
+public interface ConversationMapper {
+  default ConversationDto toModel(Message entity, UUID currentUserId) {
     Message.Type type = entity.getType();
     UUID id = null;
     String name = null;

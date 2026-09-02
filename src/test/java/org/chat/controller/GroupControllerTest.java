@@ -9,9 +9,9 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.chat.converter.GroupConverter;
 import org.chat.entity.Group;
 import org.chat.entity.User;
+import org.chat.mapper.GroupMapper;
 import org.chat.model.GroupDto;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
@@ -28,7 +28,7 @@ class GroupControllerTest {
 
   @Mock private GroupService groupService;
 
-  @Mock private GroupConverter groupConverter;
+  @Mock private GroupMapper groupMapper;
 
   @Mock private UserContext userContext;
 
@@ -58,7 +58,7 @@ class GroupControllerTest {
 
   @Test
   void create() {
-    when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+    when(groupMapper.toModel(any(Group.class))).thenReturn(groupDto);
     when(groupService.createGroup(any(GroupDto.class), any(UserPrincipal.class))).thenReturn(group);
 
     var response = groupController.create(groupDto);
@@ -66,7 +66,7 @@ class GroupControllerTest {
     assertNotNull(response);
     assertEquals(groupDto, response.getEntity());
     assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-    verify(groupConverter).convertToModel(any(Group.class));
+    verify(groupMapper).toModel(any(Group.class));
     verify(groupService).createGroup(any(GroupDto.class), any(UserPrincipal.class));
     verify(userContext).get();
   }
@@ -78,7 +78,7 @@ class GroupControllerTest {
 
     when(groupService.getUserJoinedGroups(any(UUID.class), anyInt(), anyInt()))
         .thenReturn(new PageDto<>(groups, 10, 1));
-    when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+    when(groupMapper.toModel(any(Group.class))).thenReturn(groupDto);
     when(panacheQuery.count()).thenReturn(10L);
     when(panacheQuery.pageCount()).thenReturn(1);
 
@@ -88,7 +88,7 @@ class GroupControllerTest {
     assertNotNull(response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     verify(groupService).getUserJoinedGroups(any(UUID.class), anyInt(), anyInt());
-    verify(groupConverter, times(groups.size())).convertToModel(any(Group.class));
+    verify(groupMapper, times(groups.size())).toModel(any(Group.class));
   }
 
   @Test
@@ -97,7 +97,7 @@ class GroupControllerTest {
     groups.add(group);
 
     when(groupService.getGroups(anyString(), anyInt(), anyInt())).thenReturn(panacheQuery);
-    when(groupConverter.convertToModel(any(Group.class))).thenReturn(groupDto);
+    when(groupMapper.toModel(any(Group.class))).thenReturn(groupDto);
     when(panacheQuery.list()).thenReturn(groups);
     when(panacheQuery.count()).thenReturn(10L);
     when(panacheQuery.pageCount()).thenReturn(1);
@@ -108,6 +108,6 @@ class GroupControllerTest {
     assertNotNull(response.getEntity());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     verify(groupService).getGroups(anyString(), anyInt(), anyInt());
-    verify(groupConverter, atLeast(1)).convertToModel(any(Group.class));
+    verify(groupMapper, atLeast(1)).toModel(any(Group.class));
   }
 }

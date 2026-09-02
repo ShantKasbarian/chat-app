@@ -6,7 +6,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.chat.converter.ConversationConverter;
+import org.chat.mapper.ConversationMapper;
 import org.chat.model.PageDto;
 import org.chat.security.UserContext;
 import org.chat.service.MessageService;
@@ -26,7 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 public class ConversationController {
   private final MessageService messageService;
 
-  private final ConversationConverter conversationConverter;
+  private final ConversationMapper conversationMapper;
 
   private final UserContext userContext;
 
@@ -46,7 +46,7 @@ public class ConversationController {
     var messages = messageService.findLatestByUserId(id, page, size);
     var conversations =
         messages.content().stream()
-            .map(message -> conversationConverter.convertToModel(message, id))
+            .map(message -> conversationMapper.toModel(message, id))
             .toList();
     var pageDto = new PageDto<>(conversations, messages.totalElements(), messages.totalPages());
 

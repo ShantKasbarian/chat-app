@@ -1,4 +1,4 @@
-package org.chat.converter;
+package org.chat.mapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -9,11 +9,9 @@ import org.chat.entity.Message;
 import org.chat.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
 
-class ConversationConverterTest {
-  @InjectMocks private ConversationConverter conversationConverter;
+class ConversationMapperTest {
+  private ConversationMapper conversationMapper;
 
   private Message message;
 
@@ -25,7 +23,7 @@ class ConversationConverterTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    conversationMapper = new ConversationMapperImpl();
 
     sender = new User(UUID.randomUUID(), "John.Doe", "Password123+");
     target = new User(UUID.randomUUID(), "Jack.Doe", "Password123+");
@@ -45,8 +43,8 @@ class ConversationConverterTest {
   }
 
   @Test
-  void convertToModelShouldReturnTargetUserDetailsWhenIdIsSenderId() {
-    var conversationDto = conversationConverter.convertToModel(message, sender.getId());
+  void toModelShouldReturnTargetUserDetailsWhenIdIsSenderId() {
+    var conversationDto = conversationMapper.toModel(message, sender.getId());
 
     assertNotNull(conversationDto);
     assertEquals(target.getId(), conversationDto.id());
@@ -57,8 +55,8 @@ class ConversationConverterTest {
   }
 
   @Test
-  void convertToModelShouldReturnSenderUserDetailsWhenIdIsTargetUserId() {
-    var conversationDto = conversationConverter.convertToModel(message, target.getId());
+  void toModelShouldReturnSenderUserDetailsWhenIdIsTargetUserId() {
+    var conversationDto = conversationMapper.toModel(message, target.getId());
 
     assertNotNull(conversationDto);
     assertEquals(sender.getId(), conversationDto.id());
@@ -69,10 +67,10 @@ class ConversationConverterTest {
   }
 
   @Test
-  void convertToModelShouldReturnGroupDetailsWhenMessageTypeIsGroup() {
+  void toModelShouldReturnGroupDetailsWhenMessageTypeIsGroup() {
     message.setType(Message.Type.GROUP);
 
-    var conversationDto = conversationConverter.convertToModel(message, target.getId());
+    var conversationDto = conversationMapper.toModel(message, target.getId());
 
     assertNotNull(conversationDto);
     assertEquals(group.getId(), conversationDto.id());
